@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 
 import certifi
 import urllib3
+from funcy import first
 from urllib3.connection import HTTPConnection
 
 logger = logging.getLogger(__name__)
@@ -276,7 +277,7 @@ class Steem(object):
             'last_irreversible_block_num']
 
     def get_account(self, account_name):
-        return self.exec('get_accounts', [account_name])
+        return first(self.exec('get_accounts', [account_name]))
 
 
 if __name__ == '__main__':
