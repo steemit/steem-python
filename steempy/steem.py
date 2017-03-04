@@ -18,7 +18,7 @@ class Steem(HttpClient):
     def __init__(self, url='https://steemd.steemitdev.com', log_level=logging.INFO, **kwargs):
         url = url or os.environ.get('STEEMD_HTTP_URL')
 
-        # auto-complete RPC API methods
+        # auto-complete known RPC API methods
         self.apply_helper_methods()
 
         super(Steem, self).__init__(url, log_level, **kwargs)

@@ -1,24 +1,27 @@
+import sys
+from functools import partial
+
 api_methods = {
     "api": {
-        "cancel_all_subscriptions": 3,
+        "cancel_all_subscriptions": [],
         "get_account_bandwidth": 48,
-        "get_account_count": 41,
-        "get_account_history": 43,
-        "get_account_references": 38,
-        "get_account_votes": 63,
-        "get_accounts": 37,
-        "get_active_categories": 25,
-        "get_active_votes": 62,
-        "get_active_witnesses": 73,
-        "get_best_categories": 24,
-        "get_block": 20,
-        "get_block_header": 19,
-        "get_chain_properties": 29,
-        "get_config": 27,
-        "get_content": 64,
-        "get_content_replies": 65,
-        "get_conversion_requests": 42,
-        "get_current_median_history_price": 31,
+        "get_account_count": [],
+        "get_account_history": [('account', 'string')],
+        "get_account_references": [('account_name', 'string')],
+        "get_account_votes": [('account_name', 'string')],
+        "get_accounts": [('account_names', 'list')],
+        "get_active_categories": [('after', 'string'), ('limit', 'int')],  # deprecated?
+        "get_active_votes": [('author', 'string'), ('permlink', 'string')],
+        "get_active_witnesses": [],
+        "get_best_categories": [('after', 'string'), ('limit', 'int')],  # deprecated?
+        "get_block": [('block_num', 'int')],
+        "get_block_header": [('block_num', 'int')],
+        "get_chain_properties": [],
+        "get_config": [],
+        "get_content": [('author', 'string'), ('permlink', 'string')],
+        "get_content_replies": [('author', 'string'), ('permlink', 'string')],
+        "get_conversion_requests": [('account', 'string')],
+        "get_current_median_history_price": [],
         "get_discussions_by_active": 9,
         "get_discussions_by_author_before_date": 66,
         "get_discussions_by_blog": 16,
@@ -33,7 +36,7 @@ api_methods = {
         "get_discussions_by_trending": 6,
         "get_discussions_by_trending30": 7,
         "get_discussions_by_votes": 12,
-        "get_dynamic_global_properties": 28,
+        "get_dynamic_global_properties": [],
         "get_escrow": 46,
         "get_expiring_vesting_delegations": 52,
         "get_feed_history": 30,
@@ -68,7 +71,7 @@ api_methods = {
         "get_witnesses": 68,
         "get_witnesses_by_vote": 70,
         "lookup_account_names": 39,
-        "lookup_accounts": 40,
+        "lookup_accounts": [('after', 'string'), ('limit', 'int')],
         "lookup_witness_accounts": 71,
         "set_block_applied_callback": 2,
         "set_pending_transaction_callback": 1,
@@ -77,3 +80,32 @@ api_methods = {
         "verify_authority": 60
     }
 }
+
+method_template = """
+def {method_name}(self{method_arguments}):
+    return self.exec('{method_name}'{call_arguments})
+
+"""
+
+
+def steemd_codegen():
+    """ Generates Python methods from steemd JSON API spec. Prints to stdout. """
+    for method_name, method_signature in api_methods['api'].items():
+        method_arg_mapper = partial(map, lambda x: ', %s: %s' % (x[0], x[1]))
+        call_arg_mapper = partial(map, lambda x: ', %s' % x[0])
+
+        # todo: remove this
+        if type(method_signature) is int:
+            method_signature = []
+
+        # generate method code
+        fn = method_template.format(
+            method_name=method_name,
+            method_arguments=''.join(method_arg_mapper(method_signature)),
+            call_arguments=''.join(call_arg_mapper(method_signature)),
+        )
+        sys.stdout.write(fn)
+
+
+if __name__ == '__main__':
+    steemd_codegen()
