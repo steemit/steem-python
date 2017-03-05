@@ -4,11 +4,14 @@ import json
 import logging
 import socket
 from functools import partial
+from itertools import cycle
 from urllib.parse import urlparse
+import time
 
 import certifi
 import urllib3
 from urllib3.connection import HTTPConnection
+from urllib3.exceptions import MaxRetryError
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +50,7 @@ class HttpClient(object):
 
     """
 
-    def __init__(self, url, log_level=logging.INFO, **kwargs):
-        self.url = url
-        self.hostname = urlparse(self.url).hostname
+    def __init__(self, nodes, log_level=logging.INFO, **kwargs):
         self.return_with_args = kwargs.get('return_with_args', False)
         self.re_raise = kwargs.get('re_raise', False)
         self.max_workers = kwargs.get('max_workers', None)
@@ -83,9 +84,23 @@ class HttpClient(object):
             pool_timeout=None, release_conn=None, chunked=False, body_pos=None,
             **response_kw)
         '''
-        self.request = partial(self.http.urlopen, 'POST', url)
+
+        self.nodes = cycle(nodes)
+        self.url = ''
+        self.request = None
+        self.change_node()
 
         logger.setLevel(log_level)
+
+    def change_node(self):
+        """ This method will change base URL of our requests.
+        Use it when the current node goes down to change to a fallback node. """
+        self.url = next(self.nodes)
+        self.request = partial(self.http.urlopen, 'POST', self.url)
+
+    @property
+    def hostname(self):
+        return urlparse(self.url).hostname
 
     @staticmethod
     def json_rpc_body(name, *args, as_json=True):
@@ -95,10 +110,21 @@ class HttpClient(object):
         else:
             return body_dict
 
-    def exec(self, name, *args, re_raise=None, return_with_args=None):
+    def exec(self, name, *args, re_raise=True, return_with_args=None, _ret_cnt=0):
         body = HttpClient.json_rpc_body(name, *args)
         try:
             response = self.request(body=body)
+        except MaxRetryError as e:
+            # try switching nodes before giving up
+            if _ret_cnt > 2:
+                time.sleep(5*_ret_cnt)
+            elif _ret_cnt > 10:
+                raise e
+            self.change_node()
+            return self.exec(name, *args,
+                             re_raise=re_raise,
+                             return_with_args=return_with_args,
+                             _ret_cnt=_ret_cnt+1)
         except Exception as e:
             if re_raise:
                 raise e

@@ -15,13 +15,17 @@ class Steem(HttpClient):
     """ Docstring
     """
 
-    def __init__(self, url='https://steemd.steemitdev.com', log_level=logging.INFO, **kwargs):
-        url = url or os.environ.get('STEEMD_HTTP_URL')
+    def __init__(self, nodes=None, log_level=logging.INFO, **kwargs):
+        if not nodes:
+            nodes = [
+                'https://steemd.steemit.com',
+                'https://steemd.steemitdev.com',
+            ]
 
         # auto-complete missing RPC API methods
         self.apply_missing_methods()
 
-        super(Steem, self).__init__(url, log_level, **kwargs)
+        super(Steem, self).__init__(nodes, log_level, **kwargs)
 
     def __getattr__(self, method_name):
         """ If method does not exist, lets try calling steemd with it. """
