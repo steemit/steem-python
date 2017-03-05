@@ -66,8 +66,8 @@ class Steem(HttpClient):
         """
         return first(self.exec('get_accounts', [account]))
 
-    def cancel_all_subscriptions(self):
-        return self.exec('cancel_all_subscriptions')
+    def get_account_bandwidth(self, account: str, bandwidth_type: object):
+        return self.exec('get_account_bandwidth', account, bandwidth_type)
 
     def get_account_count(self):
         return self.exec('get_account_count')
@@ -120,13 +120,55 @@ class Steem(HttpClient):
     def get_current_median_history_price(self):
         return self.exec('get_current_median_history_price')
 
+    def get_discussions_by_active(self, discussion_query: dict):
+        return self.exec('get_discussions_by_active', discussion_query)
+
+    def get_discussions_by_author_before_date(self, discussion_query: dict):
+        return self.exec('get_discussions_by_author_before_date', discussion_query)
+
+    def get_discussions_by_blog(self, discussion_query: dict):
+        return self.exec('get_discussions_by_blog', discussion_query)
+
+    def get_discussions_by_cashout(self, discussion_query: dict):
+        return self.exec('get_discussions_by_cashout', discussion_query)
+
+    def get_discussions_by_children(self, discussion_query: dict):
+        return self.exec('get_discussions_by_children', discussion_query)
+
+    def get_discussions_by_comments(self, discussion_query: dict):
+        return self.exec('get_discussions_by_comments', discussion_query)
+
+    def get_discussions_by_created(self, discussion_query: dict):
+        return self.exec('get_discussions_by_created', discussion_query)
+
+    def get_discussions_by_feed(self, discussion_query: dict):
+        return self.exec('get_discussions_by_feed', discussion_query)
+
+    def get_discussions_by_hot(self, discussion_query: dict):
+        return self.exec('get_discussions_by_hot', discussion_query)
+
+    def get_discussions_by_payout(self, discussion_query: dict):
+        return self.exec('get_discussions_by_payout', discussion_query)
+
+    def get_discussions_by_promoted(self, discussion_query: dict):
+        return self.exec('get_discussions_by_promoted', discussion_query)
+
+    def get_discussions_by_trending(self, discussion_query: dict):
+        return self.exec('get_discussions_by_trending', discussion_query)
+
+    def get_discussions_by_trending30(self, discussion_query: dict):
+        return self.exec('get_discussions_by_trending30', discussion_query)
+
+    def get_discussions_by_votes(self, discussion_query: dict):
+        return self.exec('get_discussions_by_votes', discussion_query)
+
     def get_dynamic_global_properties(self):
         return self.exec('get_dynamic_global_properties')
 
     def get_escrow(self, from_account: str, escrow_id: int):
         return self.exec('get_escrow', from_account, escrow_id)
 
-    def get_expiring_vesting_delegations(self, author: str, from_time: str, limit: int):
+    def get_expiring_vesting_delegations(self, author: str, from_time: object, limit: int):
         return self.exec('get_expiring_vesting_delegations', author, from_time, limit)
 
     def get_feed_history(self):
@@ -159,11 +201,20 @@ class Steem(HttpClient):
     def get_owner_history(self, account: str):
         return self.exec('get_owner_history', account)
 
+    def get_potential_signatures(self, signed_transaction: object):
+        return self.exec('get_potential_signatures', signed_transaction)
+
     def get_recent_categories(self, after: str, limit: int):
         return self.exec('get_recent_categories', after, limit)
 
     def get_recovery_request(self, account: str):
         return self.exec('get_recovery_request', account)
+
+    def get_replies_by_last_update(self, account: str, start_permlink: str, limit: int):
+        return self.exec('get_replies_by_last_update', account, start_permlink, limit)
+
+    def get_required_signatures(self, signed_transaction: object, available_keys: list):
+        return self.exec('get_required_signatures', signed_transaction, available_keys)
 
     def get_reward_fund(self, fund_name: str):
         return self.exec('get_reward_fund', fund_name)
@@ -180,6 +231,12 @@ class Steem(HttpClient):
     def get_tags_used_by_author(self, account: str):
         return self.exec('get_tags_used_by_author', account)
 
+    def get_transaction(self, transaction_id: str):
+        return self.exec('get_transaction', transaction_id)
+
+    def get_transaction_hex(self, signed_transaction: object):
+        return self.exec('get_transaction_hex', signed_transaction)
+
     def get_trending_categories(self, after: str, limit: int):
         return self.exec('get_trending_categories', after, limit)
 
@@ -188,6 +245,9 @@ class Steem(HttpClient):
 
     def get_vesting_delegations(self, account: str, from_account: str, limit: int):
         return self.exec('get_vesting_delegations', account, from_account, limit)
+
+    def get_withdraw_routes(self, account: str, withdraw_route_type: str):
+        return self.exec('get_withdraw_routes', account, withdraw_route_type)
 
     def get_witness_by_account(self, account: str):
         return self.exec('get_witness_by_account', account)
@@ -212,6 +272,12 @@ class Steem(HttpClient):
 
     def lookup_witness_accounts(self, account_name: str, limit: int):
         return self.exec('lookup_witness_accounts', account_name, limit)
+
+    def verify_account_authority(self, account: str, keys: list):
+        return self.exec('verify_account_authority', account, keys)
+
+    def verify_authority(self, signed_transaction: object):
+        return self.exec('verify_authority', signed_transaction)
 
 
 if __name__ == '__main__':
