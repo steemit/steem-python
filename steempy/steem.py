@@ -123,8 +123,8 @@ class Steem(HttpClient):
     def get_discussions_by_active(self, discussion_query: dict):
         return self.exec('get_discussions_by_active', discussion_query)
 
-    def get_discussions_by_author_before_date(self, discussion_query: dict):
-        return self.exec('get_discussions_by_author_before_date', discussion_query)
+    def get_discussions_by_author_before_date(self, author: str, start_permlink: str, before_date: object, limit: int):
+        return self.exec('get_discussions_by_author_before_date', author, start_permlink, before_date, limit)
 
     def get_discussions_by_blog(self, discussion_query: dict):
         return self.exec('get_discussions_by_blog', discussion_query)

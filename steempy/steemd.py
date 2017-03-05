@@ -23,7 +23,7 @@ api_methods = {
         "get_conversion_requests": [('account', 'str')],
         "get_current_median_history_price": [],
         "get_discussions_by_active": [('discussion_query', 'dict')],
-        "get_discussions_by_author_before_date": [('discussion_query', 'dict')],
+        "get_discussions_by_author_before_date": [('author', 'str'), ('start_permlink', 'str'), ('before_date', 'object'), ('limit', 'int')],
         "get_discussions_by_blog": [('discussion_query', 'dict')],
         "get_discussions_by_cashout": [('discussion_query', 'dict')],
         "get_discussions_by_children": [('discussion_query', 'dict')],
