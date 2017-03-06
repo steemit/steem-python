@@ -32,6 +32,7 @@ First Steps
    :caption: Contents:
 
    install
+   steem
 
 
 Indices and tables

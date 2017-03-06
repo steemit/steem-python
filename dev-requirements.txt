@@ -7,3 +7,4 @@ recommonmark
 sphinxcontrib-restbuilder
 sphinxcontrib-programoutput
 pytest-console-scripts
+sphinxcontrib-napoleon

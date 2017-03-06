@@ -37,7 +37,8 @@ extensions = [
     'sphinx.ext.imgmath',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages'
+    'sphinx.ext.githubpages',
+    'sphinx.ext.napoleon',
     # 'sphinxcontrib.programoutput',
     # 'sphinxcontrib.restbuilder',
 ]
