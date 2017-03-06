@@ -1,6 +1,5 @@
 # coding=utf-8
 import logging
-import os
 from functools import partial
 
 from funcy import first
@@ -12,8 +11,30 @@ logger = logging.getLogger(__name__)
 
 
 class Steem(HttpClient):
-    """ Docstring
-    """
+    """ Connect to the Steem network.
+
+        Args:
+            nodes (list): A list of Steem HTTP RPC nodes to connect to. If not provided, official Steemit nodes will be used.
+            log_level (int): Set the level for logging output. Defaults to `logging.INFO`.
+
+        Returns:
+            Steem class instance. It can be used to execute commands against steem node.
+
+        Example:
+
+           If you would like to override the official Steemit nodes (default), you can pass your own.
+           When currently used node goes offline, ``Steem`` will automatically failover to the next available node.
+
+           .. code-block:: python
+
+               nodes = [
+                   'https://steemd.yournode1.com',
+                   'https://steemd.yournode2.com',
+               ]
+
+               s = Steem(nodes)
+
+       """
 
     def __init__(self, nodes=None, log_level=logging.INFO, **kwargs):
         if not nodes:
@@ -23,7 +44,7 @@ class Steem(HttpClient):
             ]
 
         # auto-complete missing RPC API methods
-        self.apply_missing_methods()
+        self._apply_missing_methods()
 
         super(Steem, self).__init__(nodes, log_level, **kwargs)
 
@@ -32,7 +53,7 @@ class Steem(HttpClient):
         logger.warning('Calling an unknown method "%s"' % method_name)
         return partial(self.exec, method_name)
 
-    def apply_missing_methods(self):
+    def _apply_missing_methods(self):
         """ Binds known steemd api methods to this class for auto-complete purposes. """
         for method_name in api_methods['api'].keys():
             if method_name not in dir(self):
@@ -55,10 +76,10 @@ class Steem(HttpClient):
             'last_irreversible_block_num']
 
     def get_account(self, account: str):
-        """ Lookup account information, user profile, public keys, balances, etc.
+        """ Lookup account information such as user profile, public keys, balances, etc.
 
         Args:
-            account: STEEM username that we are looking up.
+            account (str): STEEM username that we are looking up.
 
         Returns:
             dict: Account information.

@@ -25,19 +25,15 @@ You can start using the library with just a few lines of code, as seen in this q
    # '977.574 SBD'
 
 
-First Steps
-===========
+User Guide
+----------
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
 
    install
    steem
 
-
-Indices and tables
-==================
+Other
+-----
 
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
