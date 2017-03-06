@@ -31,22 +31,26 @@ class HttpClient(object):
         Steem API.
 
     Args:
-      str: url: url of the API server
+      nodes (list): A list of Steem HTTP RPC nodes to connect to.
       urllib3: HTTPConnectionPool url: instance of urllib3.HTTPConnectionPool
 
     .. code-block:: python
 
-    from sbds.client import SimpleSteemAPIClient
-    rpc = SimpleSteemAPIClient("http://domain.com:port")
+       from steempy.http_client import HttpClient
+       rpc = HttpClient(['https://steemd-node1.com', 'https://steemd-node2.com'])
 
     any call available to that port can be issued using the instance
-    via the syntax rpc.exec_rpc('command', (*parameters*). Example:
+    via the syntax ``rpc.exec('command', *parameters)``.
+
+    Example:
 
     .. code-block:: python
 
-    rpc.exec('info')
-
-    Returns:
+       rpc.exec(
+           'get_followers',
+           'furion', 'abit', 'blog', 10,
+           api='follow_api'
+       )
 
     """
 
@@ -93,7 +97,9 @@ class HttpClient(object):
         logger.setLevel(log_level)
 
     def change_node(self):
-        """ This method will change base URL of our requests.
+        """ Switch to the next available node.
+
+        This method will change base URL of our requests.
         Use it when the current node goes down to change to a fallback node. """
         self.url = next(self.nodes)
         self.request = partial(self.http.urlopen, 'POST', self.url)
@@ -103,15 +109,35 @@ class HttpClient(object):
         return urlparse(self.url).hostname
 
     @staticmethod
-    def json_rpc_body(name, *args, as_json=True):
-        body_dict = {"method": name, "params": args, "jsonrpc": "2.0", "id": 0}
+    def json_rpc_body(name, *args, api=None, as_json=True, _id=0):
+        """ Build request body for steemd RPC requests.
+
+        Args:
+            name (str): Name of a method we are trying to call. (ie: `get_accounts`)
+            args: A list of arguments belonging to the calling method.
+            api (None, str): If api is provided (ie: `follow_api`),
+             we generate a body that uses `call` method appropriately.
+            as_json (bool): Should this function return json as dictionary or string.
+            _id (int): This is an arbitrary number that can be used for request/response tracking in multi-threaded
+             scenarios.
+
+        Returns:
+            (dict,str): If `as_json` is set to `True`, we get json formatted as a string.
+            Otherwise, a Python dictionary is returned.
+        """
+        headers = {"jsonrpc": "2.0", "id": _id}
+        if api:
+            body_dict = {**headers, "method": "call", "params": [api, name, args]}
+        else:
+            body_dict = {**headers, "method": name, "params": args}
         if as_json:
             return json.dumps(body_dict, ensure_ascii=False).encode('utf8')
         else:
             return body_dict
 
-    def exec(self, name, *args, re_raise=True, return_with_args=None, _ret_cnt=0):
-        body = HttpClient.json_rpc_body(name, *args)
+    def exec(self, name, *args, api=None, re_raise=True, return_with_args=None, _ret_cnt=0):
+        """ Execute a method against steemd RPC."""
+        body = HttpClient.json_rpc_body(name, *args, api=api)
         try:
             response = self.request(body=body)
         except MaxRetryError as e:

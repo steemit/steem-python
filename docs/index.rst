@@ -33,6 +33,14 @@ User Guide
    install
    steem
 
+
+Internals
+---------
+.. toctree::
+   :maxdepth: 1
+
+   http_client
+
 Other
 -----
 
