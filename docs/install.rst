@@ -1,0 +1,29 @@
+************
+Installation
+************
+
+`steem-python` requires Python 3.5 or higher. We don't recommend usage of Python that ships with OS.
+If you're just looking for a quick and easy cross-platform solution, feel free to install Python 3.x via easy to use
+`Anaconda <https://www.continuum.io/downloads>`_ installer.
+
+
+Afterwards, you can install `steem-python` with `pip`:
+
+::
+
+    $ pip install steem
+
+You can also perform the installation manually using `setup.py`:
+
+::
+
+    $ git clone https://github.com/steemit/steem-python
+    $ cd steem-python
+    $ python setup.py install --user
+
+Upgrade
+#######
+
+::
+
+   $ pip install -U steem
