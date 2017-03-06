@@ -208,24 +208,127 @@ class Steem(HttpClient):
         return self.exec('get_active_categories', after, limit)
 
     def get_active_votes(self, author: str, permlink: str):
+        """ Get all votes for the given post.
+
+        Args:
+            author (str): OP's STEEM username.
+            permlink (str): Post identifier following the username. It looks like slug-ified title.
+
+        Returns:
+            list: List of votes.
+
+        Example:
+            .. code-block:: python
+
+               s.get_active_votes('mynameisbrian', 'steemifying-idioms-there-s-no-use-crying-over-spilt-milk')
+
+            Output:
+
+            ::
+
+               [{'percent': 10000,
+                 'reputation': '36418980678',
+                 'rshares': 356981288,
+                 'time': '2017-03-06T20:04:18',
+                 'voter': 'dailystuff',
+                 'weight': '2287202760855'},
+                 ...
+                {'percent': 10000,
+                 'reputation': 3386400109,
+                 'rshares': 364252169,
+                 'time': '2017-03-06T19:32:45',
+                 'voter': 'flourish',
+                 'weight': '2334690471157'}]
+            """
         return self.exec('get_active_votes', author, permlink)
 
     def get_active_witnesses(self):
+        """ Get a list of currently active witnesses. """
         return self.exec('get_active_witnesses')
 
     def get_best_categories(self, after: str, limit: int):
         return self.exec('get_best_categories', after, limit)
 
     def get_block(self, block_num: int):
+        """ Get the full block, transactions and all, given a block number.
+
+            Args:
+                block_num (int): Block number.
+
+            Returns:
+                dict: Block in a JSON compatible format.
+
+            Example:
+
+                .. code-block:: python
+
+                   s.get_block(8888888)
+
+                ::
+
+                    {'extensions': [],
+                     'previous': '0087a2372163ff5c5838b09589ce281d5a564f66',
+                     'timestamp': '2017-01-29T02:47:33',
+                     'transaction_merkle_root': '4ddc419e531cccee6da660057d606d11aab9f3a5',
+                     'transactions': [{'expiration': '2017-01-29T02:47:42',
+                       'extensions': [],
+                       'operations': [['comment',
+                         {'author': 'hilarski',
+                          'body': 'https://media.giphy.com/media/RAx4Xwh1OPHji/giphy.gif',
+                          'json_metadata': '{"tags":["motocross"],"image":["https://media.giphy.com/media/RAx4Xwh1OPHji/giphy.gif"],"app":"steemit/0.1"}',
+                          'parent_author': 'b0y2k',
+                          'parent_permlink': 'ama-supercross-round-4-phoenix-2017',
+                          'permlink': 're-b0y2k-ama-supercross-round-4-phoenix-2017-20170129t024725575z',
+                          'title': ''}]],
+                       'ref_block_num': 41495,
+                       'ref_block_prefix': 2639073901,
+                       'signatures': ['2058b69f4c15f704a67a7b5a7996a9c9bbfd39c639f9db19b99ecad8328c4ce3610643f8d1b6424c352df120614cd535cd8f2772fce68814eeea50049684c37d69']}],
+                     'witness': 'chainsquad.com',
+                     'witness_signature': '1f115745e3f6fee95124164f4b57196c0eda2a700064faa97d0e037d3554ee2d5b618e6bfd457473783e8b8333724ba0bf93f0a4a7026e7925c8c4d2ba724152d4'}
+
+
+        """
         return self.exec('get_block', block_num)
 
     def get_block_header(self, block_num: int):
+        """ Get block headers, given a block number.
+
+            Args:
+               block_num (int): Block number.
+
+            Returns:
+               dict: Block headers in a JSON compatible format.
+
+            Example:
+
+                .. code-block:: python
+
+                   s.get_block_headers(8888888)
+
+                ::
+
+                    {'extensions': [],
+                     'previous': '0087a2372163ff5c5838b09589ce281d5a564f66',
+                     'timestamp': '2017-01-29T02:47:33',
+                     'transaction_merkle_root': '4ddc419e531cccee6da660057d606d11aab9f3a5',
+                     'witness': 'chainsquad.com'}
+        """
         return self.exec('get_block_header', block_num)
 
     def get_chain_properties(self):
+        """ Get witness elected chain properties.
+
+        ::
+
+            {'account_creation_fee': '30.000 STEEM',
+             'maximum_block_size': 65536,
+             'sbd_interest_rate': 250}
+
+        """
         return self.exec('get_chain_properties')
 
     def get_config(self):
+        """ Get internal chain configuration. """
         return self.exec('get_config')
 
     def get_content(self, author: str, permlink: str):
@@ -238,6 +341,15 @@ class Steem(HttpClient):
         return self.exec('get_conversion_requests', account)
 
     def get_current_median_history_price(self):
+        """ Get the average STEEM/SBD price.
+
+        This price is based on moving average of witness reported price feeds.
+
+        ::
+
+            {'base': '0.093 SBD', 'quote': '1.010 STEEM'}
+
+        """
         return self.exec('get_current_median_history_price')
 
     def get_discussions_by_active(self, discussion_query: dict):
@@ -292,12 +404,37 @@ class Steem(HttpClient):
         return self.exec('get_expiring_vesting_delegations', author, from_time, limit)
 
     def get_feed_history(self):
+        """ Get the hourly averages of witness reported STEEM/SBD prices.
+
+        ::
+
+            {'current_median_history': {'base': '0.093 SBD', 'quote': '1.010 STEEM'},
+             'id': 0,
+             'price_history': [{'base': '0.092 SBD', 'quote': '1.010 STEEM'},
+              {'base': '0.093 SBD', 'quote': '1.020 STEEM'},
+              {'base': '0.093 SBD', 'quote': '1.010 STEEM'},
+              {'base': '0.094 SBD', 'quote': '1.020 STEEM'},
+              {'base': '0.093 SBD', 'quote': '1.010 STEEM'},
+
+        """
         return self.exec('get_feed_history')
 
     def get_hardfork_version(self):
+        """ Get the current version of the chain.
+
+        Note:
+            This is not the same as latest minor version.
+
+        """
         return self.exec('get_hardfork_version')
 
     def get_liquidity_queue(self, start_account: str, limit: int):
+        """ Get the liquidity queue.
+
+        Warning:
+            This feature is currently not in use, and might be deprecated in the future.
+
+        """
         return self.exec('get_liquidity_queue', start_account, limit)
 
     def get_miner_queue(self):
@@ -313,6 +450,49 @@ class Steem(HttpClient):
         return self.exec('get_ops_in_block', block_num, virtual_only)
 
     def get_order_book(self, limit: int):
+        """ Get the internal market order book.
+
+        This method will return both bids and asks.
+
+        Args:
+            limit (int): How many levels deep into the book to show.
+
+        Returns:
+            dict: Order book.
+
+        Example:
+
+            .. code-block:: python
+
+               s.get_order_book(2)
+
+            Outputs:
+
+            ::
+
+                {'asks': [{'created': '2017-03-06T21:29:54',
+                   'order_price': {'base': '513.571 STEEM', 'quote': '50.000 SBD'},
+                   'real_price': '0.09735752213423265',
+                   'sbd': 50000,
+                   'steem': 513571},
+                  {'created': '2017-03-06T21:01:39',
+                   'order_price': {'base': '63.288 STEEM', 'quote': '6.204 SBD'},
+                   'real_price': '0.09802806219188472',
+                   'sbd': 6204,
+                   'steem': 63288}],
+                 'bids': [{'created': '2017-03-06T21:29:51',
+                   'order_price': {'base': '50.000 SBD', 'quote': '516.503 STEEM'},
+                   'real_price': '0.09680485882947436',
+                   'sbd': 50000,
+                   'steem': 516503},
+                  {'created': '2017-03-06T17:30:24',
+                   'order_price': {'base': '36.385 SBD', 'quote': '379.608 STEEM'},
+                   'real_price': '0.09584887568228277',
+                   'sbd': 36385,
+                   'steem': 379608}]}
+
+
+        """
         return self.exec('get_order_book', limit)
 
     def get_owner_history(self, account: str):
@@ -375,8 +555,8 @@ class Steem(HttpClient):
     def get_witness_schedule(self):
         return self.exec('get_witness_schedule')
 
-    def get_witnesses(self):
-        return self.exec('get_witnesses')
+    def get_witnesses(self, witness_ids: list):
+        return self.exec('get_witnesses', witness_ids)
 
     def get_witnesses_by_vote(self, from_account: str, limit: int):
         return self.exec('get_witnesses_by_vote', from_account, limit)
