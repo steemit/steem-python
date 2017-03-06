@@ -62,18 +62,15 @@ class Steem(HttpClient):
 
     @property
     def last_irreversible_block_num(self):
+        """ Newest irreversible block number. """
         return self.get_dynamic_global_properties()[
             'last_irreversible_block_num']
 
     @property
-    def head_block_height(self):
+    def head_block_number(self):
+        """ Newest block number. """
         return self.get_dynamic_global_properties()[
-            'last_irreversible_block_num']
-
-    @property
-    def block_height(self):
-        return self.get_dynamic_global_properties()[
-            'last_irreversible_block_num']
+            'head_block_number']
 
     def get_account(self, account: str):
         """ Lookup account information such as user profile, public keys, balances, etc.
@@ -91,18 +88,120 @@ class Steem(HttpClient):
         return self.exec('get_account_bandwidth', account, bandwidth_type)
 
     def get_account_count(self):
+        """ How many accounts are currently registered on STEEM? """
         return self.exec('get_account_count')
 
-    def get_account_history(self, account: str):
-        return self.exec('get_account_history', account)
+    def get_account_history(self, account: str, index_from: int, limit: int):
+        """ History of all operations for a given account.
+
+        Args:
+            account (str): STEEM username that we are looking up.
+            index_from (int): The highest database index we take as a starting point.
+            limit (int): How many items are we interested in.
+
+        Returns:
+            list: List of operations.
+
+        Example:
+            To get the latest (newest) operations from a given user ``furion``, we should set the ``index_from`` to -1.
+            This is the same as saying `give me the highest index there is`.
+
+            .. code-block :: python
+
+               s.get_account_history('furion', index_from=-1, limit=3)
+
+            This will yield 3 recent operations like so:
+
+            ::
+
+               [[69974,
+                 {'block': 9941972,
+                  'op': ['vote',
+                   {'author': 'breezin',
+                    'permlink': 'raising-children-is-not-childsplay-pro-s-and-con-s-of-being-a-young-parent',
+                    'voter': 'furion',
+                    'weight': 900}],
+                  'op_in_trx': 0,
+                  'timestamp': '2017-03-06T17:09:48',
+                  'trx_id': '87f9176faccc7096b5ffb5d12bfdb41b3c0b2955',
+                  'trx_in_block': 5,
+                  'virtual_op': 0}],
+                [69975,
+                 {'block': 9942005,
+                  'op': ['curation_reward',
+                   {'comment_author': 'leongkhan',
+                    'comment_permlink': 'steem-investor-report-5-march-2017',
+                    'curator': 'furion',
+                    'reward': '112.397602 VESTS'}],
+                  'op_in_trx': 1,
+                  'timestamp': '2017-03-06T17:11:30',
+                  'trx_id': '0000000000000000000000000000000000000000',
+                  'trx_in_block': 5,
+                  'virtual_op': 0}],
+                [69976,
+                 {'block': 9942006,
+                  'op': ['vote',
+                   {'author': 'ejhaasteem',
+                    'permlink': 'life-of-fishermen-in-aceh',
+                    'voter': 'furion',
+                    'weight': 100}],
+                  'op_in_trx': 0,
+                  'timestamp': '2017-03-06T17:11:30',
+                  'trx_id': '955018ac8efe298bd90b45a4fbd15b9df7e00be4',
+                  'trx_in_block': 7,
+                  'virtual_op': 0}]]
+
+            If we want to query for a particular range of indexes, we need to consider both `index_from` and `limit` fields.
+            Remember, `index_from` works backwards, so if we set it to 100, we will get items `100, 99, 98, 97...`.
+
+            For example, if we'd like to get the first 100 operations the user did, we would write:
+
+            .. code-block:: python
+
+               s.get_account_history('furion', index_from=100, limit=100)
+
+            We can get the next 100 items by running:
+
+            .. code-block:: python
+
+               s.get_account_history('furion', index_from=200, limit=100)
+
+
+        """
+
+        return self.exec('get_account_history', account, index_from, limit)
 
     def get_account_references(self, account_name: str):
         return self.exec('get_account_references', account_name)
 
-    def get_account_votes(self, account_name: str):
-        return self.exec('get_account_votes', account_name)
+    def get_account_votes(self, account: str):
+        """ All votes the given account ever made.
+
+        Returned votes are in the following format:
+        ::
+
+           {'authorperm': 'alwaysfelicia/time-line-of-best-times-to-post-on-steemit-mystery-explained',
+           'percent': 100,
+           'rshares': 709227399,
+           'time': '2016-08-07T16:06:24',
+           'weight': '3241351576115042'},
+
+
+        Args:
+            account (str): STEEM username that we are looking up.
+
+        Returns:
+            list: List of votes.
+
+
+        """
+        return self.exec('get_account_votes', account)
 
     def get_accounts(self, account_names: list):
+        """ Lookup account information such as user profile, public keys, balances, etc.
+
+        This method is same as ``get_account``, but supports querying for multiple accounts at the time.
+        """
         return self.exec('get_accounts', account_names)
 
     def get_active_categories(self, after: str, limit: int):

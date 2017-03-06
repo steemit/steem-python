@@ -6,9 +6,9 @@ api_methods = {
         "cancel_all_subscriptions": 0,
         "get_account_bandwidth": [('account', 'str'), ('bandwidth_type', 'object')],
         "get_account_count": [],
-        "get_account_history": [('account', 'str')],
+        "get_account_history": [('account', 'str'), ('index_from', 'int'), ('limit', 'int')],
         "get_account_references": [('account_name', 'str')],
-        "get_account_votes": [('account_name', 'str')],
+        "get_account_votes": [('account', 'str')],
         "get_accounts": [('account_names', 'list')],
         "get_active_categories": [('after', 'str'), ('limit', 'int')],  # deprecated?
         "get_active_votes": [('author', 'str'), ('permlink', 'str')],
