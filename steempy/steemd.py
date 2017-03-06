@@ -41,7 +41,7 @@ api_methods = {
         "get_expiring_vesting_delegations": [('author', 'str'), ('from_time', 'object'), ('limit', 'int')],  # ?
         "get_feed_history": [],
         "get_hardfork_version": [],
-        "get_key_references": [('public_key', 'str')],
+        "get_key_references": 0,  # deprecated, use account_by_key_api::get_key_references
         "get_liquidity_queue": [('start_account', 'str'), ('limit', 'int')],
         "get_miner_queue": [],
         "get_next_scheduled_hardfork": [],

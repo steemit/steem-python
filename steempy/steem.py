@@ -297,9 +297,6 @@ class Steem(HttpClient):
     def get_hardfork_version(self):
         return self.exec('get_hardfork_version')
 
-    def get_key_references(self, public_key: str):
-        return self.exec('get_key_references', public_key)
-
     def get_liquidity_queue(self, start_account: str, limit: int):
         return self.exec('get_liquidity_queue', start_account, limit)
 
