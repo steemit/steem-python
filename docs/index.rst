@@ -41,6 +41,7 @@ Internals
 
    http_client
    steemd
+   steembase
 
 Other
 -----
