@@ -10,7 +10,6 @@ __all__ = [
     'base58',
     'bip38',
     'transactions',
-    'signedtransactions',
     'types',
     'chains',
     'objects',
