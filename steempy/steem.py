@@ -2,7 +2,7 @@
 import logging
 from functools import partial
 
-from funcy import first
+from funcy.seqs import first
 
 from .http_client import HttpClient
 from .steemd import api_methods

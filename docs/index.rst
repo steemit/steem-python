@@ -40,6 +40,7 @@ Internals
    :maxdepth: 1
 
    http_client
+   steemd
 
 Other
 -----
