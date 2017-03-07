@@ -3,5 +3,5 @@ steemd
 
 Steemd contains API generating utilities.
 
-.. automodule:: steempy.steemd
+.. automodule:: steem.steemd
    :members:

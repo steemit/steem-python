@@ -18,7 +18,7 @@ known_prefixes = [
 
 
 class Base58(object):
-    """Base58 base class
+    """Base58 steembase class
 
     This class serves as an abstraction layer to deal with base58 encoded
     strings and their corresponding hex and binary representation throughout the

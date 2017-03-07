@@ -200,7 +200,7 @@ class ExchangeRate(GrapheneObject):
                 kwargs = args[0]
 
             super().__init__(OrderedDict([
-                ('base', Amount(kwargs["base"])),
+                ('steembase', Amount(kwargs["steembase"])),
                 ('quote', Amount(kwargs["quote"])),
             ]))
 

@@ -252,13 +252,13 @@ class Steem(HttpClient):
 
         ::
 
-            {'current_median_history': {'base': '0.093 SBD', 'quote': '1.010 STEEM'},
+            {'current_median_history': {'steembase': '0.093 SBD', 'quote': '1.010 STEEM'},
              'id': 0,
-             'price_history': [{'base': '0.092 SBD', 'quote': '1.010 STEEM'},
-              {'base': '0.093 SBD', 'quote': '1.020 STEEM'},
-              {'base': '0.093 SBD', 'quote': '1.010 STEEM'},
-              {'base': '0.094 SBD', 'quote': '1.020 STEEM'},
-              {'base': '0.093 SBD', 'quote': '1.010 STEEM'},
+             'price_history': [{'steembase': '0.092 SBD', 'quote': '1.010 STEEM'},
+              {'steembase': '0.093 SBD', 'quote': '1.020 STEEM'},
+              {'steembase': '0.093 SBD', 'quote': '1.010 STEEM'},
+              {'steembase': '0.094 SBD', 'quote': '1.020 STEEM'},
+              {'steembase': '0.093 SBD', 'quote': '1.010 STEEM'},
 
         """
         return self.exec('get_feed_history', api='database_api')
@@ -270,7 +270,7 @@ class Steem(HttpClient):
 
         ::
 
-            {'base': '0.093 SBD', 'quote': '1.010 STEEM'}
+            {'steembase': '0.093 SBD', 'quote': '1.010 STEEM'}
 
         """
         return self.exec('get_current_median_history_price', api='database_api')
@@ -435,22 +435,22 @@ class Steem(HttpClient):
             ::
 
                 {'asks': [{'created': '2017-03-06T21:29:54',
-                   'order_price': {'base': '513.571 STEEM', 'quote': '50.000 SBD'},
+                   'order_price': {'steembase': '513.571 STEEM', 'quote': '50.000 SBD'},
                    'real_price': '0.09735752213423265',
                    'sbd': 50000,
                    'steem': 513571},
                   {'created': '2017-03-06T21:01:39',
-                   'order_price': {'base': '63.288 STEEM', 'quote': '6.204 SBD'},
+                   'order_price': {'steembase': '63.288 STEEM', 'quote': '6.204 SBD'},
                    'real_price': '0.09802806219188472',
                    'sbd': 6204,
                    'steem': 63288}],
                  'bids': [{'created': '2017-03-06T21:29:51',
-                   'order_price': {'base': '50.000 SBD', 'quote': '516.503 STEEM'},
+                   'order_price': {'steembase': '50.000 SBD', 'quote': '516.503 STEEM'},
                    'real_price': '0.09680485882947436',
                    'sbd': 50000,
                    'steem': 516503},
                   {'created': '2017-03-06T17:30:24',
-                   'order_price': {'base': '36.385 SBD', 'quote': '379.608 STEEM'},
+                   'order_price': {'steembase': '36.385 SBD', 'quote': '379.608 STEEM'},
                    'real_price': '0.09584887568228277',
                    'sbd': 36385,
                    'steem': 379608}]}
