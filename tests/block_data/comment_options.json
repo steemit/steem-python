@@ -1,0 +1,24 @@
+{
+  "ref_block_prefix": 3739556666,
+  "expiration": "2016-08-12T07:02:19",
+  "operations": [
+    [
+      "comment_options",
+      {
+        "author": "testing001",
+        "allow_curation_rewards": true,
+        "max_accepted_payout": "1000.000 SBD",
+        "percent_steem_dollars": 5000,
+        "allow_votes": true,
+        "permlink": "testing6",
+        "extensions": []
+      }
+    ]
+  ],
+  "signatures": [
+    "1f47ff6711fad1ab07a9e10ce91e1fd84ca49629a6f45af6aca67150705e651b2006b5548520995bedd09daf6f597d2bc68a30c7c161b4600e14f0032e69235fcf"
+  ],
+  "ref_block_num": 13118,
+  "extensions": []
+}
+

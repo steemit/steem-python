@@ -1,0 +1,39 @@
+{
+  "operations": [
+    [
+      "recover_account",
+      {
+        "recent_owner_authority": {
+          "account_auths": [],
+          "key_auths": [
+            [
+              "STM6Wf68LVi22QC9eS8LBWykRiSrKKp5RTWXcNqjh3VPNhiT9xFxx",
+              1
+            ]
+          ],
+          "weight_threshold": 1
+        },
+        "new_owner_authority": {
+          "account_auths": [],
+          "key_auths": [
+            [
+              "STM82miH8qam2G2WPPjgyquPBrUbenGDHjhZMxqaKqCugWhcuqZzW",
+              1
+            ]
+          ],
+          "weight_threshold": 1
+        },
+        "extensions": [],
+        "account_to_recover": "steemychicken1"
+      }
+    ]
+  ],
+  "expiration": "2016-07-18T05:46:33",
+  "signatures": [
+    "202c2c3902d513bb7f22e833576ea8418fdf7be3a08b0736d1de03c3289c5db11e1a95af820703e1407b8f3c0b030d857f666132b10be165b7569faba0442790f5",
+    "2059587d734535c43caf33a706404d813897e8887ad1696750435be63dfae26fde5995a2c6c8cf295c380d89152abe97f4990f9c78a0e9095a96e6e2432dd88e05"
+  ],
+  "ref_block_num": 17711,
+  "ref_block_prefix": 311057647,
+  "extensions": []
+}

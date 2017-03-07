@@ -1,0 +1,20 @@
+{
+  "ref_block_prefix": 1734342499,
+  "expiration": "2016-07-01T14:12:24",
+  "operations": [
+    [
+      "set_withdraw_vesting_route",
+      {
+        "from_account": "lin9uxis",
+        "percent": 10000,
+        "auto_vest": false,
+        "to_account": "linouxis9"
+      }
+    ]
+  ],
+  "signatures": [
+    "1f1fb84928c952d6bec647f8180787485165714762591096655b9f44ad8b35742a0b964faa5d40b4ff66602ff5e5d978153414abf166adf90b6926e4791164c76a"
+  ],
+  "ref_block_num": 1756,
+  "extensions": []
+}

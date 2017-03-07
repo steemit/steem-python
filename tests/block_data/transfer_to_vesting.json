@@ -1,0 +1,19 @@
+{
+  "ref_block_prefix": 4131173691,
+  "expiration": "2016-03-27T06:55:27",
+  "operations": [
+    [
+      "transfer_to_vesting",
+      {
+        "amount": "20.000 STEEM",
+        "to": "itsascam",
+        "from": "james"
+      }
+    ]
+  ],
+  "signatures": [
+    "1f2853e69b7cf718f53e97c637a348115e17ae3995c773c28445c46b12ccf3716664aca8e82963f343a061ce0e097c29fa3e07ee9dc61d372bb14882b3106547a0"
+  ],
+  "ref_block_num": 9132,
+  "extensions": []
+}

@@ -1,0 +1,23 @@
+{
+  "ref_block_prefix": 336265640,
+  "expiration": "2016-04-26T23:08:06",
+  "operations": [
+    [
+      "feed_publish",
+      {
+        "exchange_rate": {
+          "quote": "1.000 STEEM",
+          "base": "0.374 SBD"
+        },
+        "publisher": "smooth.witness"
+      }
+    ]
+  ],
+  "signatures": [
+    "1f45f20c78e105eba93946b4366293f28a1d5b5e6e52e2007e8c0965c19bdd5b1464ba7a6b274d1a483715e3a883125106905c24e57092bc89247689cdc335c3fc"
+  ],
+  "ref_block_num": 19946,
+  "extensions": []
+}
+
+    

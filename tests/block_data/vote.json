@@ -1,0 +1,20 @@
+{
+  "ref_block_prefix": 286809142,
+  "expiration": "2016-12-16T11:31:55",
+  "operations": [
+    [
+      "vote",
+      {
+        "voter": "a00",
+        "weight": 10000,
+        "author": "kibbjez",
+        "permlink": "t6wv1"
+      }
+    ]
+  ],
+  "signatures": [
+    "20795b036ba95df0b211bc6e79c3a1d0c2363e694aee62e79eeb60f5ed859d21b86dc2205f28e8779d369a8e9a1c898df0e62efbbaf3fc3ae0ac8c8679ed6b2d68"
+  ],
+  "ref_block_num": 32469,
+  "extensions": []
+}

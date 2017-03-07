@@ -1,0 +1,21 @@
+{
+  "ref_block_prefix": 57927444,
+  "expiration": "2016-10-11T17:23:06",
+  "operations": [
+    [
+      "transfer_from_savings",
+      {
+        "amount": "0.051 STEEM",
+        "to": "knozaki2015",
+        "request_id": 1476206568,
+        "memo": "",
+        "from": "knozaki2015"
+      }
+    ]
+  ],
+  "signatures": [
+    "205230e01b4def2d4e5a7d0446dd8c41874689155e5c739fc9a6a7d339303a5f135aa89cad21b568ef9f68d15bfaaf85e9fcc78bd544d9831c977a9b1ac578f726"
+  ],
+  "ref_block_num": 42559,
+  "extensions": []
+}

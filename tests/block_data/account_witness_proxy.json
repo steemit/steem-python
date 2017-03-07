@@ -1,0 +1,19 @@
+{
+  "ref_block_prefix": 2749880717,
+  "operations": [
+    [
+      "account_witness_proxy",
+      {
+        "proxy": "abit",
+        "account": "puppies"
+      }
+    ]
+  ],
+  "signatures": [
+    "2066825bf5033b1a85b3f26c43bc853aa2e1e57ecdd400f61ea0ed444906836c323345c6b04cdbbb39637ed180ddf7a8eacc9d36086158140d1dec5788b73a01b4"
+  ],
+  "ref_block_num": 31712,
+  "expiration": "2016-04-08T15:47:00",
+  "extensions": []
+}
+

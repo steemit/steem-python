@@ -1,0 +1,34 @@
+{
+  "ref_block_prefix": 1654024379,
+  "expiration": "2016-06-03T18:37:24",
+  "operations": [
+    [
+      "custom_json",
+      {
+        "required_posting_auths": [
+          "steemit"
+        ],
+        "required_auths": [],
+        "id": "follow",
+        "json": "{"
+        follower
+        ":"
+        steemit
+        ","
+        following
+        ":"
+        steem
+        ","
+        what
+        ":["
+        posts
+        "]}"
+      }
+    ]
+  ],
+  "signatures": [
+    "1f6019603d73f8c26b92cbdf1c224bf48fb0e600ff9e1689a09e8e4cb1234aeeb92b5eb6f8b8d148bbd3e62a4eb2bc94d1ff2293ec9b957d17d46e9dc11f41735d"
+  ],
+  "ref_block_num": 56232,
+  "extensions": []
+}

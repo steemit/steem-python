@@ -1,0 +1,18 @@
+{
+  "ref_block_prefix": 4265937178,
+  "expiration": "2016-03-31T18:52:33",
+  "operations": [
+    [
+      "withdraw_vesting",
+      {
+        "account": "steemit",
+        "vesting_shares": "260000.000000 VESTS"
+      }
+    ]
+  ],
+  "signatures": [
+    "2056b5be4b9d12f91e3cec198e74dd048bcfded95b92291709815c0afc069e5aa44c1a62e3aca0001a50d57010a870975c576f83de42e435f8634dcde52a8764c5"
+  ],
+  "ref_block_num": 7003,
+  "extensions": []
+}

@@ -1,0 +1,19 @@
+{
+  "ref_block_prefix": 575883867,
+  "operations": [
+    [
+      "account_witness_vote",
+      {
+        "witness": "berniesanders",
+        "account": "donalddrumpf",
+        "approve": true
+      }
+    ]
+  ],
+  "signatures": [
+    "1f7782f6c379d14c97718489b5ebca68fa25b3042e781d2f620ccc4927fbf4d3f30e60ba424cd906eb75b87cd4002bf982bc2ba9dc0f2c7b136b566de7416a170b"
+  ],
+  "ref_block_num": 57831,
+  "expiration": "2016-03-28T23:43:36",
+  "extensions": []
+}

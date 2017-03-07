@@ -1,0 +1,28 @@
+{
+  "ref_block_prefix": 1306647607,
+  "expiration": "2016-04-26T02:53:27",
+  "operations": [
+    [
+      "witness_update",
+      {
+        "owner": "arhag",
+        "block_signing_key": "STM5VNk9doxq55YEuyFw6qpNQt7q8neBWHhrau52fjV8N3TjNNUMP",
+        "props": {
+          "account_creation_fee": "100.000 STEEM",
+          "sbd_interest_rate": 1000,
+          "maximum_block_size": 131072
+        },
+        "url": " ",
+        "fee": "0.000 STEEM"
+      }
+    ]
+  ],
+  "signatures": [
+    "1f2183af215f6878a080b659c4a302ce2c67f0df4c9914872d90cf129e6d1793b11401715e130af0da60f5a5a95c48b8de30140dd9884cbc812a017aab5c2b8b5c"
+  ],
+  "ref_block_num": 64732,
+  "extensions": []
+}
+
+
+    

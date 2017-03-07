@@ -1,0 +1,23 @@
+{
+  "ref_block_prefix": 3071757153,
+  "operations": [
+    [
+      "comment",
+      {
+        "author": "xeldal",
+        "body": "This is xeldal, an experienced witness. Will you vote for me?",
+        "json_metadata": "{}",
+        "title": "xeldal Witness Thread",
+        "permlink": "xeldal-witness-post",
+        "parent_author": "",
+        "parent_permlink": "witness-category"
+      }
+    ]
+  ],
+  "signatures": [
+    "1f332f851112774103c4a12a97941f1c39a1c30a0561e64fbbe756d0860f7e68a206f2f57dfd15b77ecf3ce13fcffd6e66ae4b65a8df29bc01682876e34eb3cecf"
+  ],
+  "ref_block_num": 32379,
+  "expiration": "2016-04-08T16:20:27",
+  "extensions": []
+}

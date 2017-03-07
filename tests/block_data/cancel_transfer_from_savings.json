@@ -1,0 +1,18 @@
+{
+  "operations": [
+    [
+      "cancel_transfer_from_savings",
+      {
+        "request_id": 1,
+        "from": "jesta"
+      }
+    ]
+  ],
+  "expiration": "2016-09-21T07:55:45",
+  "signatures": [
+    "1f135b1a9123672cdeb679d57272631858242f569c6066b0f69293963b6b7f7781587478587b843c7f9679855606c37f0ef16707bb03a775d78e2602540626e3d4"
+  ],
+  "ref_block_num": 45917,
+  "ref_block_prefix": 2784823756,
+  "extensions": []
+}
