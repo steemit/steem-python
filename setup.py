@@ -10,6 +10,7 @@ setup(
     name='steempy',  # todo change to steem
     version='0.1',
     description='Official Python STEEM Library',
+    long_description=open('README.rst').read(),
     packages=find_packages(),
     setup_requires=['pytest-runner'],
     tests_require=['pytest',
@@ -23,6 +24,8 @@ setup(
                    'pytest-console-scripts'],
 
     install_requires=[
+        'ecdsa==0.13',
+        'pylibscrypt==1.5.3',
         'requests==2.11.1',
         'ujson',
         'urllib3',
@@ -35,6 +38,5 @@ setup(
     entry_points={
         'console_scripts': [
             'steempy=steem.cli:sbds',
-            'populate=sbds.storages.db.scripts.populate:populate'
         ]
     })
