@@ -10,18 +10,11 @@ import time
 
 import certifi
 import urllib3
+from base.exceptions import RPCError
 from urllib3.connection import HTTPConnection
 from urllib3.exceptions import MaxRetryError
 
 logger = logging.getLogger(__name__)
-
-
-class RPCError(Exception):
-    pass
-
-
-class RPCConnectionError(Exception):
-    pass
 
 
 class HttpClient(object):
