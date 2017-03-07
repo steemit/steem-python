@@ -29,7 +29,7 @@ class HttpClient(object):
 
     .. code-block:: python
 
-       from steempy.http_client import HttpClient
+       from steem.http_client import HttpClient
        rpc = HttpClient(['https://steemd-node1.com', 'https://steemd-node2.com'])
 
     any call available to that port can be issued using the instance
