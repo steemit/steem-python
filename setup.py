@@ -26,7 +26,7 @@ setup(
     install_requires=[
         'ecdsa==0.13',
         'pylibscrypt==1.5.3',
-        'requests==2.11.1',
+        'requests',
         'ujson',
         'urllib3',
         'certifi',
