@@ -1,10 +1,9 @@
 import json
 
-from graphenebase.types import (
+from .operationids import operations
+from .types import (
     String, Optional, Id, JsonObj
 )
-
-from .operationids import operations
 
 
 class Operation():

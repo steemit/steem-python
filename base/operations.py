@@ -1,19 +1,14 @@
-import struct
 import json
+import struct
 from collections import OrderedDict
-from graphenebase.types import (
-    Uint8, Int16, Uint16, Uint32, Uint64,
-    Varint32, Int64, String, Bytes, Void,
-    Array, PointInTime, Signature, Bool,
-    Set, Fixed_array, Optional, Static_variant,
-    Map, Id, VoteId, ObjectId,
-)
-from graphenebase.objects import GrapheneObject, isArgsThisClass
-from graphenebase.account import PublicKey
-from graphenebase.operations import (
-    Operation as GrapheneOperation
-)
+
+from .account import PublicKey
+from .objects import isArgsThisClass
 from .operationids import operations
+from .types import (
+    Int16, Uint16, Uint32, Uint64,
+    String, Bytes, Array, PointInTime, Bool,
+    Optional, Map, JsonObj)
 
 default_prefix = "STM"
 
@@ -24,9 +19,79 @@ asset_precision = {
 }
 
 
-class Operation(GrapheneOperation):
+class GrapheneObject(object):
+    """ Core abstraction class
+
+        This class is used for any JSON reflected object in Graphene.
+
+        * ``instance.__json__()``: encodes data into json format
+        * ``bytes(instance)``: encodes data into wire format
+        * ``str(instances)``: dumps json object as string
+
+    """
+
+    def __init__(self, data=None):
+        self.data = data
+
+    def __bytes__(self):
+        if self.data is None:
+            return bytes()
+        b = b""
+        for name, value in self.data.items():
+            if isinstance(value, str):
+                b += bytes(value, 'utf-8')
+            else:
+                b += bytes(value)
+        return b
+
+    def __json__(self):
+        if self.data is None:
+            return {}
+        d = {}  # JSON output is *not* ordered
+        for name, value in self.data.items():
+            if isinstance(value, Optional) and value.isempty():
+                continue
+
+            if isinstance(value, String):
+                d.update({name: str(value)})
+            else:
+                try:
+                    d.update({name: JsonObj(value)})
+                except:
+                    d.update({name: value.__str__()})
+        return d
+
+    def __str__(self):
+        return json.dumps(self.__json__())
+
+    def toJson(self):
+        return self.__json__()
+
+    def json(self):
+        return self.__json__()
+
+
+class Operation:
     def __init__(self, op):
-        super(Operation, self).__init__(op)
+        if isinstance(op, list) and len(op) == 2:
+            if isinstance(op[0], int):
+                self.opId = op[0]
+                name = self.getOperationNameForId(self.opId)
+            else:
+                self.opId = self.operations().get(op[0], None)
+                name = op[0]
+                if self.opId is None:
+                    raise ValueError("Unknown operation")
+            self.name = name[0].upper() + name[1:]  # klassname
+            try:
+                klass = self._getklass(self.name)
+            except:
+                raise NotImplementedError("Unimplemented Operation %s" % self.name)
+            self.op = klass(op[1])
+        else:
+            self.op = op
+            self.name = type(self.op).__name__.lower()  # also store name
+            self.opId = self.operations()[self.name]
 
     def operations(self):
         return operations
@@ -41,7 +106,7 @@ class Operation(GrapheneOperation):
         return "Unknown Operation ID %d" % i
 
     def _getklass(self, name):
-        module = __import__("pistonbase.operations", fromlist=["operations"])
+        module = __import__(".operations", fromlist=["operations"])
         class_ = getattr(module, name)
         return class_
 
@@ -76,13 +141,13 @@ class Permission(GrapheneObject):
             )
 
             accountAuths = Map([
-                [String(e[0]), Uint16(e[1])]
-                for e in kwargs["account_auths"]
-            ])
+                                   [String(e[0]), Uint16(e[1])]
+                                   for e in kwargs["account_auths"]
+                                   ])
             keyAuths = Map([
-                [PublicKey(e[0], prefix=prefix), Uint16(e[1])]
-                for e in kwargs["key_auths"]
-            ])
+                               [PublicKey(e[0], prefix=prefix), Uint16(e[1])]
+                               for e in kwargs["key_auths"]
+                               ])
             super().__init__(OrderedDict([
                 ('weight_threshold', Uint32(int(kwargs["weight_threshold"]))),
                 ('account_auths', accountAuths),
@@ -150,7 +215,7 @@ class Comment(GrapheneObject):
             ]))
 
 
-class Amount():
+class Amount:
     def __init__(self, d):
         self.amount, self.asset = d.strip().split(" ")
         self.amount = float(self.amount)
@@ -178,7 +243,7 @@ class Amount():
         )
 
 
-class Exchange_rate(GrapheneObject):
+class ExchangeRate(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -192,7 +257,7 @@ class Exchange_rate(GrapheneObject):
             ]))
 
 
-class Witness_props(GrapheneObject):
+class WitnessProps(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -212,7 +277,7 @@ class Witness_props(GrapheneObject):
 ########################################################
 
 
-class Account_create(GrapheneObject):
+class AccountCreate(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -241,7 +306,7 @@ class Account_create(GrapheneObject):
             ]))
 
 
-class Account_update(GrapheneObject):
+class AccountUpdate(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -288,7 +353,7 @@ class Transfer(GrapheneObject):
             ]))
 
 
-class Transfer_to_vesting(GrapheneObject):
+class TransferToVesting(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -302,7 +367,7 @@ class Transfer_to_vesting(GrapheneObject):
             ]))
 
 
-class Withdraw_vesting(GrapheneObject):
+class WithdrawVesting(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -315,7 +380,7 @@ class Withdraw_vesting(GrapheneObject):
             ]))
 
 
-class Limit_order_create(GrapheneObject):
+class LimitOrderCreate(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -332,7 +397,7 @@ class Limit_order_create(GrapheneObject):
             ]))
 
 
-class Limit_order_cancel(GrapheneObject):
+class LimitOrderCancel(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -345,7 +410,7 @@ class Limit_order_cancel(GrapheneObject):
             ]))
 
 
-class Set_withdraw_vesting_route(GrapheneObject):
+class SetWithdrawVestingRoute(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -374,7 +439,7 @@ class Convert(GrapheneObject):
             ]))
 
 
-class Feed_publish(GrapheneObject):
+class FeedPublish(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -383,11 +448,11 @@ class Feed_publish(GrapheneObject):
                 kwargs = args[0]
             super().__init__(OrderedDict([
                 ('publisher', String(kwargs["publisher"])),
-                ('exchange_rate', Exchange_rate(kwargs["exchange_rate"])),
+                ('exchange_rate', ExchangeRate(kwargs["exchange_rate"])),
             ]))
 
 
-class Witness_update(GrapheneObject):
+class WitnessUpdate(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -402,12 +467,12 @@ class Witness_update(GrapheneObject):
                 ('owner', String(kwargs["owner"])),
                 ('url', String(kwargs["url"])),
                 ('block_signing_key', PublicKey(kwargs["block_signing_key"], prefix=prefix)),
-                ('props', Witness_props(kwargs["props"])),
+                ('props', WitnessProps(kwargs["props"])),
                 ('fee', Amount(kwargs["fee"])),
             ]))
 
 
-class Transfer_to_savings(GrapheneObject):
+class TransferToSavings(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -424,7 +489,7 @@ class Transfer_to_savings(GrapheneObject):
             ]))
 
 
-class Transfer_from_savings(GrapheneObject):
+class TransferFromSavings(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -443,7 +508,7 @@ class Transfer_from_savings(GrapheneObject):
             ]))
 
 
-class Cancel_transfer_from_savings(GrapheneObject):
+class CancelTransferFromSavings(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -456,7 +521,7 @@ class Cancel_transfer_from_savings(GrapheneObject):
             ]))
 
 
-class Account_witness_vote(GrapheneObject):
+class AccountWitnessVote(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -470,7 +535,7 @@ class Account_witness_vote(GrapheneObject):
             ]))
 
 
-class Custom_json(GrapheneObject):
+class CustomJson(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
@@ -489,15 +554,15 @@ class Custom_json(GrapheneObject):
 
             super().__init__(OrderedDict([
                 ('required_auths',
-                    Array([String(o) for o in kwargs["required_auths"]])),
+                 Array([String(o) for o in kwargs["required_auths"]])),
                 ('required_posting_auths',
-                    Array([String(o) for o in kwargs["required_posting_auths"]])),
+                 Array([String(o) for o in kwargs["required_posting_auths"]])),
                 ('id', String(kwargs["id"])),
                 ('json', String(js)),
             ]))
 
 
-class Comment_options(GrapheneObject):
+class CommentOptions(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
