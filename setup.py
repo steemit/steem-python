@@ -7,7 +7,7 @@ assert sys.version_info[0] == 3 and sys.version_info[1] >= 5, "steem requires Py
 
 # yapf: disable
 setup(
-    name='steempy',  # todo change to steem
+    name='steem',
     version='0.1',
     description='Official Python STEEM Library',
     packages=find_packages(),
@@ -34,7 +34,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'steempy=steem.cli:sbds',
+            'steem=steem.cli:sbds',
             'populate=sbds.storages.db.scripts.populate:populate'
         ]
     })
