@@ -107,7 +107,7 @@ html_static_path = ['_static']
 
 # -- Options for HTMLHelp output ------------------------------------------
 
-# Output file steembase name for HTML help builder.
+# Output file base name for HTML help builder.
 htmlhelp_basename = 'steem-pythondoc'
 
 # -- Options for LaTeX output ---------------------------------------------

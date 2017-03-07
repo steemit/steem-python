@@ -92,7 +92,7 @@ class HttpClient(object):
     def change_node(self):
         """ Switch to the next available node.
 
-        This method will change steembase URL of our requests.
+        This method will change base URL of our requests.
         Use it when the current node goes down to change to a fallback node. """
         self.url = next(self.nodes)
         self.request = partial(self.http.urlopen, 'POST', self.url)
