@@ -16,42 +16,30 @@ class Account(dict):
     """ This class allows to easily access Account data
 
         :param str account_name: Name of the account
-        :param Steem steem_instance: Steem() instance to use when accesing a RPC
+        :param Steem steem_instance: Steem() instance to use when accessing a RPC
         :param bool lazy: Use lazy loading
 
     """
 
-    def __init__(
-            self,
-            account_name,
-            steem_instance=None,
-            lazy=False,
-    ):
+    def __init__(self, account_name, steem_instance=None, lazy=False,):
         self.steem = steem_instance or shared_steem_instance()
-        self.cached = False
         self.name = account_name
 
         # caches
         self._converter = None
 
-        if not lazy:
-            self.refresh()
+        self.refresh()
 
     def refresh(self):
-        account = self.steem.rpc.get_account(self.name)
+        account = self.steem.get_account(self.name)
         if not account:
             raise AccountDoesNotExistsException
         super(Account, self).__init__(account)
-        self.cached = True
 
     def __getitem__(self, key):
-        if not self.cached:
-            self.refresh()
         return super(Account, self).__getitem__(key)
 
     def items(self):
-        if not self.cached:
-            self.refresh()
         return super(Account, self).items()
 
     @property
@@ -80,18 +68,17 @@ class Account(dict):
         return self.get_balances()
 
     def get_balances(self, as_float=False):
-        my_account_balances = self.steem.get_balances(self.name)
-        balance = {
-            "STEEM": my_account_balances["balance"],
-            "SBD": my_account_balances["sbd_balance"],
-            "VESTS": my_account_balances["vesting_shares"],
-            "SAVINGS_STEEM": my_account_balances["savings_balance"],
-            "SAVINGS_SBD": my_account_balances["savings_sbd_balance"]
+        balances = {
+            "STEEM": self["balance"],
+            "SBD": self["sbd_balance"],
+            "VESTS": self["vesting_shares"],
+            "SAVINGS_STEEM": self["savings_balance"],
+            "SAVINGS_SBD": self["savings_sbd_balance"]
         }
         if as_float:
-            return {k: v.amount for k, v in balance.items()}
+            return {k: Amount(v).amount for k, v in balances.items()}
         else:
-            return balance
+            return {k: Amount(v) for k, v in balances.items()}
 
     def reputation(self, precision=2):
         rep = int(self['reputation'])
@@ -113,9 +100,9 @@ class Account(dict):
 
     def _get_followers(self, direction="follower", last_user=""):
         if direction == "follower":
-            followers = self.steem.rpc.get_followers(self.name, last_user, "blog", 100, api="follow")
+            followers = self.steem.get_followers(self.name, last_user, "blog", 100)
         elif direction == "following":
-            followers = self.steem.rpc.get_following(self.name, last_user, "blog", 100, api="follow")
+            followers = self.steem.get_following(self.name, last_user, "blog", 100)
         if len(followers) >= 100:
             followers += self._get_followers(direction=direction, last_user=followers[-1][direction])[1:]
         return followers
@@ -150,20 +137,20 @@ class Account(dict):
 
     def virtual_op_count(self):
         try:
-            last_item = self.steem.rpc.get_account_history(self.name, -1, 0)[0][0]
+            last_item = self.steem.get_account_history(self.name, -1, 0)[0][0]
         except IndexError:
             return 0
         else:
             return last_item
 
     def get_account_votes(self):
-        return self.steem.rpc.get_account_votes(self.name)
+        return self.steem.get_account_votes(self.name)
 
     def get_withdraw_routes(self):
-        return self.steem.rpc.get_withdraw_routes(self.name, 'all')
+        return self.steem.get_withdraw_routes(self.name, 'all')
 
     def get_conversion_requests(self):
-        return self.steem.rpc.get_conversion_requests(self.name)
+        return self.steem.get_conversion_requests(self.name)
 
     @staticmethod
     def filter_by_date(items, start_time, end_time=None):
@@ -190,8 +177,6 @@ class Account(dict):
 
             :param bool load_extras: Fetch extra information related to the account (this might take a while).
         """
-        self.refresh()
-
         extras = dict()
         if load_extras:
             followers = self.get_followers()
@@ -231,7 +216,7 @@ class Account(dict):
                 limit = batch_size
             else:
                 limit = batch_size - 1
-            history = self.steem.rpc.get_account_history(self.name, i, limit)
+            history = self.steem.get_account_history(self.name, i, limit)
             for item in history:
                 index = item[0]
                 if index >= max_index:
@@ -295,16 +280,16 @@ class Account(dict):
             _limit = first
         while first > 0:
             # RPC call
-            txs = self.steem.rpc.get_account_history(self.name, first, _limit)
+            txs = self.steem.get_account_history(self.name, first, _limit)
             for i in txs[::-1]:
                 if exclude_ops and i[1]["op"][0] in exclude_ops:
                     continue
                 if not only_ops or i[1]["op"][0] in only_ops:
                     cnt += 1
                     yield i
-                    if limit >= 0 and cnt >= limit:
+                    if 0 <= limit <= cnt:
                         break
-            if limit >= 0 and cnt >= limit:
+            if 0 <= limit <= cnt:
                 break
             if len(txs) < _limit:
                 break

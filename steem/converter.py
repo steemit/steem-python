@@ -22,14 +22,14 @@ class Converter(object):
             witness feeds. Return value will be SBD
         """
         return (
-            Amount(self.steem.rpc.get_feed_history()['current_median_history']['base']).amount /
-            Amount(self.steem.rpc.get_feed_history()['current_median_history']['quote']).amount
+            Amount(self.steem.get_feed_history()['current_median_history']['base']).amount /
+            Amount(self.steem.get_feed_history()['current_median_history']['quote']).amount
         )
 
     def steem_per_mvests(self):
         """ Obtain STEEM/MVESTS ratio
         """
-        info = self.steem.rpc.get_dynamic_global_properties()
+        info = self.steem.get_dynamic_global_properties()
         return (
             Amount(info["total_vesting_fund_steem"]).amount /
             (Amount(info["total_vesting_shares"]).amount / 1e6)
@@ -88,7 +88,7 @@ class Converter(object):
         """
         steem_payout = self.sbd_to_steem(sbd_payout)
 
-        props = self.steem.rpc.get_dynamic_global_properties()
+        props = self.steem.get_dynamic_global_properties()
         total_reward_fund_steem = Amount(props['total_reward_fund_steem'])
         total_reward_shares2 = int(props['total_reward_shares2'])
 
