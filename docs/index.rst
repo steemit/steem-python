@@ -32,6 +32,7 @@ User Guide
 
    install
    steem
+   commit
 
 
 Internals

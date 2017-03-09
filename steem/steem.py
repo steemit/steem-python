@@ -3,6 +3,7 @@ import logging
 from functools import partial
 
 from funcy.seqs import first
+from steem.commit import Commit
 
 from .http_client import HttpClient
 from .steemd import api_methods
@@ -42,6 +43,8 @@ class Steem(HttpClient):
                 'https://steemd.steemit.com',
                 'https://steemd.steemitdev.com',
             ]
+
+        self.commit = Commit(steem=self, **kwargs)
 
         # auto-complete missing RPC API methods
         # self._apply_missing_methods()

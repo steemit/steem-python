@@ -3,19 +3,19 @@ import re
 from datetime import datetime
 
 from funcy.colls import walk_values
-from piston.instance import shared_steem_instance
-from pistonbase.operations import Comment_options
 from steem.utils import parse_time
 from steembase.exceptions import (
     PostDoesNotExist,
     VotingInvalidOnArchivedPost
 )
+from steembase.operations import CommentOptions
 
 from .amount import Amount
 from .helpers import (
     resolveIdentifier,
     constructIdentifier,
 )
+from .instance import shared_steem_instance
 from .utils import remove_from_dict
 
 
@@ -281,7 +281,7 @@ class Post(dict):
         return walk_values(decompose_amounts, safe_dict)
 
     def set_comment_options(self, options):
-        op = Comment_options(
+        op = CommentOptions(
             **{"author": self["author"],
                "permlink": self["permlink"],
                "max_accepted_payout":
