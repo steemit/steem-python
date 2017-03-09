@@ -35,13 +35,6 @@ class Amount(dict):
         elif self["asset"] == "VESTS":
             prec = 6
 
-        # GOLOS
-        elif self["asset"] == "GBG":
-            prec = 3
-        elif self["asset"] == "GOLOS":
-            prec = 3
-        elif self["asset"] == "GESTS":
-            prec = 6
         # default
         else:
             prec = 6

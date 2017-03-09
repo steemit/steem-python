@@ -20,26 +20,23 @@ from .utils import remove_from_dict
 
 
 class Post(dict):
-    """ This object gets instanciated by Steem.streams and is used as an
+    """ This object gets instantiated by Steem.streams and is used as an
         abstraction layer for Comments in Steem
 
         :param identifier post: The post as obtained by `get_content` or the identifier string of the post (``@author/permlink``)
-        :param Steem steem_instance: Steem() instance to use when accesing a RPC
-        :param bool lazy: Use lazy loading
+        :param Steem steem_instance: Steem() instance to use when accessing a RPC
 
     """
     steem = None
 
-    def __init__(self, post, steem_instance=None, lazy=False):
+    def __init__(self, post, steem_instance=None):
         self.steem = steem_instance or shared_steem_instance()
-        self.loaded = False
 
         if isinstance(post, str):  # From identifier
             parts = post.split("@")
             self.identifier = "@" + parts[-1]
 
-            if not lazy:
-                self.refresh()
+            self.refresh()
 
         elif (isinstance(post, dict) and  # From dictionary
                       "author" in post and
@@ -132,16 +129,12 @@ class Post(dict):
         # also set identifier
         super(Post, self).__setitem__("identifier", self.identifier)
 
-        self.loaded = True
+        self.refresh()
 
     def __getattr__(self, key):
-        if not self.loaded:
-            self.refresh()
         return object.__getattribute__(self, key)
 
     def __getitem__(self, key):
-        if not self.loaded:
-            self.refresh()
         return super(Post, self).__getitem__(key)
 
     def __repr__(self):
@@ -226,14 +219,10 @@ class Post(dict):
     def reward(self):
         """Return a float value of estimated total SBD reward.
         """
-        if not self.loaded:
-            self.refresh()
         return self['total_payout_reward']
 
     @property
     def meta(self):
-        if not self.loaded:
-            self.refresh()
         return self.get('json_metadata', dict())
 
     def time_elapsed(self):

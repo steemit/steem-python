@@ -11,27 +11,20 @@ class Witness(dict):
         :param bool lazy: Use lazy loading
 
     """
-    def __init__(self, witness, steem_instance=None, lazy=False):
+    def __init__(self, witness, steem_instance=None):
         self.steem = steem_instance or shared_steem_instance()
-        self.cached = False
-        self.witness = witness
-
-        if not lazy:
-            self.refresh()
+        self.witness_name = witness
+        self.witness = None
+        self.refresh()
 
     def refresh(self):
-        witness = self.steem.rpc.get_witness_by_account(self.witness)
+        witness = self.steem.rpc.get_witness_by_account(self.witness_name)
         if not witness:
             raise WitnessDoesNotExistsException
         super(Witness, self).__init__(witness)
-        self.cached = True
 
     def __getitem__(self, key):
-        if not self.cached:
-            self.refresh()
         return super(Witness, self).__getitem__(key)
 
     def items(self):
-        if not self.cached:
-            self.refresh()
         return super(Witness, self).items()

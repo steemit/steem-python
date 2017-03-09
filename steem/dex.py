@@ -1,6 +1,6 @@
 import random
 
-from steembase import transactions
+from steembase import transactions, operations
 
 from .instance import shared_steem_instance
 from .storage import configStorage as config
@@ -18,9 +18,6 @@ class Dex(object):
 
     def __init__(self, steem_instance=None):
         self.steem = steem_instance or shared_steem_instance()
-        # ensure market_history is registered
-        self.steem.rpc.apis = list(set(self.steem.rpc.apis + ["market_history"]))
-        self.steem.rpc.register_apis()
 
     def _get_asset(self, symbol):
         """ Return the properties of the assets tradeable on the
@@ -82,7 +79,7 @@ class Dex(object):
 
         """
         ticker = {}
-        t = self.steem.rpc.get_ticker(api="market_history")
+        t = self.steem.get_ticker(api="market_history")
         ticker = {'highest_bid': float(t['highest_bid']),
                   'latest': float(t["latest"]),
                   'lowest_ask': float(t["lowest_ask"]),
@@ -101,7 +98,7 @@ class Dex(object):
                 {'sbd_volume': 108329.611, 'steem_volume': 355094.043}
 
         """
-        v = self.steem.rpc.get_volume(api="market_history")
+        v = self.steem.get_volume(api="market_history")
         return {'sbd_volume': v["sbd_volume"],
                 'steem_volume': v["steem_volume"]}
 
@@ -131,7 +128,7 @@ class Dex(object):
                            'sbd': 333902,
                            'steem': 1030568}]},
         """
-        orders = self.steem.rpc.get_order_book(limit, api="market_history")
+        orders = self.steem.get_order_book(limit, api="market_history")
         r = {"asks": [], "bids": []}
         for side in ["bids", "asks"]:
             for o in orders[side]:
@@ -160,7 +157,7 @@ class Dex(object):
         if not account:
             raise ValueError("You need to provide an account")
 
-        orders = self.steem.rpc.get_open_orders(account, limit=1000)
+        orders = self.steem.get_open_orders(account, limit=1000)
         return orders
 
     def returnTradeHistory(self, time=1 * 60 * 60, limit=100):
@@ -170,15 +167,15 @@ class Dex(object):
             :param int limit: amount of trades to show (<100) (default: 100)
         """
         assert limit <= 100, "'limit' has to be smaller than 100"
-        return self.steem.rpc.get_trade_history(
-            transactions.formatTimeFromNow(-time),
-            transactions.formatTimeFromNow(),
+        return self.steem.get_trade_history(
+            transactions.fmt_time_from_now(-time),
+            transactions.fmt_time_from_now(),
             limit,
             api="market_history"
         )
 
     def returnMarketHistoryBuckets(self):
-        return self.steem.rpc.get_market_history_buckets(api="market_history")
+        return self.steem.get_market_history_buckets(api="market_history")
 
     def returnMarketHistory(
             self,
@@ -210,10 +207,10 @@ class Dex(object):
                   'seconds': 300,
                   'steem_volume': 30088443},
         """
-        return self.steem.rpc.get_market_history(
+        return self.steem.get_market_history(
             bucket_seconds,
-            transactions.formatTimeFromNow(-start_age - stop_age),
-            transactions.formatTimeFromNow(-stop_age),
+            transactions.fmt_time_from_now(-start_age - stop_age),
+            transactions.fmt_time_from_now(-stop_age),
             api="market_history"
         )
 
@@ -248,7 +245,7 @@ class Dex(object):
 
         # We buy quote and pay with base
         quote, base = self._get_assets(quote=quote_symbol)
-        op = transactions.Limit_order_create(**{
+        op = operations.LimitOrderCreate(**{
             "owner": account,
             "orderid": orderid or random.getrandbits(32),
             "amount_to_sell": '{:.{prec}f} {asset}'.format(
@@ -260,7 +257,7 @@ class Dex(object):
                 prec=quote["precision"],
                 asset=quote["symbol"]),
             "fill_or_kill": killfill,
-            "expiration": transactions.formatTimeFromNow(expiration)
+            "expiration": transactions.fmt_time_from_now(expiration)
         })
         return self.steem.finalizeOp(op, account, "active")
 
@@ -294,7 +291,7 @@ class Dex(object):
             raise ValueError("You need to provide an account")
         # We buy quote and pay with base
         quote, base = self._get_assets(quote=quote_symbol)
-        op = transactions.Limit_order_create(**{
+        op = operations.LimitOrderCreate(**{
             "owner": account,
             "orderid": orderid or random.getrandbits(32),
             "amount_to_sell": '{:.{prec}f} {asset}'.format(
@@ -306,7 +303,7 @@ class Dex(object):
                 prec=base["precision"],
                 asset=base["symbol"]),
             "fill_or_kill": killfill,
-            "expiration": transactions.formatTimeFromNow(expiration)
+            "expiration": transactions.fmt_time_from_now(expiration)
         })
         return self.steem.finalizeOp(op, account, "active")
 
@@ -322,7 +319,7 @@ class Dex(object):
         if not account:
             raise ValueError("You need to provide an account")
 
-        op = transactions.Limit_order_cancel(**{
+        op = operations.LimitOrderCancel(**{
             "owner": account,
             "orderid": orderid,
         })

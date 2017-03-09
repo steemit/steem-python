@@ -45,7 +45,7 @@ class Blockchain(object):
         """
         return self.steem.rpc.get_dynamic_global_properties()
 
-    def chainParameters(self):
+    def chain_parameters(self):
         return self.config()["parameters"]
 
     def get_network(self):

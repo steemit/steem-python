@@ -17,11 +17,10 @@ class Account(dict):
 
         :param str account_name: Name of the account
         :param Steem steem_instance: Steem() instance to use when accessing a RPC
-        :param bool lazy: Use lazy loading
 
     """
 
-    def __init__(self, account_name, steem_instance=None, lazy=False,):
+    def __init__(self, account_name, steem_instance=None):
         self.steem = steem_instance or shared_steem_instance()
         self.name = account_name
 
