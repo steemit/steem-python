@@ -803,115 +803,6 @@ class Commit(object):
         )
         return self.finalizeOp(op, account, "active")
 
-    # def get_replies(self, author, skipown=True):
-    #     """ Get replies for an author
-    #
-    #         :param str author: Show replies for this author
-    #         :param bool skipown: Do not show my own replies
-    #     """
-    #     state = self.rpc.get_state("/@%s/recent-replies" % author)
-    #     replies = state["accounts"][author].get("recent_replies", [])
-    #     discussions = []
-    #     for reply in replies:
-    #         post = state["content"][reply]
-    #         if skipown and post["author"] == author:
-    #             continue
-    #         discussions.append(Post(post, steem_instance=self.rpc))
-    #     return discussions
-    #
-    # def get_promoted(self):
-    #     """ Get promoted posts
-    #     """
-    #     state = self.rpc.get_state("/promoted")
-    #     # why is there a empty key in the struct?
-    #     promoted = state["discussion_idx"][''].get("promoted", [])
-    #     r = []
-    #     for p in promoted:
-    #         post = state["content"].get(p)
-    #         r.append(Post(post, steem_instance=self.rpc))
-    #     return r
-    #
-    # def get_posts(self, limit=10,
-    #               sort="hot",
-    #               category=None,
-    #               start=None):
-    #     """ Get multiple posts in an array.
-    #
-    #         :param int limit: Limit the list of posts by ``limit``
-    #         :param str sort: Sort the list by "recent" or "payout"
-    #         :param str category: Only show posts in this category
-    #         :param str start: Show posts after this post. Takes an
-    #                           identifier of the form ``@author/permlink``
-    #     """
-    #
-    #     discussion_query = {"tag": category,
-    #                         "limit": limit,
-    #                         }
-    #     if start:
-    #         author, permlink = resolveIdentifier(start)
-    #         discussion_query["start_author"] = author
-    #         discussion_query["start_permlink"] = permlink
-    #
-    #     if sort not in ["trending", "created", "active", "cashout",
-    #                     "payout", "votes", "children", "hot"]:
-    #         raise Exception("Invalid choice of '--sort'!")
-    #
-    #     func = getattr(self.rpc, "get_discussions_by_%s" % sort)
-    #     r = []
-    #     for p in func(discussion_query):
-    #         r.append(Post(p, steem_instance=self.rpc))
-    #     return r
-    #
-    # def get_categories(self, sort="trending", begin=None, limit=10):
-    #     """ List categories
-    #
-    #         :param str sort: Sort categories by "trending", "best",
-    #                          "active", or "recent"
-    #         :param str begin: Show categories after this
-    #                           identifier of the form ``@author/permlink``
-    #         :param int limit: Limit categories by ``x``
-    #     """
-    #     if sort == "trending":
-    #         func = self.rpc.get_trending_categories
-    #     elif sort == "best":
-    #         func = self.rpc.get_best_categories
-    #     elif sort == "active":
-    #         func = self.rpc.get_active_categories
-    #     elif sort == "recent":
-    #         func = self.rpc.get_recent_categories
-    #     else:
-    #         log.error("Invalid choice of '--sort' (%s)!" % sort)
-    #         return
-    #
-    #     return func(begin, limit)
-    #
-    # def get_balances(self, account=None):
-    #     """ Get the balance of an account
-    #
-    #         :param str account: (optional) the source account for the transfer if not ``default_account``
-    #     """
-    #     if not account:
-    #         if "default_account" in config:
-    #             account = config["default_account"]
-    #     if not account:
-    #         raise ValueError("You need to provide an account")
-    #     a = Account(account, steem_instance=self.rpc)
-    #     info = self.rpc.get_dynamic_global_properties()
-    #     steem_per_mvest = (
-    #         Amount(info["total_vesting_fund_steem"]).amount /
-    #         (Amount(info["total_vesting_shares"]).amount / 1e6)
-    #     )
-    #     vesting_shares_steem = Amount(a["vesting_shares"]) / 1e6 * steem_per_mvest
-    #     return {
-    #         "balance": Amount(a["balance"]),
-    #         "vesting_shares": Amount(a["vesting_shares"]),
-    #         "sbd_balance": Amount(a["sbd_balance"]),
-    #         "savings_balance": Amount(a["savings_balance"]),
-    #         "savings_sbd_balance": Amount(a["savings_sbd_balance"]),
-    #         # computed amounts
-    #         "vesting_shares_steem": Amount(vesting_shares_steem),
-    #     }
-
     def decode_memo(self, enc_memo, account):
         """ Try to decode an encrypted memo
         """
@@ -925,17 +816,6 @@ class Commit(object):
         if not wif:
             raise MissingKeyError
         return memo.decode_memo(PrivateKey(wif), enc_memo)
-
-    # def stream_comments(self, *args, **kwargs):
-    #     """ Generator that yields posts when they come in
-    #
-    #         To be used in a for loop that returns an instance of `Post()`.
-    #     """
-    #     for c in Blockchain(
-    #         mode=kwargs.get("mode", "irreversible"),
-    #         steem_instance=self.rpc,
-    #     ).stream("comment", *args, **kwargs):
-    #         yield Post(c, steem_instance=self.rpc)
 
     def interest(self, account):
         """ Caluclate interest for an account

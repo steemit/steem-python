@@ -3,7 +3,10 @@ import logging
 from functools import partial
 
 from funcy.seqs import first
+from steem.blockchain import Blockchain
 from steem.commit import Commit
+from steem.helpers import resolveIdentifier
+from steem.post import Post
 
 from .http_client import HttpClient
 from .steemd import api_methods
@@ -62,6 +65,96 @@ class Steem(HttpClient):
             if method_name not in dir(self):
                 to_call = partial(self.exec, method_name)
                 setattr(self, method_name, to_call)
+
+    def get_replies(self, author, skip_own=True):
+        """ Get replies for an author
+
+            :param str author: Show replies for this author
+            :param bool skip_own: Do not show my own replies
+        """
+        state = self.get_state("/@%s/recent-replies" % author)
+        replies = state["accounts"][author].get("recent_replies", [])
+        discussions = []
+        for reply in replies:
+            post = state["content"][reply]
+            if skip_own and post["author"] == author:
+                continue
+            discussions.append(Post(post, steem_instance=self))
+        return discussions
+
+    def get_promoted(self):
+        """ Get promoted posts
+        """
+        state = self.get_state("/promoted")
+        # why is there a empty key in the struct?
+        promoted = state["discussion_idx"][''].get("promoted", [])
+        r = []
+        for p in promoted:
+            post = state["content"].get(p)
+            r.append(Post(post, steem_instance=self))
+        return r
+
+    def get_posts(self, limit=10, sort="hot", category=None, start=None):
+        """ Get multiple posts in an array.
+
+            :param int limit: Limit the list of posts by ``limit``
+            :param str sort: Sort the list by "recent" or "payout"
+            :param str category: Only show posts in this category
+            :param str start: Show posts after this post. Takes an
+                              identifier of the form ``@author/permlink``
+        """
+
+        discussion_query = {"tag": category,
+                            "limit": limit,
+                            }
+        if start:
+            author, permlink = resolveIdentifier(start)
+            discussion_query["start_author"] = author
+            discussion_query["start_permlink"] = permlink
+
+        if sort not in ["trending", "created", "active", "cashout",
+                        "payout", "votes", "children", "hot"]:
+            raise Exception("Invalid choice of '--sort'!")
+
+        func = getattr(self, "get_discussions_by_%s" % sort)
+        r = []
+        for p in func(discussion_query):
+            r.append(Post(p, steem_instance=self))
+        return r
+
+    def get_categories(self, sort="trending", begin=None, limit=10):
+        """ List categories
+
+            :param str sort: Sort categories by "trending", "best",
+                             "active", or "recent"
+            :param str begin: Show categories after this
+                              identifier of the form ``@author/permlink``
+            :param int limit: Limit categories by ``x``
+        """
+        if sort == "trending":
+            func = self.get_trending_categories
+        elif sort == "best":
+            func = self.get_best_categories
+        elif sort == "active":
+            func = self.get_active_categories
+        elif sort == "recent":
+            func = self.get_recent_categories
+        else:
+            logger.error("Invalid choice of '--sort' (%s)!" % sort)
+            return
+
+        return func(begin, limit)
+
+    def stream_comments(self, *args, **kwargs):
+        """ Generator that yields posts when they come in
+
+            To be used in a for loop that returns an instance of `Post()`.
+        """
+        for c in Blockchain(
+            mode=kwargs.get("mode", "irreversible"),
+            steem_instance=self,
+        ).stream("comment", *args, **kwargs):
+            yield Post(c, steem_instance=self)
 
     @property
     def last_irreversible_block_num(self):
