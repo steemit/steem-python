@@ -13,12 +13,12 @@ from .account import Account
 log = logging.getLogger(__name__)
 
 
-class Wallet():
+class Wallet:
     """ The wallet is meant to maintain access to private keys for
         your accounts. It either uses manually provided private keys
         or uses a SQLite database managed by storage.py.
 
-        :param SteemNodeRPC rpc: RPC connection to a Steem node
+        :param Steem rpc: RPC connection to a Steem node
         :param array,dict,string keys: Predefine the wif keys to shortcut the wallet database
 
         Three wallet operation modes are possible:
@@ -38,10 +38,6 @@ class Wallet():
           any account. This mode is only used for *foreign*
           signatures!
     """
-    keys = []
-    rpc = None
-    masterpassword = None
-
     # Keys from database
     configStorage = None
     MasterPassword = None
@@ -51,19 +47,13 @@ class Wallet():
     keys = {}  # struct with pubkey as key and wif as value
     keyMap = {}  # type:wif pairs to force certain keys
 
-    def __init__(self, rpc, *args, **kwargs):
+    def __init__(self, rpc, **kwargs):
         from .storage import configStorage
         self.configStorage = configStorage
 
         # RPC
-        Wallet.rpc = rpc
-
-        # Prefix?
-        if Wallet.rpc:
-            self.prefix = Wallet.rpc.chain_params["prefix"]
-        else:
-            # If not connected, load prefix from config
-            self.prefix = self.configStorage["prefix"]
+        self.rpc = rpc
+        self.prefix = "STM"
 
         # Compatibility after name change from wif->keys
         if "wif" in kwargs and "keys" not in kwargs:
@@ -227,7 +217,7 @@ class Wallet():
 
             :param str pub: Public Key
         """
-        if (Wallet.keys):
+        if Wallet.keys:
             if pub in Wallet.keys:
                 return Wallet.keys[pub]
             elif len(Wallet.keys) == 1:
@@ -330,12 +320,7 @@ class Wallet():
         # FIXME, this only returns the first associated key.
         # If the key is used by multiple accounts, this
         # will surely lead to undesired behavior
-        if self.rpc.chain_params["prefix"] == "STM":
-            # STEEM
-            names = self.rpc.get_key_references([pub], api="account_by_key")[0]
-        else:
-            # GOLOS
-            names = self.rpc.get_key_references([pub])[0]
+        names = self.rpc.exec('get_key_references', [pub], api="account_by_key_api")[0]
         if not names:
             return None
         else:
