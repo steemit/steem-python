@@ -38,6 +38,8 @@ class Wallet:
           any account. This mode is only used for *foreign*
           signatures!
     """
+    masterpassword = None
+
     # Keys from database
     configStorage = None
     MasterPassword = None
@@ -187,8 +189,8 @@ class Wallet:
                         confirm=False,
                         text="Confirm Passphrase: "
                     )
-                    if (pw == pwck):
-                        return (pw)
+                    if pw == pwck:
+                        return pw
                     else:
                         print("Given Passphrases do not match!")
         else:
