@@ -231,7 +231,7 @@ class SignedTransaction(GrapheneObject):
     def sign(self, wifkeys, chain=None):
         """ Sign the transaction with the provided private keys.
 
-            :param array wifkeys: Array of wif keys
+            :param list wifkeys: Array of wif keys
             :param str chain: identifier for the chain
 
         """
