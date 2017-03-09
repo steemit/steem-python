@@ -5,18 +5,18 @@ from datetime import datetime
 from funcy.colls import walk_values
 from piston.instance import shared_steem_instance
 from pistonbase.operations import Comment_options
-
-from .amount import Amount
+from steem.utils import parse_time
 from steembase.exceptions import (
     PostDoesNotExist,
     VotingInvalidOnArchivedPost
 )
+
+from .amount import Amount
 from .helpers import (
     resolveIdentifier,
     constructIdentifier,
-    remove_from_dict,
 )
-from steem.utils import parse_time, remove_from_dict
+from .utils import remove_from_dict
 
 
 class Post(dict):
@@ -30,12 +30,7 @@ class Post(dict):
     """
     steem = None
 
-    def __init__(
-        self,
-        post,
-        steem_instance=None,
-        lazy=False
-    ):
+    def __init__(self, post, steem_instance=None, lazy=False):
         self.steem = steem_instance or shared_steem_instance()
         self.loaded = False
 
@@ -47,8 +42,8 @@ class Post(dict):
                 self.refresh()
 
         elif (isinstance(post, dict) and  # From dictionary
-                "author" in post and
-                "permlink" in post):
+                      "author" in post and
+                      "permlink" in post):
             # strip leading @
             if post["author"][0] == "@":
                 post["author"] = post["author"][1:]
@@ -187,7 +182,7 @@ class Post(dict):
             ), reverse=True)
         else:
             r = sorted(r, key=lambda x: x[sort])
-        return(r)
+        return (r)
 
     def reply(self, body, title="", author="", meta=None):
         """ Reply to the post
@@ -282,6 +277,7 @@ class Post(dict):
             if type(item) == Amount:
                 return item.__dict__
             return item
+
         return walk_values(decompose_amounts, safe_dict)
 
     def set_comment_options(self, options):

@@ -30,11 +30,7 @@ class Blockchain(object):
                 (``irreversible``) or actual head block (``head``)
 
     """
-    def __init__(
-        self,
-        steem_instance=None,
-        mode="irreversible"
-    ):
+    def __init__(self, steem_instance=None, mode="irreversible"):
         self.steem = steem_instance or shared_steem_instance()
 
         if mode == "irreversible":

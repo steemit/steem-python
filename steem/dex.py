@@ -1,8 +1,8 @@
 import random
 
-from .instance import shared_steem_instance
-from pistonbase import transactions
+from steembase import transactions
 
+from .instance import shared_steem_instance
 from .storage import configStorage as config
 
 
@@ -181,10 +181,10 @@ class Dex(object):
         return self.steem.rpc.get_market_history_buckets(api="market_history")
 
     def returnMarketHistory(
-        self,
-        bucket_seconds=60 * 5,
-        start_age=1 * 60 * 60,
-        stop_age=0,
+            self,
+            bucket_seconds=60 * 5,
+            start_age=1 * 60 * 60,
+            stop_age=0,
     ):
         """ Return the market history (filled orders).
 

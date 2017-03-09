@@ -1,6 +1,6 @@
-from piston.instance import shared_steem_instance
+from .instance import shared_steem_instance
 
-from .exceptions import WitnessDoesNotExistsException
+from steembase.exceptions import WitnessDoesNotExistsException
 
 
 class Witness(dict):
@@ -11,12 +11,7 @@ class Witness(dict):
         :param bool lazy: Use lazy loading
 
     """
-    def __init__(
-        self,
-        witness,
-        steem_instance=None,
-        lazy=False
-    ):
+    def __init__(self, witness, steem_instance=None, lazy=False):
         self.steem = steem_instance or shared_steem_instance()
         self.cached = False
         self.witness = witness

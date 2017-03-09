@@ -1,14 +1,14 @@
 import logging
 import os
 
-from graphenebase import bip38
-from pistonbase.account import PrivateKey, GraphenePrivateKey
-
-from .account import Account
-from .exceptions import (
+from steembase import bip38
+from steembase.account import PrivateKey
+from steembase.exceptions import (
     InvalidWifError,
     WalletExists
 )
+
+from .account import Account
 
 log = logging.getLogger(__name__)
 
@@ -198,7 +198,7 @@ class Wallet():
                         text="Confirm Passphrase: "
                     )
                     if (pw == pwck):
-                        return(pw)
+                        return (pw)
                     else:
                         print("Given Passphrases do not match!")
         else:
@@ -209,7 +209,7 @@ class Wallet():
         """ Add a private key to the wallet database
         """
         # it could be either graphenebase or pistonbase so we can't check the type directly
-        if isinstance(wif, PrivateKey) or isinstance(wif, GraphenePrivateKey):
+        if isinstance(wif, PrivateKey) or isinstance(wif, PrivateKey):
             wif = str(wif)
         try:
             pub = format(PrivateKey(wif).pubkey, self.prefix)
@@ -227,7 +227,7 @@ class Wallet():
 
             :param str pub: Public Key
         """
-        if(Wallet.keys):
+        if (Wallet.keys):
             if pub in Wallet.keys:
                 return Wallet.keys[pub]
             elif len(Wallet.keys) == 1:

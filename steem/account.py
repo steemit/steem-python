@@ -4,12 +4,12 @@ import math
 import time
 from contextlib import suppress
 
-from piston.instance import shared_steem_instance
+from steembase.exceptions import AccountDoesNotExistsException
 
 from .amount import Amount
 from .converter import Converter
-from steembase.exceptions import AccountDoesNotExistsException
-from steem.utils import parse_time
+from .instance import shared_steem_instance
+from .utils import parse_time
 
 
 class Account(dict):
@@ -20,11 +20,12 @@ class Account(dict):
         :param bool lazy: Use lazy loading
 
     """
+
     def __init__(
-        self,
-        account_name,
-        steem_instance=None,
-        lazy=False,
+            self,
+            account_name,
+            steem_instance=None,
+            lazy=False,
     ):
         self.steem = steem_instance or shared_steem_instance()
         self.cached = False
@@ -276,8 +277,8 @@ class Account(dict):
         return self.history(filter_by, start=start_index)
 
     def rawhistory(
-        self, first=99999999999,
-        limit=-1, only_ops=[], exclude_ops=[]
+            self, first=99999999999,
+            limit=-1, only_ops=[], exclude_ops=[]
     ):
         """ Returns a generator for individual account transactions. The
             latest operation will be first. This call can be used in a

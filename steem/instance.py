@@ -1,4 +1,4 @@
-import piston as pstn
+import steem as stm
 
 _shared_steem_instance = None
 
@@ -9,7 +9,7 @@ def shared_steem_instance():
     """
     global _shared_steem_instance
     if not _shared_steem_instance:
-        _shared_steem_instance = pstn.Steem()  # todo: add piston config
+        _shared_steem_instance = stm.Steem()
     return _shared_steem_instance
 
 

@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 import json
 import re
-
+from datetime import datetime
 from urllib.parse import urlparse
 
-import w3lib.url
 import langdetect
-from langdetect import DetectorFactory
-from datetime import datetime
-
 import sbds.sbds_logging
+import w3lib.url
+from langdetect import DetectorFactory
 
 logger = sbds.sbds_logging.getLogger(__name__)
 

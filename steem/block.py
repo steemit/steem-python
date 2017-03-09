@@ -1,7 +1,7 @@
-from piston.instance import shared_steem_instance
-
 from steembase.exceptions import BlockDoesNotExistsException
-from steem.utils import parse_time
+
+from .instance import shared_steem_instance
+from .utils import parse_time
 
 
 class Block(dict):
@@ -12,12 +12,8 @@ class Block(dict):
         :param bool lazy: Use lazy loading
 
     """
-    def __init__(
-        self,
-        block,
-        steem_instance=None,
-        lazy=False
-    ):
+
+    def __init__(self, block, steem_instance=None, lazy=False):
         self.steem = steem_instance or shared_steem_instance()
         self.cached = False
         self.block = block

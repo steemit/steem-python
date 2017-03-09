@@ -1,7 +1,7 @@
 from .account import Account
-from .post import Post
 from .instance import shared_steem_instance
-from steem.utils import is_comment
+from .post import Post
+from .utils import is_comment
 
 
 class Blog(list):
@@ -11,6 +11,7 @@ class Blog(list):
         :param Steem steem_instance: Steem() instance to use when accesing a RPC
 
     """
+
     def __init__(self, account_name, steem_instance=None):
         self.steem = steem_instance or shared_steem_instance()
         self.name = account_name

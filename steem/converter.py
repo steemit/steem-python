@@ -1,8 +1,7 @@
 import math
 
-from .instance import shared_steem_instance
-
 from .amount import Amount
+from .instance import shared_steem_instance
 
 
 class Converter(object):
@@ -12,6 +11,7 @@ class Converter(object):
         :param Steem steem_instance: Steem() instance to use when accesing a RPC
 
     """
+
     def __init__(self, steem_instance=None):
         self.steem = steem_instance or shared_steem_instance()
 

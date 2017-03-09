@@ -3,12 +3,12 @@ class Amount(dict):
 
         :param str amountString: Amount string as used by the backend (e.g. "10 SBD")
     """
-    def __init__(self, amountString="0 SBD"):
-        if isinstance(amountString, Amount):
-            self["amount"] = amountString["amount"]
-            self["asset"] = amountString["asset"]
-        elif isinstance(amountString, str):
-            self["amount"], self["asset"] = amountString.split(" ")
+    def __init__(self, amount_string="0 SBD"):
+        if isinstance(amount_string, Amount):
+            self["amount"] = amount_string["amount"]
+            self["asset"] = amount_string["asset"]
+        elif isinstance(amount_string, str):
+            self["amount"], self["asset"] = amount_string.split(" ")
         else:
             raise ValueError("Need an instance of 'Amount' or a string with amount and asset")
 
