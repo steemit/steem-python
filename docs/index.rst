@@ -33,6 +33,7 @@ User Guide
    install
    steem
    commit
+   convenience
 
 
 Internals
