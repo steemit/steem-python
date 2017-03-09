@@ -11,7 +11,7 @@ from steembase.exceptions import (
     PostDoesNotExist,
     VotingInvalidOnArchivedPost
 )
-from .utils import (
+from .helpers import (
     resolveIdentifier,
     constructIdentifier,
     remove_from_dict,

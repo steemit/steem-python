@@ -18,7 +18,7 @@ from .post import (
 )
 from .storage import configStorage as config
 from .transactionbuilder import TransactionBuilder
-from .utils import (
+from .helpers import (
     resolveIdentifier,
     constructIdentifier,
     derivePermlink,
