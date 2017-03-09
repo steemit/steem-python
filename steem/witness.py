@@ -18,7 +18,7 @@ class Witness(dict):
         self.refresh()
 
     def refresh(self):
-        witness = self.steem.rpc.get_witness_by_account(self.witness_name)
+        witness = self.steem.get_witness_by_account(self.witness_name)
         if not witness:
             raise WitnessDoesNotExistsException
         super(Witness, self).__init__(witness)
