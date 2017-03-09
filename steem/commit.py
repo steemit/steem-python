@@ -89,7 +89,7 @@ class Commit(object):
                 posting permission. Neither can you use different
                 accounts for different operations!
         """
-        tx = TransactionBuilder(steem_instance=self)
+        tx = TransactionBuilder(steem_instance=self.rpc)
         tx.appendOps(ops)
 
         if self.unsigned:
@@ -110,7 +110,7 @@ class Commit(object):
                 from the wallet as defined in "missing_signatures" key
                 of the transactions.
         """
-        tx = TransactionBuilder(tx, steem_instance=self)
+        tx = TransactionBuilder(tx, steem_instance=self.rpc)
         tx.appendMissingSignatures(wifs)
         tx.sign()
         return tx.json()
@@ -120,7 +120,7 @@ class Commit(object):
 
             :param tx tx: Signed transaction to broadcast
         """
-        tx = TransactionBuilder(tx, steem_instance=self)
+        tx = TransactionBuilder(tx, steem_instance=self.rpc)
         return tx.broadcast()
 
     def reply(self, identifier, body, title="", author="", meta=None):
@@ -157,7 +157,7 @@ class Commit(object):
             :param bool replace: Instead of calculating a *diff*, replace
                                  the post entirely (defaults to ``False``)
         """
-        original_post = Post(identifier, steem_instance=self)
+        original_post = Post(identifier, steem_instance=self.rpc)
 
         if replace:
             newbody = body
@@ -305,7 +305,7 @@ class Commit(object):
 
         # If comment_options are used, add a new op to the transaction
         if options:
-            default_max_payout = "1000000.000 %s" % self.symbol("SBD")
+            default_max_payout = "1000000.000 SBD"
             op.append(
                 operations.CommentOptions(**{
                     "author": author,
@@ -435,7 +435,7 @@ class Commit(object):
 
         account = None
         try:
-            account = Account(account_name, steem_instance=self)
+            account = Account(account_name, steem_instance=self.rpc)
         except:
             pass
         if account:
@@ -536,15 +536,15 @@ class Commit(object):
         if not account:
             raise ValueError("You need to provide an account")
 
-        assert asset == self.symbol("SBD") or asset == self.symbol("steem")
+        assert asset in ['STEEM', 'SBD']
 
         if memo and memo[0] == "#":
-            from pistonbase import memo as Memo
+            from steembase import memo as Memo
             memo_wif = self.wallet.getMemoKeyForAccount(account)
             if not memo_wif:
                 raise MissingKeyError("Memo key for %s missing!" % account)
-            to_account = Account(to, steem_instance=self)
-            nonce = str(random.getrandbits(64))
+            to_account = Account(to, steem_instance=self.rpc)
+            nonce = random.getrandbits(64)
             memo = Memo.encode_memo(
                 PrivateKey(memo_wif),
                 PublicKey(to_account["memo_key"], prefix=self.rpc.chain_params["prefix"]),
@@ -612,7 +612,7 @@ class Commit(object):
                "amount": '{:.{prec}f} {asset}'.format(
                    float(amount),
                    prec=3,
-                   asset=self.symbol("steem"))
+                   asset='STEEM')
                }
         )
 
@@ -640,7 +640,7 @@ class Commit(object):
                "amount": '{:.{prec}f} {asset}'.format(
                    float(amount),
                    prec=3,
-                   asset=self.symbol("SBD")
+                   asset='SBD'
                )}
         )
 
@@ -655,7 +655,7 @@ class Commit(object):
             :param str to: (optional) the source account for the transfer if not ``default_account``
             :param str account: (optional) the source account for the transfer if not ``default_account``
         """
-        self._valid_currency(currency)
+        assert currency in ['STEEM', 'SBD']
 
         if not account:
             if "default_account" in config:
@@ -689,7 +689,7 @@ class Commit(object):
             :param str to: (optional) the source account for the transfer if not ``default_account``
             :param str account: (optional) the source account for the transfer if not ``default_account``
         """
-        self._valid_currency(currency)
+        assert currency in ['STEEM', 'SBD']
 
         if not account:
             if "default_account" in config:
@@ -756,8 +756,8 @@ class Commit(object):
             **{
                 "publisher": account,
                 "exchange_rate": {
-                    "base": "%s %s" % (steem_usd_price, self.symbol("SBD")),
-                    "quote": "%s %s" % (quote, self.symbol("steem")),
+                    "base": "%s SBD" % steem_usd_price,
+                    "quote": "%s STEEM" % quote,
                 }
             }
         )
@@ -797,16 +797,11 @@ class Commit(object):
                 "url": url,
                 "block_signing_key": signing_key,
                 "props": props,
-                "fee": "0.000 %s" % self.symbol("steem"),
+                "fee": "0.000 STEEM",
                 "prefix": self.rpc.chain_params["prefix"]
             }
         )
         return self.finalizeOp(op, account, "active")
-
-    @staticmethod
-    def _valid_currency(currency):
-        if currency not in ['STEEM', 'SBD', 'VESTS']:
-            raise TypeError("Unsupported currency %s" % currency)
 
     # def get_replies(self, author, skipown=True):
     #     """ Get replies for an author
@@ -821,7 +816,7 @@ class Commit(object):
     #         post = state["content"][reply]
     #         if skipown and post["author"] == author:
     #             continue
-    #         discussions.append(Post(post, steem_instance=self))
+    #         discussions.append(Post(post, steem_instance=self.rpc))
     #     return discussions
     #
     # def get_promoted(self):
@@ -833,7 +828,7 @@ class Commit(object):
     #     r = []
     #     for p in promoted:
     #         post = state["content"].get(p)
-    #         r.append(Post(post, steem_instance=self))
+    #         r.append(Post(post, steem_instance=self.rpc))
     #     return r
     #
     # def get_posts(self, limit=10,
@@ -864,7 +859,7 @@ class Commit(object):
     #     func = getattr(self.rpc, "get_discussions_by_%s" % sort)
     #     r = []
     #     for p in func(discussion_query):
-    #         r.append(Post(p, steem_instance=self))
+    #         r.append(Post(p, steem_instance=self.rpc))
     #     return r
     #
     # def get_categories(self, sort="trending", begin=None, limit=10):
@@ -900,7 +895,7 @@ class Commit(object):
     #             account = config["default_account"]
     #     if not account:
     #         raise ValueError("You need to provide an account")
-    #     a = Account(account, steem_instance=self)
+    #     a = Account(account, steem_instance=self.rpc)
     #     info = self.rpc.get_dynamic_global_properties()
     #     steem_per_mvest = (
     #         Amount(info["total_vesting_fund_steem"]).amount /
@@ -938,19 +933,19 @@ class Commit(object):
     #     """
     #     for c in Blockchain(
     #         mode=kwargs.get("mode", "irreversible"),
-    #         steem_instance=self,
+    #         steem_instance=self.rpc,
     #     ).stream("comment", *args, **kwargs):
-    #         yield Post(c, steem_instance=self)
+    #         yield Post(c, steem_instance=self.rpc)
 
     def interest(self, account):
         """ Caluclate interest for an account
 
             :param str account: Account name to get interest for
         """
-        account = Account(account, steem_instance=self)
+        account = Account(account, steem_instance=self.rpc.rpc)
         last_payment = formatTimeString(account["sbd_last_interest_payment"])
         next_payment = last_payment + timedelta(days=30)
-        interest_rate = self.get_dynamic_global_properties()["sbd_interest_rate"] / 100  # the result is in percent!
+        interest_rate = self.rpc.get_dynamic_global_properties()["sbd_interest_rate"] / 100  # the result is in percent!
         interest_amount = (interest_rate / 100) * int(
             int(account["sbd_seconds"]) / (60 * 60 * 24 * 356)
         ) * 10 ** -3
@@ -1029,7 +1024,7 @@ class Commit(object):
             raise ValueError(
                 "Permission needs to be either 'owner', 'posting', or 'active"
             )
-        account = Account(account, steem_instance=self)
+        account = Account(account, steem_instance=self.rpc)
         if not weight:
             weight = account[permission]["weight_threshold"]
 
@@ -1042,7 +1037,7 @@ class Commit(object):
             ])
         except:
             try:
-                foreign_account = Account(foreign, steem_instance=self)
+                foreign_account = Account(foreign, steem_instance=self.rpc)
                 authority["account_auths"].append([
                     foreign_account["name"],
                     weight
@@ -1090,7 +1085,7 @@ class Commit(object):
             raise ValueError(
                 "Permission needs to be either 'owner', 'posting', or 'active"
             )
-        account = Account(account, steem_instance=self)
+        account = Account(account, steem_instance=self.rpc)
         authority = account[permission]
 
         try:
@@ -1104,7 +1099,7 @@ class Commit(object):
             ))
         except:
             try:
-                foreign_account = Account(foreign, steem_instance=self)
+                foreign_account = Account(foreign, steem_instance=self.rpc)
                 affected_items = list(
                     filter(lambda x: x[0] == foreign_account["name"],
                            authority["account_auths"]))
@@ -1130,7 +1125,7 @@ class Commit(object):
         except:
             log.critical(
                 "The account's threshold will be reduced by %d"
-                % (removed_weight)
+                % removed_weight
             )
             authority["weight_threshold"] -= removed_weight
             self._test_weights_treshold(authority)
@@ -1163,7 +1158,7 @@ class Commit(object):
             raise ValueError("You need to provide an account")
 
         PublicKey(key)  # raises exception if invalid
-        account = Account(account, steem_instance=self)
+        account = Account(account, steem_instance=self.rpc)
         op = operations.AccountUpdate(
             **{"account": account["name"],
                "memo_key": key,
@@ -1185,7 +1180,7 @@ class Commit(object):
                 account = config["default_author"]
         if not account:
             raise ValueError("You need to provide an account")
-        account = Account(account, steem_instance=self)
+        account = Account(account, steem_instance=self.rpc)
         op = operations.AccountWitnessVote(
             **{"account": account["name"],
                "witness": witness,
@@ -1295,7 +1290,7 @@ class Commit(object):
                 account = config["default_account"]
         if not account:
             raise ValueError("You need to provide an account")
-        account = Account(account, steem_instance=self)
+        account = Account(account, steem_instance=self.rpc)
         op = operations.AccountUpdate(
             **{"account": account["name"],
                "memo_key": account["memo_key"],
@@ -1328,7 +1323,7 @@ class Commit(object):
                 account = config["default_account"]
         if not account:
             raise ValueError("You need to provide an account")
-        account = Account(account, steem_instance=self)
+        account = Account(account, steem_instance=self.rpc)
         author, permlink = resolveIdentifier(identifier)
         default_max_payout = "1000000.000 SBD"
         op = operations.CommentOptions(

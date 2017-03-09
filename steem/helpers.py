@@ -155,5 +155,3 @@ def formatTimeFromNow(secs=0):
 
     """
     return datetime.utcfromtimestamp(time.time() + int(secs)).strftime('%Y-%m-%dT%H:%M:%S')
-
-

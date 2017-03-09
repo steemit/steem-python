@@ -1,6 +1,6 @@
 import logging
 
-from steembase import transactions, operations
+from steembase import operations
 from steembase.account import PrivateKey
 from steembase.exceptions import (
     InsufficientAuthorityError,
@@ -8,7 +8,7 @@ from steembase.exceptions import (
     InvalidKeyFormat
 )
 from steembase.operations import Operation
-from steembase.transactions import SignedTransaction
+from steembase.transactions import SignedTransaction, fmt_time_from_now, get_block_params
 
 from .account import Account
 from .instance import shared_steem_instance
@@ -63,9 +63,9 @@ class TransactionBuilder(dict):
             ops = [Operation(o) for o in self.op]
         else:
             ops = [Operation(self.op)]
-        expiration = transactions.formatTimeFromNow(self.steem.expiration)
-        ref_block_num, ref_block_prefix = transactions.getBlockParams(self.steem.rpc)
-        tx = Signed_Transaction(
+        expiration = fmt_time_from_now(self.steem.expiration)
+        ref_block_num, ref_block_prefix = get_block_params(self.steem.rpc)
+        tx = SignedTransaction(
             ref_block_num=ref_block_num,
             ref_block_prefix=ref_block_prefix,
             expiration=expiration,
