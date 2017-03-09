@@ -3,10 +3,13 @@ import logging
 from functools import partial
 
 from funcy.seqs import first
+from steem.block import Block
 from steem.blockchain import Blockchain
 from steem.commit import Commit
 from steem.helpers import resolveIdentifier
 from steem.post import Post
+from steembase.transactions import SignedTransaction
+from steembase.types import PointInTime
 
 from .http_client import HttpClient
 from .steemd import api_methods
@@ -567,19 +570,19 @@ class Steem(HttpClient):
         """
         return self.exec('get_liquidity_queue', start_account, limit, api='database_api')
 
-    def get_transaction_hex(self, signed_transaction: object):
+    def get_transaction_hex(self, signed_transaction: SignedTransaction):
         return self.exec('get_transaction_hex', signed_transaction, api='database_api')
 
     def get_transaction(self, transaction_id: str):
         return self.exec('get_transaction', transaction_id, api='database_api')
 
-    def get_required_signatures(self, signed_transaction: object, available_keys: list):
+    def get_required_signatures(self, signed_transaction: SignedTransaction, available_keys: list):
         return self.exec('get_required_signatures', signed_transaction, available_keys, api='database_api')
 
-    def get_potential_signatures(self, signed_transaction: object):
+    def get_potential_signatures(self, signed_transaction: SignedTransaction):
         return self.exec('get_potential_signatures', signed_transaction, api='database_api')
 
-    def verify_authority(self, signed_transaction: object):
+    def verify_authority(self, signed_transaction: SignedTransaction):
         return self.exec('verify_authority', signed_transaction, api='database_api')
 
     def verify_account_authority(self, account: str, keys: list):
@@ -649,8 +652,13 @@ class Steem(HttpClient):
     def get_content_replies(self, author: str, permlink: str):
         return self.exec('get_content_replies', author, permlink, api='database_api')
 
-    def get_discussions_by_author_before_date(self, author: str, start_permlink: str, before_date: object, limit: int):
-        return self.exec('get_discussions_by_author_before_date', author, start_permlink, before_date, limit,
+    def get_discussions_by_author_before_date(self,
+                                              author: str,
+                                              start_permlink: str,
+                                              before_date: PointInTime,
+                                              limit: int):
+        return self.exec('get_discussions_by_author_before_date',
+                         author, start_permlink, before_date, limit,
                          api='database_api')
 
     def get_replies_by_last_update(self, account: str, start_permlink: str, limit: int):
@@ -721,17 +729,17 @@ class Steem(HttpClient):
     def get_blog_authors(self, blog_account: str):
         return self.exec('get_blog_authors', blog_account, api='follow_api')
 
-    def broadcast_transaction(self, signed_transaction: object):
+    def broadcast_transaction(self, signed_transaction: SignedTransaction):
         return self.exec('broadcast_transaction', signed_transaction, api='network_broadcast_api')
 
-    def broadcast_transaction_with_callback(self, callback: object, signed_transaction: object):
+    def broadcast_transaction_with_callback(self, callback: object, signed_transaction: SignedTransaction):
         return self.exec('broadcast_transaction_with_callback', callback, signed_transaction,
                          api='network_broadcast_api')
 
-    def broadcast_transaction_synchronous(self, signed_transaction: object):
+    def broadcast_transaction_synchronous(self, signed_transaction: SignedTransaction):
         return self.exec('broadcast_transaction_synchronous', signed_transaction, api='network_broadcast_api')
 
-    def broadcast_block(self, block: object):
+    def broadcast_block(self, block: Block):
         return self.exec('broadcast_block', block, api='network_broadcast_api')
 
     def set_max_block_age(self, max_block_age: int):
