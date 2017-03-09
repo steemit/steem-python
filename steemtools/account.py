@@ -9,7 +9,7 @@ from piston.instance import shared_steem_instance
 from .amount import Amount
 from .converter import Converter
 from steembase.exceptions import AccountDoesNotExistsException
-from .utils import parse_time
+from steem.utils import parse_time
 
 
 class Account(dict):

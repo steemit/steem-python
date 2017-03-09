@@ -4,19 +4,15 @@ import random
 import re
 from datetime import datetime, timedelta
 
-import pkg_resources  # part of setuptools
-from pistonapi.steemnoderpc import SteemNodeRPC, NoAccessApi
-from pistonbase import memo
-from pistonbase import operations
-from pistonbase.account import PrivateKey, PublicKey
-
-from .account import Account
-from .amount import Amount
-from .blockchain import Blockchain
+from steembase import memo
+from steembase import operations
+from steembase.account import PrivateKey, PublicKey
 from steembase.exceptions import (
     AccountExistsException,
     MissingKeyError,
 )
+
+from .account import Account
 from .post import (
     Post
 )
@@ -28,7 +24,6 @@ from .utils import (
     derivePermlink,
     formatTimeString
 )
-from .wallet import Wallet
 
 log = logging.getLogger(__name__)
 
@@ -36,16 +31,16 @@ STEEMIT_100_PERCENT = 10000
 STEEMIT_1_PERCENT = (STEEMIT_100_PERCENT / 100)
 
 
-class Steem(object):
-    """ Connect to the Steem network.
+class Commit(object):
+    """ Commit things to the Steem network.
 
-        :param str node: Node to connect to *(optional)*
-        :param str rpcuser: RPC user *(optional)*
-        :param str rpcpassword: RPC password *(optional)*
-        :param bool nobroadcast: Do **not** broadcast a transaction! *(optional)*
+        This class contains helper methods to construct, sign and broadcast common transactions, such as posting,
+        voting, sending funds, etc.
+
+        :param Steem steem: Steemd node to connect to*
+        :param bool offline: Do **not** broadcast transactions! *(optional)*
         :param bool debug: Enable Debugging *(optional)*
         :param array,dict,string keys: Predefine the wif keys to shortcut the wallet database
-        :param bool offline: Boolean to prevent connecting to network (defaults to ``False``)
 
         Three wallet operation modes are possible:
 
@@ -64,101 +59,16 @@ class Steem(object):
           any account. This mode is only used for *foreign*
           signatures!
 
-        If no node is provided, it will connect to the node of
-        http://piston.rocks. It is **highly** recommended that you pick your own
-        node instead. Default settings can be changed with:
-
-        .. code-block:: python
-
-            piston set node <host>
-
-        where ``<host>`` starts with ``ws://`` or ``wss://``.
-
-        The purpose of this class it to simplify posting and dealing
-        with accounts, posts and categories in Steem.
-
-        The idea is to have a class that allows to do this:
-
-        .. code-block:: python
-
-            from piston import Steem
-            steem = Steem()
-            steem.post("Testing steem library", "I am testing steem", category="spam")
-
-        All that is requires is for the user to have added a posting key with piston
-
-        .. code-block:: bash
-
-            piston addkey
-
-        and setting a default author:
-
-        .. code-block:: bash
-
-            piston set default_author xeroc
-
-        This class also deals with edits, votes and reading content.
     """
 
-    def __init__(self,
-                 node="",
-                 rpcuser="",
-                 rpcpassword="",
-                 debug=False,
-                 **kwargs):
-
-        # More specific set of APIs to register to
-        # Optional API's will be attempted later
-        if "apis" not in kwargs:
-            kwargs["apis"] = [
-                "database",
-                "network_broadcast",
-                # "account_by_key",
-                # "follow",
-            ]
-
-        self.rpc = None
+    def __init__(self, steem, offline=False, debug=False, **kwargs):
+        self.rpc = steem
         self.debug = debug
-
-        self.offline = kwargs.get("offline", False)
-        self.nobroadcast = kwargs.get("nobroadcast", False)
+        self.offline = offline
         self.unsigned = kwargs.get("unsigned", False)
         self.expiration = int(kwargs.get("expiration", 30))
 
-        if not self.offline:
-            self._connect(node=node,
-                          rpcuser=rpcuser,
-                          rpcpassword=rpcpassword,
-                          **kwargs)
-
-            # Try Optional APIs
-            try:
-                self.rpc.register_apis(["account_by_key", "follow"])
-            except NoAccessApi as e:
-                log.info(str(e))
-
-        self.wallet = Wallet(self.rpc, **kwargs)
-
-    def _connect(self,
-                 node="",
-                 rpcuser="",
-                 rpcpassword="",
-                 **kwargs):
-        """ Connect to Steem network (internal use only)
-        """
-        if not node:
-            if "node" in config:
-                node = config["node"]
-            else:
-                raise ValueError("A Steem node needs to be provided!")
-
-        if not rpcuser and "rpcuser" in config:
-            rpcuser = config["rpcuser"]
-
-        if not rpcpassword and "rpcpassword" in config:
-            rpcpassword = config["rpcpassword"]
-
-        self.rpc = SteemNodeRPC(node, rpcuser, rpcpassword, **kwargs)
+        # self.wallet = Wallet(self.rpc, **kwargs)
 
     def finalizeOp(self, ops, account, permission):
         """ This method obtains the required private keys if present in
@@ -212,19 +122,6 @@ class Steem(object):
         """
         tx = TransactionBuilder(tx, steem_instance=self)
         return tx.broadcast()
-
-    def symbol(self, asset):
-        """ This method returns the symbol names used on the blockchain.
-            It is only relevant if we are not on STEEM, but e.g. on
-            GOLOS
-        """
-        assert asset.lower() in ["sbd", "steem"]
-        return self.rpc.chain_params["%s_symbol" % asset.lower()]
-
-    def info(self):
-        """ Returns the global properties
-        """
-        return self.rpc.get_dynamic_global_properties()
 
     def reply(self, identifier, body, title="", author="", meta=None):
         """ Reply to an existing post
@@ -341,9 +238,7 @@ class Steem(object):
             author = config["default_author"]
 
         if not author:
-            raise ValueError(
-                "Please define an author. (Try 'piston set default_author'"
-            )
+            raise ValueError("Please define an author.")
 
         # Deal with meta data
         if not isinstance(meta, dict):
@@ -351,11 +246,6 @@ class Steem(object):
                 meta = json.loads(meta)
             except:
                 meta = {}
-
-        # Default "app"
-        if "app" not in meta:
-            version = pkg_resources.require("piston-lib")[0].version
-            meta["app"] = "pysteem/{}".format(version)
 
         # Identify the comment options
         options = {}
@@ -417,7 +307,7 @@ class Steem(object):
         if options:
             default_max_payout = "1000000.000 %s" % self.symbol("SBD")
             op.append(
-                operations.Comment_options(**{
+                operations.CommentOptions(**{
                     "author": author,
                     "permlink": permlink,
                     "max_accepted_payout": options.get("max_accepted_payout", default_max_payout),
@@ -627,7 +517,7 @@ class Steem(object):
                          'weight_threshold': 1},
              'prefix': self.rpc.chain_params["prefix"]}
 
-        op = operations.Account_create(**s)
+        op = operations.AccountCreate(**s)
 
         return self.finalizeOp(op, creator, "active")
 
@@ -688,7 +578,7 @@ class Steem(object):
         if not account:
             raise ValueError("You need to provide an account")
 
-        op = operations.Withdraw_vesting(
+        op = operations.WithdrawVesting(
             **{"account": account,
                "vesting_shares": '{:.{prec}f} {asset}'.format(
                    float(amount),
@@ -716,7 +606,7 @@ class Steem(object):
         if not to:
             to = account  # powerup on the same account
 
-        op = operations.Transfer_to_vesting(
+        op = operations.TransferToVesting(
             **{"from": account,
                "to": to,
                "amount": '{:.{prec}f} {asset}'.format(
@@ -776,7 +666,7 @@ class Steem(object):
         if not to:
             to = account  # move to savings on same account
 
-        op = operations.Transfer_to_savings(
+        op = operations.TransferToSavings(
             **{
                 "from": account,
                 "to": to,
@@ -815,7 +705,7 @@ class Steem(object):
         else:
             request_id = random.getrandbits(32)
 
-        op = operations.Transfer_from_savings(
+        op = operations.TransferFromSavings(
             **{
                 "from": account,
                 "request_id": request_id,
@@ -841,7 +731,7 @@ class Steem(object):
         if not account:
             raise ValueError("You need to provide an account")
 
-        op = operations.Cancel_transfer_from_savings(
+        op = operations.CancelTransferFromSavings(
             **{
                 "from": account,
                 "request_id": request_id,
@@ -862,7 +752,7 @@ class Steem(object):
         if not account:
             raise ValueError("You need to provide an account")
 
-        op = operations.Feed_publish(
+        op = operations.FeedPublish(
             **{
                 "publisher": account,
                 "exchange_rate": {
@@ -901,7 +791,7 @@ class Steem(object):
         except Exception as e:
             raise e
 
-        op = operations.Witness_update(
+        op = operations.WitnessUpdate(
             **{
                 "owner": account,
                 "url": url,
@@ -915,161 +805,117 @@ class Steem(object):
 
     @staticmethod
     def _valid_currency(currency):
-        if currency not in [
-            Steem.rpc.chain_params["sbd_symbol"],
-            Steem.rpc.chain_params["steem_symbol"]
-        ]:
+        if currency not in ['STEEM', 'SBD', 'VESTS']:
             raise TypeError("Unsupported currency %s" % currency)
 
-    def get_content(self, identifier):
-        """ Get the full content of a post.
-
-            :param str identifier: Identifier for the post to upvote Takes
-                                   the form ``@author/permlink``
-        """
-        return Post(identifier, steem_instance=self)
-
-    def get_post(self, identifier):
-        """ Get the full content of a post.
-
-            :param str identifier: Identifier for the post to upvote Takes
-                                   the form ``@author/permlink``
-        """
-        return Post(identifier, steem_instance=self)
-
-    def get_recommended(self, user):
-        """ (obsolete) Get recommended posts for user
-        """
-        log.critical("get_recommended has been removed from the backend.")
-        return []
-
-    def get_blog(self, user):
-        """ Get blog posts of a user
-
-            :param str user: Show recommendations for this author
-        """
-        from .blog import Blog
-        return Blog(user)
-
-    def get_replies(self, author, skipown=True):
-        """ Get replies for an author
-
-            :param str author: Show replies for this author
-            :param bool skipown: Do not show my own replies
-        """
-        state = self.rpc.get_state("/@%s/recent-replies" % author)
-        replies = state["accounts"][author].get("recent_replies", [])
-        discussions = []
-        for reply in replies:
-            post = state["content"][reply]
-            if skipown and post["author"] == author:
-                continue
-            discussions.append(Post(post, steem_instance=self))
-        return discussions
-
-    def get_promoted(self):
-        """ Get promoted posts
-        """
-        state = self.rpc.get_state("/promoted")
-        # why is there a empty key in the struct?
-        promoted = state["discussion_idx"][''].get("promoted", [])
-        r = []
-        for p in promoted:
-            post = state["content"].get(p)
-            r.append(Post(post, steem_instance=self))
-        return r
-
-    def get_posts(self, limit=10,
-                  sort="hot",
-                  category=None,
-                  start=None):
-        """ Get multiple posts in an array.
-
-            :param int limit: Limit the list of posts by ``limit``
-            :param str sort: Sort the list by "recent" or "payout"
-            :param str category: Only show posts in this category
-            :param str start: Show posts after this post. Takes an
-                              identifier of the form ``@author/permlink``
-        """
-
-        discussion_query = {"tag": category,
-                            "limit": limit,
-                            }
-        if start:
-            author, permlink = resolveIdentifier(start)
-            discussion_query["start_author"] = author
-            discussion_query["start_permlink"] = permlink
-
-        if sort not in ["trending", "created", "active", "cashout",
-                        "payout", "votes", "children", "hot"]:
-            raise Exception("Invalid choice of '--sort'!")
-
-        func = getattr(self.rpc, "get_discussions_by_%s" % sort)
-        r = []
-        for p in func(discussion_query):
-            r.append(Post(p, steem_instance=self))
-        return r
-
-    def get_comments(self, identifier):
-        """ Return **first-level** comments of a post.
-
-            :param str identifier: Identifier of a post. Takes an
-                                   identifier of the form ``@author/permlink``
-        """
-        return Post(identifier, steem_instance=self).get_comments()
-
-    def get_categories(self, sort="trending", begin=None, limit=10):
-        """ List categories
-
-            :param str sort: Sort categories by "trending", "best",
-                             "active", or "recent"
-            :param str begin: Show categories after this
-                              identifier of the form ``@author/permlink``
-            :param int limit: Limit categories by ``x``
-        """
-        if sort == "trending":
-            func = self.rpc.get_trending_categories
-        elif sort == "best":
-            func = self.rpc.get_best_categories
-        elif sort == "active":
-            func = self.rpc.get_active_categories
-        elif sort == "recent":
-            func = self.rpc.get_recent_categories
-        else:
-            log.error("Invalid choice of '--sort' (%s)!" % sort)
-            return
-
-        return func(begin, limit)
-
-    def get_balances(self, account=None):
-        """ Get the balance of an account
-
-            :param str account: (optional) the source account for the transfer if not ``default_account``
-        """
-        if not account:
-            if "default_account" in config:
-                account = config["default_account"]
-        if not account:
-            raise ValueError("You need to provide an account")
-        a = Account(account, steem_instance=self)
-        info = self.rpc.get_dynamic_global_properties()
-        steem_per_mvest = (
-            Amount(info["total_vesting_fund_steem"]).amount /
-            (Amount(info["total_vesting_shares"]).amount / 1e6)
-        )
-        vesting_shares_steem = Amount(a["vesting_shares"]) / 1e6 * steem_per_mvest
-        return {
-            "balance": Amount(a["balance"]),
-            "vesting_shares": Amount(a["vesting_shares"]),
-            "sbd_balance": Amount(a["sbd_balance"]),
-            "savings_balance": Amount(a["savings_balance"]),
-            "savings_sbd_balance": Amount(a["savings_sbd_balance"]),
-            # computed amounts
-            "vesting_shares_steem": Amount(vesting_shares_steem),
-        }
-
-    def get_account_history(self, account, **kwargs):
-        return Account(account, steem_instance=self).rawhistory(**kwargs)
+    # def get_replies(self, author, skipown=True):
+    #     """ Get replies for an author
+    #
+    #         :param str author: Show replies for this author
+    #         :param bool skipown: Do not show my own replies
+    #     """
+    #     state = self.rpc.get_state("/@%s/recent-replies" % author)
+    #     replies = state["accounts"][author].get("recent_replies", [])
+    #     discussions = []
+    #     for reply in replies:
+    #         post = state["content"][reply]
+    #         if skipown and post["author"] == author:
+    #             continue
+    #         discussions.append(Post(post, steem_instance=self))
+    #     return discussions
+    #
+    # def get_promoted(self):
+    #     """ Get promoted posts
+    #     """
+    #     state = self.rpc.get_state("/promoted")
+    #     # why is there a empty key in the struct?
+    #     promoted = state["discussion_idx"][''].get("promoted", [])
+    #     r = []
+    #     for p in promoted:
+    #         post = state["content"].get(p)
+    #         r.append(Post(post, steem_instance=self))
+    #     return r
+    #
+    # def get_posts(self, limit=10,
+    #               sort="hot",
+    #               category=None,
+    #               start=None):
+    #     """ Get multiple posts in an array.
+    #
+    #         :param int limit: Limit the list of posts by ``limit``
+    #         :param str sort: Sort the list by "recent" or "payout"
+    #         :param str category: Only show posts in this category
+    #         :param str start: Show posts after this post. Takes an
+    #                           identifier of the form ``@author/permlink``
+    #     """
+    #
+    #     discussion_query = {"tag": category,
+    #                         "limit": limit,
+    #                         }
+    #     if start:
+    #         author, permlink = resolveIdentifier(start)
+    #         discussion_query["start_author"] = author
+    #         discussion_query["start_permlink"] = permlink
+    #
+    #     if sort not in ["trending", "created", "active", "cashout",
+    #                     "payout", "votes", "children", "hot"]:
+    #         raise Exception("Invalid choice of '--sort'!")
+    #
+    #     func = getattr(self.rpc, "get_discussions_by_%s" % sort)
+    #     r = []
+    #     for p in func(discussion_query):
+    #         r.append(Post(p, steem_instance=self))
+    #     return r
+    #
+    # def get_categories(self, sort="trending", begin=None, limit=10):
+    #     """ List categories
+    #
+    #         :param str sort: Sort categories by "trending", "best",
+    #                          "active", or "recent"
+    #         :param str begin: Show categories after this
+    #                           identifier of the form ``@author/permlink``
+    #         :param int limit: Limit categories by ``x``
+    #     """
+    #     if sort == "trending":
+    #         func = self.rpc.get_trending_categories
+    #     elif sort == "best":
+    #         func = self.rpc.get_best_categories
+    #     elif sort == "active":
+    #         func = self.rpc.get_active_categories
+    #     elif sort == "recent":
+    #         func = self.rpc.get_recent_categories
+    #     else:
+    #         log.error("Invalid choice of '--sort' (%s)!" % sort)
+    #         return
+    #
+    #     return func(begin, limit)
+    #
+    # def get_balances(self, account=None):
+    #     """ Get the balance of an account
+    #
+    #         :param str account: (optional) the source account for the transfer if not ``default_account``
+    #     """
+    #     if not account:
+    #         if "default_account" in config:
+    #             account = config["default_account"]
+    #     if not account:
+    #         raise ValueError("You need to provide an account")
+    #     a = Account(account, steem_instance=self)
+    #     info = self.rpc.get_dynamic_global_properties()
+    #     steem_per_mvest = (
+    #         Amount(info["total_vesting_fund_steem"]).amount /
+    #         (Amount(info["total_vesting_shares"]).amount / 1e6)
+    #     )
+    #     vesting_shares_steem = Amount(a["vesting_shares"]) / 1e6 * steem_per_mvest
+    #     return {
+    #         "balance": Amount(a["balance"]),
+    #         "vesting_shares": Amount(a["vesting_shares"]),
+    #         "sbd_balance": Amount(a["sbd_balance"]),
+    #         "savings_balance": Amount(a["savings_balance"]),
+    #         "savings_sbd_balance": Amount(a["savings_sbd_balance"]),
+    #         # computed amounts
+    #         "vesting_shares_steem": Amount(vesting_shares_steem),
+    #     }
 
     def decode_memo(self, enc_memo, account):
         """ Try to decode an encrypted memo
@@ -1085,16 +931,16 @@ class Steem(object):
             raise MissingKeyError
         return memo.decode_memo(PrivateKey(wif), enc_memo)
 
-    def stream_comments(self, *args, **kwargs):
-        """ Generator that yields posts when they come in
-
-            To be used in a for loop that returns an instance of `Post()`.
-        """
-        for c in Blockchain(
-            mode=kwargs.get("mode", "irreversible"),
-            steem_instance=self,
-        ).stream("comment", *args, **kwargs):
-            yield Post(c, steem_instance=self)
+    # def stream_comments(self, *args, **kwargs):
+    #     """ Generator that yields posts when they come in
+    #
+    #         To be used in a for loop that returns an instance of `Post()`.
+    #     """
+    #     for c in Blockchain(
+    #         mode=kwargs.get("mode", "irreversible"),
+    #         steem_instance=self,
+    #     ).stream("comment", *args, **kwargs):
+    #         yield Post(c, steem_instance=self)
 
     def interest(self, account):
         """ Caluclate interest for an account
@@ -1104,7 +950,7 @@ class Steem(object):
         account = Account(account, steem_instance=self)
         last_payment = formatTimeString(account["sbd_last_interest_payment"])
         next_payment = last_payment + timedelta(days=30)
-        interest_rate = self.info()["sbd_interest_rate"] / 100  # the result is in percent!
+        interest_rate = self.get_dynamic_global_properties()["sbd_interest_rate"] / 100  # the result is in percent!
         interest_amount = (interest_rate / 100) * int(
             int(account["sbd_seconds"]) / (60 * 60 * 24 * 356)
         ) * 10 ** -3
@@ -1137,7 +983,7 @@ class Steem(object):
         if not account:
             raise ValueError("You need to provide an account")
 
-        op = operations.Set_withdraw_vesting_route(
+        op = operations.SetWithdrawVestingRoute(
             **{"from_account": account,
                "to_account": to,
                "percent": int(percentage * STEEMIT_1_PERCENT),
@@ -1209,7 +1055,7 @@ class Steem(object):
             authority["weight_threshold"] = threshold
             self._test_weights_treshold(authority)
 
-        op = operations.Account_update(
+        op = operations.AccountUpdate(
             **{"account": account["name"],
                permission: authority,
                "memo_key": account["memo_key"],
@@ -1289,7 +1135,7 @@ class Steem(object):
             authority["weight_threshold"] -= removed_weight
             self._test_weights_treshold(authority)
 
-        op = operations.Account_update(
+        op = operations.AccountUpdate(
             **{"account": account["name"],
                permission: authority,
                "memo_key": account["memo_key"],
@@ -1318,7 +1164,7 @@ class Steem(object):
 
         PublicKey(key)  # raises exception if invalid
         account = Account(account, steem_instance=self)
-        op = operations.Account_update(
+        op = operations.AccountUpdate(
             **{"account": account["name"],
                "memo_key": key,
                "json_metadata": account["json_metadata"]}
@@ -1340,7 +1186,7 @@ class Steem(object):
         if not account:
             raise ValueError("You need to provide an account")
         account = Account(account, steem_instance=self)
-        op = operations.Account_witness_vote(
+        op = operations.AccountWitnessVote(
             **{"account": account["name"],
                "witness": witness,
                "approve": approve,
@@ -1373,7 +1219,7 @@ class Steem(object):
             account = required_posting_auths[0]
         else:
             raise Exception("At least on account needs to be specified")
-        op = operations.Custom_json(
+        op = operations.CustomJson(
             **{"json": json,
                "required_auths": required_auths,
                "required_posting_auths": required_posting_auths,
@@ -1437,10 +1283,6 @@ class Steem(object):
             required_posting_auths=[account]
         )
 
-    def reblog(self, *args, **kwargs):
-        """ See resteem() """
-        self.resteem(*args, **kwargs)
-
     def update_account_profile(self, profile, account=None):
         """ Update an account's meta data (json_meta)
 
@@ -1454,7 +1296,7 @@ class Steem(object):
         if not account:
             raise ValueError("You need to provide an account")
         account = Account(account, steem_instance=self)
-        op = operations.Account_update(
+        op = operations.AccountUpdate(
             **{"account": account["name"],
                "memo_key": account["memo_key"],
                "json_metadata": profile}
@@ -1488,8 +1330,8 @@ class Steem(object):
             raise ValueError("You need to provide an account")
         account = Account(account, steem_instance=self)
         author, permlink = resolveIdentifier(identifier)
-        default_max_payout = "1000000.000 %s" % self.symbol("SBD")
-        op = operations.Comment_options(
+        default_max_payout = "1000000.000 SBD"
+        op = operations.CommentOptions(
             **{
                 "author": author,
                 "permlink": permlink,

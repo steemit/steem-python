@@ -48,41 +48,7 @@ class DataDir(object):
 
     def __init__(self):
         #: Storage
-        self.check_legacy_v1()
-        self.check_legacy_v2()
         self.mkdir_p()
-
-    def check_legacy_v1(self):
-        """ Look for legacy wallet and move to new directory
-        """
-        appname = "piston"
-        appauthor = "Fabian Schuh"
-        storageDatabase = "piston.sqlite"
-        data_dir = user_data_dir(appname, appauthor)
-        sqlDataBaseFile = os.path.join(data_dir, storageDatabase)
-
-        if os.path.isdir(data_dir) and not os.path.isdir(self.data_dir):
-            # Move whole directory
-            shutil.copytree(data_dir, self.data_dir)
-            # Copy piston.sql to steem.sql (no deletion!)
-            shutil.copy(sqlDataBaseFile, self.sqlDataBaseFile)
-            log.info("Your settings have been moved to {}".format(self.data_dir))
-
-    def check_legacy_v2(self):
-        """ Look for legacy wallet and move to new directory
-        """
-        appname = "steem"
-        appauthor = "Fabian Schuh"
-        storageDatabase = "steem.sqlite"
-        data_dir = user_data_dir(appname, appauthor)
-        sqlDataBaseFile = os.path.join(data_dir, storageDatabase)
-
-        if os.path.isdir(data_dir) and not os.path.isdir(self.data_dir):
-            # Move whole directory
-            shutil.copytree(data_dir, self.data_dir)
-            # Copy piston.sql to steem.sql (no deletion!)
-            shutil.copy(sqlDataBaseFile, self.sqlDataBaseFile)
-            log.info("Your settings have been moved to {}".format(self.data_dir))
 
     def mkdir_p(self):
         """ Ensure that the directory in which the data is stored
@@ -256,14 +222,7 @@ class Configuration(DataDir):
         "format": "markdown",
         "limit": 10,
         "list_sorting": "trending",
-        "node": "wss://this.piston.rocks",
         "post_category": "steem",
-        "rpcpassword": "",
-        "rpcuser": "",
-        "web:port": 5054,
-        "web:debug": False,
-        "web:host": "127.0.0.1",
-        "web:nobroadcast": False,
         "prefix": "STM"
     }
 

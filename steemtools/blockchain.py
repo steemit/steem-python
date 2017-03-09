@@ -3,7 +3,7 @@ import time
 from piston.instance import shared_steem_instance
 
 from .block import Block
-from .utils import parse_time
+from steem.utils import parse_time
 
 virtual_operations = [
     "fill_convert_request",

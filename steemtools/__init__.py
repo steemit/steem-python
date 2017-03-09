@@ -1,4 +1,4 @@
-from .steem import Steem
+from .commit import Commit
 
 __all__ = [
     "account",
@@ -15,7 +15,7 @@ __all__ = [
     "post",
     "profile",
     "savings",
-    "steem",
+    "commit",
     "storage",
     "transactionbuilder",
     "utils",

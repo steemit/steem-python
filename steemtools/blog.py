@@ -1,7 +1,7 @@
 from .account import Account
 from .post import Post
 from .instance import shared_steem_instance
-from .utils import is_comment
+from steem.utils import is_comment
 
 
 class Blog(list):

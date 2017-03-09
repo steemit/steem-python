@@ -15,8 +15,8 @@ from .utils import (
     resolveIdentifier,
     constructIdentifier,
     remove_from_dict,
-    parse_time,
 )
+from steem.utils import parse_time, remove_from_dict
 
 
 class Post(dict):

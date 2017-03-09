@@ -1,7 +1,7 @@
 from piston.instance import shared_steem_instance
 
 from steembase.exceptions import BlockDoesNotExistsException
-from .utils import parse_time
+from steem.utils import parse_time
 
 
 class Block(dict):

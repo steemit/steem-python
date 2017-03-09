@@ -1,10 +1,10 @@
 import logging
 
 from .instance import shared_steem_instance
-from pistonbase import transactions, operations
-from pistonbase.account import PrivateKey
-from pistonbase.operations import Operation
-from pistonbase.signedtransactions import Signed_Transaction
+from steembase import transactions, operations
+from steembase.account import PrivateKey
+from steembase.operations import Operation
+from steembase.transactions import SignedTransaction
 from steembase.exceptions import (
     InsufficientAuthorityError,
     MissingKeyError,
@@ -91,7 +91,7 @@ class TransactionBuilder(dict):
             operations.default_prefix = self["blockchain"]["prefix"]
 
         try:
-            signedtx = Signed_Transaction(**self.json())
+            signedtx = SignedTransaction(**self.json())
         except:
             raise ValueError("Invalid TransactionBuilder Format")
 

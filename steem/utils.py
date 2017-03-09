@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 import w3lib.url
 import langdetect
 from langdetect import DetectorFactory
+from datetime import datetime
 
 import sbds.sbds_logging
 
@@ -186,3 +187,50 @@ def detect_language(text):
     except langdetect.lang_detect_exception.LangDetectException as e:
         logger.warning(e)
         return None
+
+
+def is_comment(item):
+    """Quick check whether an item is a comment (reply) to another post.
+    The item can be a Post object or just a raw comment object from the blockchain.
+    """
+    return item['permlink'][:3] == "re-" and item['parent_author']
+
+
+def time_elapsed(posting_time):
+    """Takes a string time from a post or blockchain event, and returns a time delta from now.
+    """
+    if type(posting_time) == str:
+        posting_time = parse_time(posting_time)
+    return datetime.utcnow() - posting_time
+
+
+def parse_time(block_time):
+    """Take a string representation of time from the blockchain, and parse it into datetime object.
+    """
+    return datetime.strptime(block_time, '%Y-%m-%dT%H:%M:%S')
+
+
+def time_diff(time1, time2):
+    return parse_time(time1) - parse_time(time2)
+
+
+def keep_in_dict(obj, allowed_keys=list()):
+    """ Prune a class or dictionary of all but allowed keys.
+    """
+    if type(obj) == dict:
+        items = obj.items()
+    else:
+        items = obj.__dict__.items()
+
+    return {k: v for k, v in items if k in allowed_keys}
+
+
+def remove_from_dict(obj, remove_keys=list()):
+    """ Prune a class or dictionary of specified keys.
+    """
+    if type(obj) == dict:
+        items = obj.items()
+    else:
+        items = obj.__dict__.items()
+
+    return {k: v for k, v in items if k not in remove_keys}
