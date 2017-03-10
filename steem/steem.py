@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+from typing import List, Any
 
 from funcy.seqs import first
 from steembase.chains import known_chains
@@ -46,8 +47,8 @@ class Steem(HttpClient):
     def __init__(self, nodes=None, log_level=logging.INFO, **kwargs):
         if not nodes:
             nodes = [
-                'https://steemd.steemitdev.com',
                 'https://steemd.steemit.com',
+                'https://steemd.steemitdev.com',
             ]
 
         # self.commit = Commit(steem=self, **kwargs)
@@ -756,6 +757,33 @@ class Steem(HttpClient):
 
     def set_max_block_age(self, max_block_age: int):
         return self.exec('set_max_block_age', max_block_age, api='network_broadcast_api')
+
+    def get_ticker(self):
+        """ Returns the market ticker for the internal SBD:STEEM market. """
+        return self.exec('get_ticker', api='market_history')
+
+    def get_volume(self):
+        """ Returns the market volume for the past 24 hours. """
+        return self.exec('get_volume', api='market_history')
+
+    # def get_order_book(self, limit: int):
+    #     return self.exec('get_order_book', limit, api='market_history')
+
+    def get_trade_history(self, start: PointInTime, end: PointInTime, limit: int):
+        """ Returns the trade history for the internal SBD:STEEM market. """
+        return self.exec('get_trade_history', start, end, limit, api='market_history')
+
+    def get_recent_trades(self, limit: int) -> List[Any]:
+        """ Returns the N most recent trades for the internal SBD:STEEM market. """
+        return self.exec('get_recent_trades', limit, api='market_history')
+
+    def get_market_history(self, bucket_seconds: int, start: PointInTime, end: PointInTime):
+        """ Returns the market history for the internal SBD:STEEM market. """
+        return self.exec('get_market_history', bucket_seconds, start, end, api='market_history')
+
+    def get_market_history_buckets(self):
+        """ Returns the bucket seconds being tracked by the plugin. """
+        return self.exec('get_market_history_buckets', api='market_history')
 
 
 if __name__ == '__main__':

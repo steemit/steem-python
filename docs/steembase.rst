@@ -7,7 +7,7 @@ This module should only be used by library developers or people with deep domain
 **Warning:**
 Not all methods are documented. Please see source.
 
-.. image:: http://i.imgur.com/A9urMG9.png
+.. image:: https://i.imgur.com/A9urMG9.png
 
 Account
 =======
