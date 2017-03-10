@@ -3,12 +3,11 @@ import struct
 from collections import OrderedDict
 
 from .account import PublicKey
-from .objects import isArgsThisClass, GrapheneObject
 from .operationids import operations
 from .types import (
     Int16, Uint16, Uint32, Uint64,
     String, Bytes, Array, PointInTime, Bool,
-    Optional, Map, Id)
+    Optional, Map, Id, JsonObj)
 
 default_prefix = "STM"
 
@@ -68,6 +67,58 @@ class Operation:
             self.getOperationNameForId(self.opId),
             self.op.json()
         ])
+
+
+class GrapheneObject(object):
+    """ Core abstraction class
+
+        This class is used for any JSON reflected object in Graphene.
+
+        * ``instance.__json__()``: encodes data into json format
+        * ``bytes(instance)``: encodes data into wire format
+        * ``str(instances)``: dumps json object as string
+
+    """
+
+    def __init__(self, data=None):
+        self.data = data
+
+    def __bytes__(self):
+        if self.data is None:
+            return bytes()
+        b = b""
+        for name, value in self.data.items():
+            if isinstance(value, str):
+                b += bytes(value, 'utf-8')
+            else:
+                b += bytes(value)
+        return b
+
+    def __json__(self):
+        if self.data is None:
+            return {}
+        d = {}  # JSON output is *not* ordered
+        for name, value in self.data.items():
+            if isinstance(value, Optional) and value.isempty():
+                continue
+
+            if isinstance(value, String):
+                d.update({name: str(value)})
+            else:
+                try:
+                    d.update({name: JsonObj(value)})
+                except:
+                    d.update({name: value.__str__()})
+        return d
+
+    def __str__(self):
+        return json.dumps(self.__json__())
+
+    def toJson(self):
+        return self.__json__()
+
+    def json(self):
+        return self.__json__()
 
 
 class Permission(GrapheneObject):
@@ -531,3 +582,7 @@ class CommentOptions(GrapheneObject):
                 ('allow_curation_rewards', Bool(bool(kwargs["allow_curation_rewards"]))),
                 ('extensions', Array([])),
             ]))
+
+
+def isArgsThisClass(self, args):
+    return len(args) == 1 and type(args[0]).__name__ == type(self).__name__

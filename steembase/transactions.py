@@ -10,8 +10,7 @@ import ecdsa
 
 from .account import PrivateKey, PublicKey
 from .chains import known_chains
-from .objects import isArgsThisClass, GrapheneObject
-from .operations import Operation
+from .operations import Operation, GrapheneObject, isArgsThisClass
 from .types import (
     Array,
     Set,

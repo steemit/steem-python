@@ -3,7 +3,6 @@ import struct
 import time
 from binascii import hexlify, unhexlify
 from calendar import timegm
-from pprint import pprint
 
 from .objecttypes import object_type
 
