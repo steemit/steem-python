@@ -4,16 +4,14 @@ from typing import List, Any
 
 from funcy.seqs import first
 from steembase.chains import known_chains
+from steembase.http_client import HttpClient
 from steembase.transactions import SignedTransaction
 from steembase.types import PointInTime
 
 from .block import Block
 from .blockchain import Blockchain
 from .helpers import resolveIdentifier
-from .http_client import HttpClient
 from .post import Post
-
-# from .steemd import api_methods
 
 logger = logging.getLogger(__name__)
 
