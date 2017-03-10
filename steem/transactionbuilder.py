@@ -1,6 +1,7 @@
 import logging
+from pprint import pprint
 
-from steembase import operations
+from steem.wallet import Wallet
 from steembase.account import PrivateKey
 from steembase.exceptions import (
     InsufficientAuthorityError,
@@ -21,14 +22,17 @@ class TransactionBuilder(dict):
         operations and signers.
     """
 
-    def __init__(self, tx={}, steem_instance=None):
+    def __init__(self, tx=None, steem_instance=None, no_broadcast=False, expiration=30):
         self.steem = steem_instance or shared_steem_instance()
+        self.no_broadcast = no_broadcast
+        self.expiration = expiration
+        self.wallet = Wallet(self.steem)
 
         self.op = []
         self.wifs = []
-        if not isinstance(tx, dict):
+        if tx and not isinstance(tx, dict):
             raise ValueError("Invalid TransactionBuilder Format")
-        super(TransactionBuilder, self).__init__(tx)
+        super(TransactionBuilder, self).__init__(tx or {})
 
     def appendOps(self, ops):
         if isinstance(ops, list):
@@ -41,11 +45,11 @@ class TransactionBuilder(dict):
     def appendSigner(self, account, permission):
         account = Account(account, steem_instance=self.steem)
         if permission == "active":
-            wif = self.steem.wallet.getActiveKeyForAccount(account["name"])
+            wif = self.wallet.getActiveKeyForAccount(account["name"])
         elif permission == "posting":
-            wif = self.steem.wallet.getPostingKeyForAccount(account["name"])
+            wif = self.wallet.getPostingKeyForAccount(account["name"])
         elif permission == "owner":
-            wif = self.steem.wallet.getOwnerKeyForAccount(account["name"])
+            wif = self.wallet.getOwnerKeyForAccount(account["name"])
         else:
             raise ValueError("Invalid permission")
         self.wifs.append(wif)
@@ -63,8 +67,8 @@ class TransactionBuilder(dict):
             ops = [Operation(o) for o in self.op]
         else:
             ops = [Operation(self.op)]
-        expiration = fmt_time_from_now(self.steem.expiration)
-        ref_block_num, ref_block_prefix = get_block_params(self.steem.rpc)
+        expiration = fmt_time_from_now(self.expiration)
+        ref_block_num, ref_block_prefix = get_block_params(self.steem)
         tx = SignedTransaction(
             ref_block_num=ref_block_num,
             ref_block_prefix=ref_block_prefix,
@@ -82,14 +86,6 @@ class TransactionBuilder(dict):
                 from the wallet as defined in "missing_signatures" key
                 of the transactions.
         """
-
-        # We need to set the default prefix, otherwise pubkeys are
-        # presented wrongly!
-        if self.steem.rpc:
-            operations.default_prefix = self.steem.rpc.chain_params["prefix"]
-        elif "blockchain" in self:
-            operations.default_prefix = self["blockchain"]["prefix"]
-
         try:
             signedtx = SignedTransaction(**self.json())
         except:
@@ -98,7 +94,7 @@ class TransactionBuilder(dict):
         if not any(self.wifs):
             raise MissingKeyError
 
-        signedtx.sign(self.wifs, chain=self.steem.rpc.chain_params)
+        signedtx.sign(self.wifs, chain=self.steem.chain_params)
         self["signatures"].extend(signedtx.json().get("signatures"))
 
     def broadcast(self):
@@ -106,18 +102,18 @@ class TransactionBuilder(dict):
 
             :param tx tx: Signed transaction to broadcast
         """
-        if self.steem.nobroadcast:
+        if self.no_broadcast:
             log.warning("Not broadcasting anything!")
             return self
 
         try:
-            if not self.steem.rpc.verify_authority(self.json()):
+            if not self.steem.verify_authority(self.json()):
                 raise InsufficientAuthorityError
         except Exception as e:
             raise e
 
         try:
-            self.steem.rpc.broadcast_transaction(self.json(), api="network_broadcast")
+            self.steem.broadcast_transaction(self.json())
         except Exception as e:
             raise e
 
@@ -152,7 +148,7 @@ class TransactionBuilder(dict):
             self["missing_signatures"].extend(
                 [x[0] for x in account_auth_account[permission]["key_auths"]]
             )
-        self["blockchain"] = self.steem.rpc.chain_params
+        self["blockchain"] = self.steem.chain_params
 
     def json(self):
         return dict(self)
@@ -160,6 +156,6 @@ class TransactionBuilder(dict):
     def appendMissingSignatures(self, wifs):
         missing_signatures = self.get("missing_signatures", [])
         for pub in missing_signatures:
-            wif = self.steem.wallet.getPrivateKeyForPublicKey(pub)
+            wif = self.wallet.getPrivateKeyForPublicKey(pub)
             if wif:
                 self.appendWif(wif)

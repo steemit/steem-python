@@ -1,18 +1,18 @@
 # coding=utf-8
 import logging
-from functools import partial
 
 from funcy.seqs import first
-from steem.block import Block
-from steem.blockchain import Blockchain
-from steem.commit import Commit
-from steem.helpers import resolveIdentifier
-from steem.post import Post
+from steembase.chains import known_chains
 from steembase.transactions import SignedTransaction
 from steembase.types import PointInTime
 
+from .block import Block
+from .blockchain import Blockchain
+from .helpers import resolveIdentifier
 from .http_client import HttpClient
-from .steemd import api_methods
+from .post import Post
+
+# from .steemd import api_methods
 
 logger = logging.getLogger(__name__)
 
@@ -46,28 +46,40 @@ class Steem(HttpClient):
     def __init__(self, nodes=None, log_level=logging.INFO, **kwargs):
         if not nodes:
             nodes = [
-                'https://steemd.steemit.com',
                 'https://steemd.steemitdev.com',
+                'https://steemd.steemit.com',
             ]
 
-        self.commit = Commit(steem=self, **kwargs)
+        # self.commit = Commit(steem=self, **kwargs)
+        # self.wallet = Wallet(rpc=self, **kwargs)
 
         # auto-complete missing RPC API methods
         # self._apply_missing_methods()
 
         super(Steem, self).__init__(nodes, log_level, **kwargs)
 
-    def __getattr__(self, method_name):
-        """ If method does not exist, lets try calling steemd with it. """
-        logger.warning('Calling an unknown method "%s"' % method_name)
-        return partial(self.exec, method_name)
+    # def __getattr__(self, method_name):
+    #     """ If method does not exist, lets try calling steemd with it. """
+    #     logger.warning('Calling an unknown method "%s"' % method_name)
+    #     return partial(self.exec, method_name)
+    #
+    # def _apply_missing_methods(self):
+    #     """ Binds known steemd api methods to this class for auto-complete purposes. """
+    #     for method_name in api_methods['api'].keys():
+    #         if method_name not in dir(self):
+    #             to_call = partial(self.exec, method_name)
+    #             setattr(self, method_name, to_call)
 
-    def _apply_missing_methods(self):
-        """ Binds known steemd api methods to this class for auto-complete purposes. """
-        for method_name in api_methods['api'].keys():
-            if method_name not in dir(self):
-                to_call = partial(self.exec, method_name)
-                setattr(self, method_name, to_call)
+    @property
+    def chain_params(self):
+        """ Identify the connected network. This call returns a
+            dictionary with keys chain_id, prefix, and other chain
+            specific settings
+        """
+        props = self.get_dynamic_global_properties()
+        chain = props["current_supply"].split(" ")[1]
+        assert chain in known_chains, "The chain you are connecting to is not supported"
+        return known_chains.get(chain)
 
     def get_replies(self, author, skip_own=True):
         """ Get replies for an author
@@ -154,8 +166,8 @@ class Steem(HttpClient):
             To be used in a for loop that returns an instance of `Post()`.
         """
         for c in Blockchain(
-            mode=kwargs.get("mode", "irreversible"),
-            steem_instance=self,
+                mode=kwargs.get("mode", "irreversible"),
+                steem_instance=self,
         ).stream("comment", *args, **kwargs):
             yield Post(c, steem_instance=self)
 

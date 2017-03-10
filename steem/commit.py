@@ -3,6 +3,7 @@ import logging
 import random
 import re
 from datetime import datetime, timedelta
+from pprint import pprint
 
 from steembase import memo
 from steembase import operations
@@ -19,9 +20,8 @@ from .helpers import (
     derivePermlink,
     formatTimeString
 )
-from .post import (
-    Post
-)
+from .instance import shared_steem_instance
+from .post import Post
 from .storage import configStorage as config
 from .transactionbuilder import TransactionBuilder
 
@@ -61,8 +61,8 @@ class Commit(object):
 
     """
 
-    def __init__(self, steem, offline=False, debug=False, **kwargs):
-        self.rpc = steem
+    def __init__(self, steem=None, offline=False, debug=False, **kwargs):
+        self.rpc = steem or shared_steem_instance()
         self.debug = debug
         self.offline = offline
         self.unsigned = kwargs.get("unsigned", False)
@@ -1217,3 +1217,8 @@ class Commit(object):
             }
         )
         return self.finalizeOp(op, account["name"], "posting")
+
+
+if __name__ == "__main__":
+    c = Commit()
+    c.transfer(to='fnait', amount='0.001', asset='STEEM', memo='libtest', account='furion')
