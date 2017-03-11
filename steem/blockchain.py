@@ -1,6 +1,6 @@
 import time
 
-from .instance import shared_steem_instance
+from .instance import shared_steemd_instance
 
 from .block import Block
 from steem.utils import parse_time
@@ -25,13 +25,13 @@ class Blockchain(object):
     """ This class allows to access the blockchain and read data
         from it
 
-        :param Steem steem_instance: Steem() instance to use when accesing a RPC
+        :param Steemd steemd_instance: Steemd() instance to use when accessing a RPC
         :param str mode: (default) Irreversible block
                 (``irreversible``) or actual head block (``head``)
 
     """
-    def __init__(self, steem_instance=None, mode="irreversible"):
-        self.steem = steem_instance or shared_steem_instance()
+    def __init__(self, steemd_instance=None, mode="irreversible"):
+        self.steemd = steemd_instance or shared_steemd_instance()
 
         if mode == "irreversible":
             self.mode = 'last_irreversible_block_num'
@@ -43,19 +43,19 @@ class Blockchain(object):
     def info(self):
         """ This call returns the *dynamic global properties*
         """
-        return self.steem.rpc.get_dynamic_global_properties()
+        return self.steemd.rpc.get_dynamic_global_properties()
 
     def chain_parameters(self):
         return self.config()["parameters"]
 
     def get_network(self):
-        return self.steem.rpc.get_network()
+        return self.steemd.rpc.get_network()
 
     def get_chain_properties(self):
-        return self.steem.rpc.get_chain_properties()
+        return self.steemd.rpc.get_chain_properties()
 
     def config(self):
-        return self.steem.rpc.get_config()
+        return self.steemd.rpc.get_config()
 
     def get_current_block_num(self):
         """ This call returns the current block
@@ -65,7 +65,7 @@ class Blockchain(object):
     def get_current_block(self):
         """ This call returns the current block
         """
-        return Block(self.get_current_block_num(), steem_instance=self.steem)
+        return Block(self.get_current_block_num(), steemd_instance=self.steemd)
 
     def block_time(self, block_num):
         """ Returns a datetime of the block with the given block
@@ -73,7 +73,7 @@ class Blockchain(object):
 
             :param int block_num: Block number
         """
-        return Block(block_num, steem_instance=self.steem).time()
+        return Block(block_num, steemd_instance=self.steemd).time()
 
     def block_timestamp(self, block_num):
         """ Returns the timestamp of the block with the given block
@@ -81,7 +81,7 @@ class Blockchain(object):
 
             :param int block_num: Block number
         """
-        return int(Block(block_num, steem_instance=self.steem).time().timestamp())
+        return int(Block(block_num, steemd_instance=self.steemd).time().timestamp())
 
     def blocks(self, start=None, stop=None):
         """ Yields blocks starting from ``start``.
@@ -108,7 +108,7 @@ class Blockchain(object):
             # Blocks from start until head block
             for blocknum in range(start, head_block + 1):
                 # Get full block
-                block = self.steem.rpc.get_block(blocknum)
+                block = self.steemd.rpc.get_block(blocknum)
                 if not block:
                     start = blocknum
                     retry = True
@@ -170,7 +170,7 @@ class Blockchain(object):
             # Blocks from start until head block
             for blocknum in range(start, head_block + 1):
                 # Get full block
-                yield from self.steem.rpc.get_ops_in_block(blocknum, only_virtual_ops)
+                yield from self.steemd.rpc.get_ops_in_block(blocknum, only_virtual_ops)
 
             # Set new start
             start = head_block + 1
@@ -272,7 +272,7 @@ class Blockchain(object):
         """
         lastname = start
         while True:
-            names = self.steem.rpc.lookup_accounts(lastname, steps)
+            names = self.steemd.rpc.lookup_accounts(lastname, steps)
             for name in names:
                 yield name
                 if name == stop:

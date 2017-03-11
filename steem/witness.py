@@ -1,4 +1,4 @@
-from .instance import shared_steem_instance
+from .instance import shared_steemd_instance
 
 from steembase.exceptions import WitnessDoesNotExistsException
 
@@ -7,18 +7,17 @@ class Witness(dict):
     """ Read data about a witness in the chain
 
         :param str witness: Name of the witness
-        :param Steem steem_instance: Steem() instance to use when accesing a RPC
-        :param bool lazy: Use lazy loading
+        :param Steemd steemd_instance: Steemd() instance to use when accessing a RPC
 
     """
-    def __init__(self, witness, steem_instance=None):
-        self.steem = steem_instance or shared_steem_instance()
+    def __init__(self, witness, steemd_instance=None):
+        self.steemd = steemd_instance or shared_steemd_instance()
         self.witness_name = witness
         self.witness = None
         self.refresh()
 
     def refresh(self):
-        witness = self.steem.get_witness_by_account(self.witness_name)
+        witness = self.steemd.get_witness_by_account(self.witness_name)
         if not witness:
             raise WitnessDoesNotExistsException
         super(Witness, self).__init__(witness)

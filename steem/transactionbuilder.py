@@ -11,7 +11,7 @@ from steembase.operations import Operation
 from steembase.transactions import SignedTransaction, fmt_time_from_now, get_block_params
 
 from .account import Account
-from .instance import shared_steem_instance
+from .instance import shared_steemd_instance
 
 log = logging.getLogger(__name__)
 
@@ -21,11 +21,11 @@ class TransactionBuilder(dict):
         operations and signers.
     """
 
-    def __init__(self, tx=None, steem_instance=None, no_broadcast=False, expiration=30):
-        self.steem = steem_instance or shared_steem_instance()
+    def __init__(self, tx=None, steemd_instance=None, no_broadcast=False, expiration=30):
+        self.steemd = steemd_instance or shared_steemd_instance()
         self.no_broadcast = no_broadcast
         self.expiration = expiration
-        self.wallet = Wallet(self.steem)
+        self.wallet = Wallet(self.steemd)
 
         self.op = []
         self.wifs = []
@@ -42,7 +42,7 @@ class TransactionBuilder(dict):
         self.constructTx()
 
     def appendSigner(self, account, permission):
-        account = Account(account, steem_instance=self.steem)
+        account = Account(account, steemd_instance=self.steemd)
         if permission == "active":
             wif = self.wallet.getActiveKeyForAccount(account["name"])
         elif permission == "posting":
@@ -67,7 +67,7 @@ class TransactionBuilder(dict):
         else:
             ops = [Operation(self.op)]
         expiration = fmt_time_from_now(self.expiration)
-        ref_block_num, ref_block_prefix = get_block_params(self.steem)
+        ref_block_num, ref_block_prefix = get_block_params(self.steemd)
         tx = SignedTransaction(
             ref_block_num=ref_block_num,
             ref_block_prefix=ref_block_prefix,
@@ -93,7 +93,7 @@ class TransactionBuilder(dict):
         if not any(self.wifs):
             raise MissingKeyError
 
-        signedtx.sign(self.wifs, chain=self.steem.chain_params)
+        signedtx.sign(self.wifs, chain=self.steemd.chain_params)
         self["signatures"].extend(signedtx.json().get("signatures"))
 
     def broadcast(self):
@@ -106,13 +106,13 @@ class TransactionBuilder(dict):
             return self
 
         try:
-            if not self.steem.verify_authority(self.json()):
+            if not self.steemd.verify_authority(self.json()):
                 raise InsufficientAuthorityError
         except Exception as e:
             raise e
 
         try:
-            self.steem.broadcast_transaction(self.json())
+            self.steemd.broadcast_transaction(self.json())
         except Exception as e:
             raise e
 
@@ -123,7 +123,7 @@ class TransactionBuilder(dict):
             unsigned/partial transaction in order to simplify later
             signing (e.g. for multisig or coldstorage)
         """
-        accountObj = Account(account, steem_instance=self.steem)
+        accountObj = Account(account, steemd_instance=self.steemd)
         authority = accountObj[permission]
         # We add a required_authorities to be able to identify
         # how to sign later. This is an array, because we
@@ -132,7 +132,7 @@ class TransactionBuilder(dict):
             account: authority
         }})
         for account_auth in authority["account_auths"]:
-            account_auth_account = Account(account_auth[0], steem_instance=self.steem)
+            account_auth_account = Account(account_auth[0], steemd_instance=self.steemd)
             self["required_authorities"].update({
                 account_auth[0]: account_auth_account.get(permission)
             })
@@ -143,11 +143,11 @@ class TransactionBuilder(dict):
             ]
         # Add one recursion of keys from account_auths:
         for account_auth in authority["account_auths"]:
-            account_auth_account = Account(account_auth[0], steem_instance=self.steem)
+            account_auth_account = Account(account_auth[0], steemd_instance=self.steemd)
             self["missing_signatures"].extend(
                 [x[0] for x in account_auth_account[permission]["key_auths"]]
             )
-        self["blockchain"] = self.steem.chain_params
+        self["blockchain"] = self.steemd.chain_params
 
     def json(self):
         return dict(self)

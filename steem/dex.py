@@ -2,7 +2,7 @@ import random
 
 from steembase import transactions, operations
 
-from .instance import shared_steem_instance
+from .instance import shared_steemd_instance
 from .storage import configStorage as config
 
 
@@ -10,14 +10,13 @@ class Dex(object):
     """ This class allows to access calls specific for the internal
         exchange of STEEM.
 
-        :param Steem steem_instance: Steem() instance to use when accesing a RPC
+        :param Steemd steemd_instance: Steemd() instance to use when accessing a RPC
 
     """
-    steem = None
     assets = ["STEEM", "SBD"]
 
-    def __init__(self, steem_instance=None):
-        self.steem = steem_instance or shared_steem_instance()
+    def __init__(self, steemd_instance=None):
+        self.steemd = steemd_instance or shared_steemd_instance()
 
     def _get_asset(self, symbol):
         """ Return the properties of the assets tradeable on the
@@ -79,7 +78,7 @@ class Dex(object):
 
         """
         ticker = {}
-        t = self.steem.get_ticker()
+        t = self.steemd.get_ticker()
         ticker = {'highest_bid': float(t['highest_bid']),
                   'latest': float(t["latest"]),
                   'lowest_ask': float(t["lowest_ask"]),
@@ -98,7 +97,7 @@ class Dex(object):
                 {'sbd_volume': 108329.611, 'steem_volume': 355094.043}
 
         """
-        v = self.steem.get_volume()
+        v = self.steemd.get_volume()
         return {'sbd_volume': v["sbd_volume"],
                 'steem_volume': v["steem_volume"]}
 
@@ -128,7 +127,7 @@ class Dex(object):
                            'sbd': 333902,
                            'steem': 1030568}]},
         """
-        orders = self.steem.get_order_book(limit, )
+        orders = self.steemd.get_order_book(limit, )
         r = {"asks": [], "bids": []}
         for side in ["bids", "asks"]:
             for o in orders[side]:
@@ -144,7 +143,7 @@ class Dex(object):
 
             :param str account: (optional) the source account for the transfer if not ``default_account``
         """
-        return self.steem.get_balances(account)
+        return self.steemd.get_balances(account)
 
     def returnOpenOrders(self, account=None):
         """ Return open Orders of the account
@@ -157,7 +156,7 @@ class Dex(object):
         if not account:
             raise ValueError("You need to provide an account")
 
-        orders = self.steem.get_open_orders(account, limit=1000)
+        orders = self.steemd.get_open_orders(account, limit=1000)
         return orders
 
     def returnTradeHistory(self, time=1 * 60 * 60, limit=100):
@@ -167,14 +166,14 @@ class Dex(object):
             :param int limit: amount of trades to show (<100) (default: 100)
         """
         assert limit <= 100, "'limit' has to be smaller than 100"
-        return self.steem.get_trade_history(
+        return self.steemd.get_trade_history(
             transactions.fmt_time_from_now(-time),
             transactions.fmt_time_from_now(),
             limit,
         )
 
     def returnMarketHistoryBuckets(self):
-        return self.steem.get_market_history_buckets()
+        return self.steemd.get_market_history_buckets()
 
     def returnMarketHistory(
             self,
@@ -206,7 +205,7 @@ class Dex(object):
                   'seconds': 300,
                   'steem_volume': 30088443},
         """
-        return self.steem.get_market_history(
+        return self.steemd.get_market_history(
             bucket_seconds,
             transactions.fmt_time_from_now(-start_age - stop_age),
             transactions.fmt_time_from_now(-stop_age),
@@ -257,7 +256,7 @@ class Dex(object):
             "fill_or_kill": killfill,
             "expiration": transactions.fmt_time_from_now(expiration)
         })
-        return self.steem.finalizeOp(op, account, "active")
+        return self.steemd.finalizeOp(op, account, "active")
 
     def sell(self,
              amount,
@@ -303,7 +302,7 @@ class Dex(object):
             "fill_or_kill": killfill,
             "expiration": transactions.fmt_time_from_now(expiration)
         })
-        return self.steem.finalizeOp(op, account, "active")
+        return self.steemd.finalizeOp(op, account, "active")
 
     def cancel(self, orderid, account=None):
         """ Cancels an order you have placed in a given market.
@@ -321,7 +320,7 @@ class Dex(object):
             "owner": account,
             "orderid": orderid,
         })
-        return self.steem.finalizeOp(op, account, "active")
+        return self.steemd.finalizeOp(op, account, "active")
 
     def get_lowest_ask(self):
         """ Return the lowest ask.
@@ -362,4 +361,4 @@ class Dex(object):
     def transfer(self, *args, **kwargs):
         """ Dummy to redirect to steem.transfer()
         """
-        return self.steem.transfer(*args, **kwargs)
+        return self.steemd.transfer(*args, **kwargs)

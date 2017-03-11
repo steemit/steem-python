@@ -1,5 +1,5 @@
 from .account import Account
-from .instance import shared_steem_instance
+from .instance import shared_steemd_instance
 from .post import Post
 from .utils import is_comment
 
@@ -8,26 +8,26 @@ class Blog(list):
     """ Obtain a list of blog posts of an account
 
         :param str account_name: Name of the account
-        :param Steem steem_instance: Steem() instance to use when accesing a RPC
+        :param Steemd steemd_instance: Steemd() instance to use when accessing a RPC
 
     """
 
-    def __init__(self, account_name, steem_instance=None):
-        self.steem = steem_instance or shared_steem_instance()
+    def __init__(self, account_name, steemd_instance=None):
+        self.steemd = steemd_instance or shared_steemd_instance()
         self.name = account_name
         self.refresh()
 
     def refresh(self):
-        state = self.steem.rpc.get_state("/@%s/blog" % self.name)
+        state = self.steemd.rpc.get_state("/@%s/blog" % self.name)
         posts = state["accounts"].get(self.name, {}).get("blog", [])
         r = []
         for p in posts:
             post = state["content"][p]
-            r.append(Post(post, steem_instance=self.steem))
+            r.append(Post(post, steemd_instance=self.steemd))
         super(Blog, self).__init__(r)
 
     def all(self):
-        self.current_index = Account(self.name, steem_instance=self.steem).virtual_op_count()
+        self.current_index = Account(self.name, steemd_instance=self.steemd).virtual_op_count()
 
         # prevent duplicates
         self.seen_items = set()
@@ -43,7 +43,7 @@ class Blog(list):
                 limit = 1000 - self.current_index
                 self.current_index = 1000
 
-            h = self.steem.rpc.get_account_history(self.name, self.current_index, limit)
+            h = self.steemd.rpc.get_account_history(self.name, self.current_index, limit)
             if not h:
                 raise StopIteration
 
@@ -67,4 +67,4 @@ class Blog(list):
                     hist_uniq.append(item)
 
             for p in hist_uniq:
-                yield Post(p, steem_instance=self.steem)
+                yield Post(p, steemd_instance=self.steemd)

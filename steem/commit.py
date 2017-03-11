@@ -19,7 +19,7 @@ from .helpers import (
     derivePermlink,
     formatTimeString
 )
-from .instance import shared_steem_instance
+from .instance import shared_steemd_instance
 from .post import Post
 from .storage import configStorage as config
 from .transactionbuilder import TransactionBuilder
@@ -36,7 +36,7 @@ class Commit(object):
         This class contains helper methods to construct, sign and broadcast common transactions, such as posting,
         voting, sending funds, etc.
 
-        :param Steem steem: Steemd node to connect to*
+        :param Steemd steemd: Steemd node to connect to*
         :param bool offline: Do **not** broadcast transactions! *(optional)*
         :param bool debug: Enable Debugging *(optional)*
         :param array,dict,string keys: Predefine the wif keys to shortcut the wallet database
@@ -60,8 +60,8 @@ class Commit(object):
 
     """
 
-    def __init__(self, steem=None, offline=False, debug=False, **kwargs):
-        self.rpc = steem or shared_steem_instance()
+    def __init__(self, steemd_instance=None, offline=False, debug=False, **kwargs):
+        self.steemd = steemd_instance or shared_steemd_instance()
         self.debug = debug
         self.offline = offline
         self.unsigned = kwargs.get("unsigned", False)
@@ -88,7 +88,7 @@ class Commit(object):
                 posting permission. Neither can you use different
                 accounts for different operations!
         """
-        tx = TransactionBuilder(steem_instance=self.rpc)
+        tx = TransactionBuilder(steemd_instance=self.steemd)
         tx.appendOps(ops)
 
         if self.unsigned:
@@ -109,7 +109,7 @@ class Commit(object):
                 from the wallet as defined in "missing_signatures" key
                 of the transactions.
         """
-        tx = TransactionBuilder(tx, steem_instance=self.rpc)
+        tx = TransactionBuilder(tx, steemd_instance=self.steemd)
         tx.appendMissingSignatures(wifs)
         tx.sign()
         return tx.json()
@@ -119,7 +119,7 @@ class Commit(object):
 
             :param tx tx: Signed transaction to broadcast
         """
-        tx = TransactionBuilder(tx, steem_instance=self.rpc)
+        tx = TransactionBuilder(tx, steemd_instance=self.steemd)
         return tx.broadcast()
 
     def reply(self, identifier, body, title="", author="", meta=None):
@@ -156,7 +156,7 @@ class Commit(object):
             :param bool replace: Instead of calculating a *diff*, replace
                                  the post entirely (defaults to ``False``)
         """
-        original_post = Post(identifier, steem_instance=self.rpc)
+        original_post = Post(identifier, steemd_instance=self.steemd)
 
         if replace:
             newbody = body
@@ -434,7 +434,7 @@ class Commit(object):
 
         account = None
         try:
-            account = Account(account_name, steem_instance=self.rpc)
+            account = Account(account_name, steemd_instance=self.steemd)
         except:
             pass
         if account:
@@ -462,19 +462,19 @@ class Commit(object):
                 self.wallet.addPrivateKey(posting_privkey)
                 self.wallet.addPrivateKey(memo_privkey)
         elif (owner_key and posting_key and active_key and memo_key):
-            posting_pubkey = PublicKey(posting_key, prefix=self.rpc.chain_params["prefix"])
-            active_pubkey = PublicKey(active_key, prefix=self.rpc.chain_params["prefix"])
-            owner_pubkey = PublicKey(owner_key, prefix=self.rpc.chain_params["prefix"])
-            memo_pubkey = PublicKey(memo_key, prefix=self.rpc.chain_params["prefix"])
+            posting_pubkey = PublicKey(posting_key, prefix=self.steemd.chain_params["prefix"])
+            active_pubkey = PublicKey(active_key, prefix=self.steemd.chain_params["prefix"])
+            owner_pubkey = PublicKey(owner_key, prefix=self.steemd.chain_params["prefix"])
+            memo_pubkey = PublicKey(memo_key, prefix=self.steemd.chain_params["prefix"])
         else:
             raise ValueError(
                 "Call incomplete! Provide either a password or public keys!"
             )
 
-        owner = format(owner_pubkey, self.rpc.chain_params["prefix"])
-        active = format(active_pubkey, self.rpc.chain_params["prefix"])
-        posting = format(posting_pubkey, self.rpc.chain_params["prefix"])
-        memo = format(memo_pubkey, self.rpc.chain_params["prefix"])
+        owner = format(owner_pubkey, self.steemd.chain_params["prefix"])
+        active = format(active_pubkey, self.steemd.chain_params["prefix"])
+        posting = format(posting_pubkey, self.steemd.chain_params["prefix"])
+        memo = format(memo_pubkey, self.steemd.chain_params["prefix"])
 
         owner_key_authority = [[owner, 1]]
         active_key_authority = [[active, 1]]
@@ -498,7 +498,7 @@ class Commit(object):
         for k in additional_posting_accounts:
             posting_accounts_authority.append([k, 1])
 
-        props = self.rpc.get_chain_properties()
+        props = self.steemd.get_chain_properties()
         fee = props["account_creation_fee"]
         s = {'creator': creator,
              'fee': fee,
@@ -514,7 +514,7 @@ class Commit(object):
              'posting': {'account_auths': posting_accounts_authority,
                          'key_auths': posting_key_authority,
                          'weight_threshold': 1},
-             'prefix': self.rpc.chain_params["prefix"]}
+             'prefix': self.steemd.chain_params["prefix"]}
 
         op = operations.AccountCreate(**s)
 
@@ -542,14 +542,14 @@ class Commit(object):
             memo_wif = self.wallet.getMemoKeyForAccount(account)
             if not memo_wif:
                 raise MissingKeyError("Memo key for %s missing!" % account)
-            to_account = Account(to, steem_instance=self.rpc)
+            to_account = Account(to, steemd_instance=self.steemd)
             nonce = random.getrandbits(64)
             memo = Memo.encode_memo(
                 PrivateKey(memo_wif),
-                PublicKey(to_account["memo_key"], prefix=self.rpc.chain_params["prefix"]),
+                PublicKey(to_account["memo_key"], prefix=self.steemd.chain_params["prefix"]),
                 nonce,
                 memo,
-                prefix=self.rpc.chain_params["prefix"]
+                prefix=self.steemd.chain_params["prefix"]
             )
 
         op = operations.Transfer(
@@ -797,7 +797,7 @@ class Commit(object):
                 "block_signing_key": signing_key,
                 "props": props,
                 "fee": "0.000 STEEM",
-                "prefix": self.rpc.chain_params["prefix"]
+                "prefix": self.steemd.chain_params["prefix"]
             }
         )
         return self.finalizeOp(op, account, "active")
@@ -821,10 +821,10 @@ class Commit(object):
 
             :param str account: Account name to get interest for
         """
-        account = Account(account, steem_instance=self.rpc.rpc)
+        account = Account(account, steemd_instance=self.steemd.rpc)
         last_payment = formatTimeString(account["sbd_last_interest_payment"])
         next_payment = last_payment + timedelta(days=30)
-        interest_rate = self.rpc.get_dynamic_global_properties()["sbd_interest_rate"] / 100  # the result is in percent!
+        interest_rate = self.steemd.get_dynamic_global_properties()["sbd_interest_rate"] / 100  # the result is in percent!
         interest_amount = (interest_rate / 100) * int(
             int(account["sbd_seconds"]) / (60 * 60 * 24 * 356)
         ) * 10 ** -3
@@ -903,7 +903,7 @@ class Commit(object):
             raise ValueError(
                 "Permission needs to be either 'owner', 'posting', or 'active"
             )
-        account = Account(account, steem_instance=self.rpc)
+        account = Account(account, steemd_instance=self.steemd)
         if not weight:
             weight = account[permission]["weight_threshold"]
 
@@ -916,7 +916,7 @@ class Commit(object):
             ])
         except:
             try:
-                foreign_account = Account(foreign, steem_instance=self.rpc)
+                foreign_account = Account(foreign, steemd_instance=self.steemd)
                 authority["account_auths"].append([
                     foreign_account["name"],
                     weight
@@ -934,7 +934,7 @@ class Commit(object):
                permission: authority,
                "memo_key": account["memo_key"],
                "json_metadata": account["json_metadata"],
-               'prefix': self.rpc.chain_params["prefix"]}
+               'prefix': self.steemd.chain_params["prefix"]}
         )
         if permission == "owner":
             return self.finalizeOp(op, account["name"], "owner")
@@ -964,11 +964,11 @@ class Commit(object):
             raise ValueError(
                 "Permission needs to be either 'owner', 'posting', or 'active"
             )
-        account = Account(account, steem_instance=self.rpc)
+        account = Account(account, steemd_instance=self.steemd)
         authority = account[permission]
 
         try:
-            pubkey = PublicKey(foreign, prefix=self.rpc.chain_params["prefix"])
+            pubkey = PublicKey(foreign, prefix=self.steemd.chain_params["prefix"])
             affected_items = list(
                 filter(lambda x: x[0] == str(pubkey),
                        authority["key_auths"]))
@@ -978,7 +978,7 @@ class Commit(object):
             ))
         except:
             try:
-                foreign_account = Account(foreign, steem_instance=self.rpc)
+                foreign_account = Account(foreign, steemd_instance=self.steemd)
                 affected_items = list(
                     filter(lambda x: x[0] == foreign_account["name"],
                            authority["account_auths"]))
@@ -1037,7 +1037,7 @@ class Commit(object):
             raise ValueError("You need to provide an account")
 
         PublicKey(key)  # raises exception if invalid
-        account = Account(account, steem_instance=self.rpc)
+        account = Account(account, steemd_instance=self.steemd)
         op = operations.AccountUpdate(
             **{"account": account["name"],
                "memo_key": key,
@@ -1059,7 +1059,7 @@ class Commit(object):
                 account = config["default_author"]
         if not account:
             raise ValueError("You need to provide an account")
-        account = Account(account, steem_instance=self.rpc)
+        account = Account(account, steemd_instance=self.steemd)
         op = operations.AccountWitnessVote(
             **{"account": account["name"],
                "witness": witness,
@@ -1169,7 +1169,7 @@ class Commit(object):
                 account = config["default_account"]
         if not account:
             raise ValueError("You need to provide an account")
-        account = Account(account, steem_instance=self.rpc)
+        account = Account(account, steemd_instance=self.steemd)
         op = operations.AccountUpdate(
             **{"account": account["name"],
                "memo_key": account["memo_key"],
@@ -1202,7 +1202,7 @@ class Commit(object):
                 account = config["default_account"]
         if not account:
             raise ValueError("You need to provide an account")
-        account = Account(account, steem_instance=self.rpc)
+        account = Account(account, steemd_instance=self.steemd)
         author, permlink = resolveIdentifier(identifier)
         default_max_payout = "1000000.000 SBD"
         op = operations.CommentOptions(

@@ -1,6 +1,7 @@
 import logging
 import os
 
+from steem.instance import shared_steemd_instance
 from steembase import bip38
 from steembase.account import PrivateKey
 from steembase.exceptions import (
@@ -49,12 +50,12 @@ class Wallet:
     keys = {}  # struct with pubkey as key and wif as value
     keyMap = {}  # type:wif pairs to force certain keys
 
-    def __init__(self, rpc, **kwargs):
+    def __init__(self, steemd_instance=None, **kwargs):
         from .storage import configStorage
         self.configStorage = configStorage
 
         # RPC
-        self.rpc = rpc
+        self.steemd = steemd_instance or shared_steemd_instance()
         self.prefix = "STM"
 
         # Compatibility after name change from wif->keys
@@ -257,7 +258,7 @@ class Wallet:
         if "owner" in Wallet.keyMap:
             return Wallet.keyMap.get("owner")
         else:
-            account = self.rpc.get_account(name)
+            account = self.steemd.get_account(name)
             if not account:
                 return
             for authority in account["owner"]["key_auths"]:
@@ -272,7 +273,7 @@ class Wallet:
         if "posting" in Wallet.keyMap:
             return Wallet.keyMap.get("posting")
         else:
-            account = self.rpc.get_account(name)
+            account = self.steemd.get_account(name)
             if not account:
                 return
             for authority in account["posting"]["key_auths"]:
@@ -287,7 +288,7 @@ class Wallet:
         if "memo" in Wallet.keyMap:
             return Wallet.keyMap.get("memo")
         else:
-            account = self.rpc.get_account(name)
+            account = self.steemd.get_account(name)
             if not account:
                 return
             key = self.getPrivateKeyForPublicKey(account["memo_key"])
@@ -301,7 +302,7 @@ class Wallet:
         if "active" in Wallet.keyMap:
             return Wallet.keyMap.get("active")
         else:
-            account = self.rpc.get_account(name)
+            account = self.steemd.get_account(name)
             if not account:
                 return
             for authority in account["active"]["key_auths"]:
@@ -322,7 +323,7 @@ class Wallet:
         # FIXME, this only returns the first associated key.
         # If the key is used by multiple accounts, this
         # will surely lead to undesired behavior
-        names = self.rpc.exec('get_key_references', [pub], api="account_by_key_api")[0]
+        names = self.steemd.exec('get_key_references', [pub], api="account_by_key_api")[0]
         if not names:
             return None
         else:

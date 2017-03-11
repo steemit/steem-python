@@ -8,7 +8,7 @@ from steembase.exceptions import AccountDoesNotExistsException
 
 from .amount import Amount
 from .converter import Converter
-from .instance import shared_steem_instance
+from .instance import shared_steemd_instance
 from .utils import parse_time
 
 
@@ -16,12 +16,12 @@ class Account(dict):
     """ This class allows to easily access Account data
 
         :param str account_name: Name of the account
-        :param Steem steem_instance: Steem() instance to use when accessing a RPC
+        :param Steemd steemd_instance: Steemd() instance to use when accessing a RPC
 
     """
 
-    def __init__(self, account_name, steem_instance=None):
-        self.steem = steem_instance or shared_steem_instance()
+    def __init__(self, account_name, steemd_instance=None):
+        self.steemd = steemd_instance or shared_steemd_instance()
         self.name = account_name
 
         # caches
@@ -30,7 +30,7 @@ class Account(dict):
         self.refresh()
 
     def refresh(self):
-        account = self.steem.get_account(self.name)
+        account = self.steemd.get_account(self.name)
         if not account:
             raise AccountDoesNotExistsException
         super(Account, self).__init__(account)
@@ -44,7 +44,7 @@ class Account(dict):
     @property
     def converter(self):
         if not self._converter:
-            self._converter = Converter(self.steem)
+            self._converter = Converter(self.steemd)
         return self._converter
 
     @property
@@ -99,9 +99,9 @@ class Account(dict):
 
     def _get_followers(self, direction="follower", last_user=""):
         if direction == "follower":
-            followers = self.steem.get_followers(self.name, last_user, "blog", 100)
+            followers = self.steemd.get_followers(self.name, last_user, "blog", 100)
         elif direction == "following":
-            followers = self.steem.get_following(self.name, last_user, "blog", 100)
+            followers = self.steemd.get_following(self.name, last_user, "blog", 100)
         if len(followers) >= 100:
             followers += self._get_followers(direction=direction, last_user=followers[-1][direction])[1:]
         return followers
@@ -136,20 +136,20 @@ class Account(dict):
 
     def virtual_op_count(self):
         try:
-            last_item = self.steem.get_account_history(self.name, -1, 0)[0][0]
+            last_item = self.steemd.get_account_history(self.name, -1, 0)[0][0]
         except IndexError:
             return 0
         else:
             return last_item
 
     def get_account_votes(self):
-        return self.steem.get_account_votes(self.name)
+        return self.steemd.get_account_votes(self.name)
 
     def get_withdraw_routes(self):
-        return self.steem.get_withdraw_routes(self.name, 'all')
+        return self.steemd.get_withdraw_routes(self.name, 'all')
 
     def get_conversion_requests(self):
-        return self.steem.get_conversion_requests(self.name)
+        return self.steemd.get_conversion_requests(self.name)
 
     @staticmethod
     def filter_by_date(items, start_time, end_time=None):
@@ -215,7 +215,7 @@ class Account(dict):
                 limit = batch_size
             else:
                 limit = batch_size - 1
-            history = self.steem.get_account_history(self.name, i, limit)
+            history = self.steemd.get_account_history(self.name, i, limit)
             for item in history:
                 index = item[0]
                 if index >= max_index:
@@ -279,7 +279,7 @@ class Account(dict):
             _limit = first
         while first > 0:
             # RPC call
-            txs = self.steem.get_account_history(self.name, first, _limit)
+            txs = self.steemd.get_account_history(self.name, first, _limit)
             for i in txs[::-1]:
                 if exclude_ops and i[1]["op"][0] in exclude_ops:
                     continue

@@ -15,7 +15,7 @@ from .helpers import (
     resolveIdentifier,
     constructIdentifier,
 )
-from .instance import shared_steem_instance
+from .instance import shared_steemd_instance
 from .utils import remove_from_dict
 
 
@@ -24,13 +24,12 @@ class Post(dict):
         abstraction layer for Comments in Steem
 
         :param identifier post: The post as obtained by `get_content` or the identifier string of the post (``@author/permlink``)
-        :param Steem steem_instance: Steem() instance to use when accessing a RPC
+        :param Steemd steemd_instance: Steemd() instance to use when accessing a RPC
 
     """
-    steem = None
 
-    def __init__(self, post, steem_instance=None):
-        self.steem = steem_instance or shared_steem_instance()
+    def __init__(self, post, steemd_instance=None):
+        self.steemd = steemd_instance or shared_steemd_instance()
 
         if isinstance(post, str):  # From identifier
             parts = post.split("@")
@@ -58,7 +57,7 @@ class Post(dict):
 
     def refresh(self):
         post_author, post_permlink = resolveIdentifier(self.identifier)
-        post = self.steem.rpc.get_content(post_author, post_permlink)
+        post = self.steemd.rpc.get_content(post_author, post_permlink)
         if not post["permlink"]:
             raise PostDoesNotExist("Post does not exist: %s" % self.identifier)
 
@@ -69,8 +68,8 @@ class Post(dict):
 
         # Total reward
         post["total_payout_reward"] = (
-            Amount(post.get("total_payout_value", "0 %s" % self.steem.symbol("SBD"))) +
-            Amount(post.get("total_pending_payout_value", "0 %s" % self.steem.symbol("SBD")))
+            Amount(post.get("total_payout_value", "0 %s" % self.steemd.symbol("SBD"))) +
+            Amount(post.get("total_pending_payout_value", "0 %s" % self.steemd.symbol("SBD")))
         )
 
         # Parse Times
@@ -93,7 +92,7 @@ class Post(dict):
             "promoted",
         ]
         for p in sbd_amounts:
-            post[p] = Amount(post.get(p, "0.000 %s" % self.steem.symbol("SBD")))
+            post[p] = Amount(post.get(p, "0.000 %s" % self.steemd.symbol("SBD")))
 
         # Try to properly format json meta data
 
@@ -161,10 +160,10 @@ class Post(dict):
         """ Return **first-level** comments of the post.
         """
         post_author, post_permlink = resolveIdentifier(self.identifier)
-        posts = self.steem.rpc.get_content_replies(post_author, post_permlink)
+        posts = self.steemd.rpc.get_content_replies(post_author, post_permlink)
         r = []
         for post in posts:
-            r.append(Post(post, steem_instance=self.steem))
+            r.append(Post(post, steemd_instance=self.steemd))
         if sort == "total_payout_value":
             r = sorted(r, key=lambda x: float(
                 x["total_payout_value"]
@@ -185,7 +184,7 @@ class Post(dict):
             :param str author: Author of reply
             :param json meta: JSON Meta data
         """
-        return self.steem.reply(self.identifier, body, title, author, meta)
+        return self.steemd.reply(self.identifier, body, title, author, meta)
 
     def upvote(self, weight=+100, voter=None):
         """ Upvote the post
@@ -213,7 +212,7 @@ class Post(dict):
         # pollutes the blockchain and account history
         if getattr(self, "mode") == "archived":
             raise VotingInvalidOnArchivedPost
-        return self.steem.vote(self.identifier, weight, voter=voter)
+        return self.steemd.vote(self.identifier, weight, voter=voter)
 
     @property
     def reward(self):
@@ -285,4 +284,4 @@ class Post(dict):
                    options.get("allow_curation_rewards", self["allow_curation_rewards"]),
                }
         )
-        return self.steem.finalizeOp(op, self["author"], "posting")
+        return self.steemd.finalizeOp(op, self["author"], "posting")

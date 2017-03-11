@@ -1,19 +1,19 @@
 import math
 
 from .amount import Amount
-from .instance import shared_steem_instance
+from .instance import shared_steemd_instance
 
 
 class Converter(object):
     """ Converter simplifies the handling of different metrics of
         the blockchain
 
-        :param Steem steem_instance: Steem() instance to use when accesing a RPC
+        :param Steemd steemd_instance: Steemd() instance to use when accessing a RPC
 
     """
 
-    def __init__(self, steem_instance=None):
-        self.steem = steem_instance or shared_steem_instance()
+    def __init__(self, steemd_instance=None):
+        self.steemd = steemd_instance or shared_steemd_instance()
 
         self.CONTENT_CONSTANT = 2000000000000
 
@@ -22,14 +22,14 @@ class Converter(object):
             witness feeds. Return value will be SBD
         """
         return (
-            Amount(self.steem.get_feed_history()['current_median_history']['base']).amount /
-            Amount(self.steem.get_feed_history()['current_median_history']['quote']).amount
+            Amount(self.steemd.get_feed_history()['current_median_history']['base']).amount /
+            Amount(self.steemd.get_feed_history()['current_median_history']['quote']).amount
         )
 
     def steem_per_mvests(self):
         """ Obtain STEEM/MVESTS ratio
         """
-        info = self.steem.get_dynamic_global_properties()
+        info = self.steemd.get_dynamic_global_properties()
         return (
             Amount(info["total_vesting_fund_steem"]).amount /
             (Amount(info["total_vesting_shares"]).amount / 1e6)
@@ -88,7 +88,7 @@ class Converter(object):
         """
         steem_payout = self.sbd_to_steem(sbd_payout)
 
-        props = self.steem.get_dynamic_global_properties()
+        props = self.steemd.get_dynamic_global_properties()
         total_reward_fund_steem = Amount(props['total_reward_fund_steem'])
         total_reward_shares2 = int(props['total_reward_shares2'])
 
