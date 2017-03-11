@@ -1,5 +1,4 @@
 import logging
-from pprint import pprint
 
 from steem.wallet import Wallet
 from steembase.account import PrivateKey

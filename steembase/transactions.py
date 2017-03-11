@@ -59,9 +59,8 @@ class SignedTransaction(GrapheneObject):
                 kwargs["signatures"] = Array([Signature(unhexlify(a)) for a in kwargs["signatures"]])
 
             if "operations" in kwargs:
-                opklass = self.getOperationKlass()
-                if all([not isinstance(a, opklass) for a in kwargs["operations"]]):
-                    kwargs['operations'] = Array([opklass(a) for a in kwargs["operations"]])
+                if all([not isinstance(a, Operation) for a in kwargs["operations"]]):
+                    kwargs['operations'] = Array([Operation(a) for a in kwargs["operations"]])
                 else:
                     kwargs['operations'] = Array(kwargs["operations"])
 
@@ -73,9 +72,6 @@ class SignedTransaction(GrapheneObject):
                 ('extensions', kwargs['extensions']),
                 ('signatures', kwargs['signatures']),
             ]))
-
-    def getOperationKlass(self):
-        return Operation
 
     def recoverPubkeyParameter(self, digest, signature, pubkey):
         """ Use to derive a number that allows to easily recover the

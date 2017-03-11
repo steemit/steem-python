@@ -3,7 +3,6 @@ import logging
 import random
 import re
 from datetime import datetime, timedelta
-from pprint import pprint
 
 from steembase import memo
 from steembase import operations

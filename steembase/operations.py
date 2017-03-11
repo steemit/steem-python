@@ -1,4 +1,6 @@
+import importlib
 import json
+import re
 import struct
 from collections import OrderedDict
 
@@ -23,48 +25,58 @@ class Operation:
         if isinstance(op, list) and len(op) == 2:
             if isinstance(op[0], int):
                 self.opId = op[0]
-                name = self.getOperationNameForId(self.opId)
+                name = self.get_operation_name_for_id(self.opId)
             else:
-                self.opId = self.operations().get(op[0], None)
+                self.opId = operations.get(op[0], None)
                 name = op[0]
                 if self.opId is None:
                     raise ValueError("Unknown operation")
-            self.name = name[0].upper() + name[1:]  # klassname
+
+            # convert method name like feed_publish to class name like FeedPublish
+            self.name = self.to_class_name(name)
             try:
-                klass = self._getklass(self.name)
+                klass = self.get_class(self.name)
             except:
                 raise NotImplementedError("Unimplemented Operation %s" % self.name)
-            self.op = klass(op[1])
+            else:
+                self.op = klass(op[1])
         else:
             self.op = op
-            self.name = type(self.op).__name__.lower()  # also store name
-            self.opId = self.operations()[self.name]
+            # class name like FeedPublish
+            self.name = type(self.op).__name__
+            self.opId = operations[self.to_method_name(self.name)]
 
-    def operations(self):
-        return operations
-
-    def getOperationKlass(self):
-        return Operation
-
-    def getOperationNameForId(self, i):
+    @staticmethod
+    def get_operation_name_for_id(_id: int):
         """ Convert an operation id into the corresponding string
         """
-        for key in operations:
-            if int(operations[key]) is int(i):
+        for key, value in operations.items():
+            if value == int(_id):
                 return key
-        return "Unknown Operation ID %d" % i
 
-    def _getklass(self, name):
-        module = __import__("steembase.operations", fromlist=["operations"])
-        class_ = getattr(module, name)
-        return class_
+    @staticmethod
+    def to_class_name(method_name: str):
+        """ Take a name of a method, like feed_publish and turn it into class name like FeedPublish. """
+        return ''.join(map(str.title, method_name.split('_')))
+
+    @staticmethod
+    def to_method_name(class_name: str):
+        """ Take a name of a class, like FeedPublish and turn it into method name like feed_publish. """
+        words = re.findall('[A-Z][^A-Z]*', class_name)
+        return '_'.join(map(str.lower, words))
+
+    @staticmethod
+    def get_class(class_name: str):
+        """ Given name of a class from `operations`, return real class. """
+        module = importlib.import_module('steembase.operations')
+        return getattr(module, class_name)
 
     def __bytes__(self):
         return bytes(Id(self.opId)) + bytes(self.op)
 
     def __str__(self):
         return json.dumps([
-            self.getOperationNameForId(self.opId),
+            self.get_operation_name_for_id(self.opId),
             self.op.json()
         ])
 

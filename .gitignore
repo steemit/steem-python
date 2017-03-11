@@ -109,3 +109,4 @@ tests/failed_blocks/
 /envd/
 /tests/envdir-to-envfile.sh
 /deploy/
+/test.py
