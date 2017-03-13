@@ -23,37 +23,31 @@ class Post(dict):
     """ This object gets instantiated by Steem.streams and is used as an
         abstraction layer for Comments in Steem
 
-        :param identifier post: The post as obtained by `get_content` or the identifier string of the post (``@author/permlink``)
-        :param Steemd steemd_instance: Steemd() instance to use when accessing a RPC
-
+        Args:
+            post (str or dict): ``@author/permlink`` or raw ``comment`` as dictionary.
+            steemd_instance (Steemd): Steemd node to connect to
     """
 
     def __init__(self, post, steemd_instance=None):
         self.steemd = steemd_instance or shared_steemd_instance()
 
         if isinstance(post, str):  # From identifier
-            parts = post.split("@")
-            self.identifier = "@" + parts[-1]
-
+            self.identifier = self.parse_identifier(post)
             self.refresh()
-
-        elif (isinstance(post, dict) and  # From dictionary
-                      "author" in post and
-                      "permlink" in post):
-            # strip leading @
-            if post["author"][0] == "@":
-                post["author"] = post["author"][1:]
-            self.identifier = constructIdentifier(
-                post["author"],
-                post["permlink"]
-            )
+        elif isinstance(post, dict) and "author" in post and "permlink" in post:
+            post["author"] = post["author"].replace('@', '')
+            self.identifier = constructIdentifier(post["author"], post["permlink"])
 
             if "created" in post:
                 self._store_post(post)
-
         else:
             raise ValueError("Post expects an identifier or a dict "
                              "with author and permlink!")
+
+    @staticmethod
+    def parse_identifier(uri):
+        """ Extract post identifier from post URL. """
+        return '@%s' % uri.split('@')[-1]
 
     def refresh(self):
         post_author, post_permlink = resolveIdentifier(self.identifier)
@@ -94,14 +88,10 @@ class Post(dict):
         for p in sbd_amounts:
             post[p] = Amount(post.get(p, "0.000 SBD"))
 
-        # Try to properly format json meta data
-
         try:
             meta_str = post.get("json_metadata", "{}")
             post['json_metadata'] = json.loads(meta_str)
         except:
-            post['json_metadata'] = dict()
-        if not post['json_metadata']:
             post['json_metadata'] = dict()
 
         post["tags"] = []
@@ -127,8 +117,6 @@ class Post(dict):
 
         # also set identifier
         super(Post, self).__setitem__("identifier", self.identifier)
-
-        self.refresh()
 
     def __getattr__(self, key):
         return object.__getattribute__(self, key)
@@ -174,7 +162,7 @@ class Post(dict):
             ), reverse=True)
         else:
             r = sorted(r, key=lambda x: x[sort])
-        return (r)
+        return r
 
     def reply(self, body, title="", author="", meta=None):
         """ Reply to the post
@@ -230,11 +218,6 @@ class Post(dict):
         return datetime.utcnow() - self['created']
 
     def is_main_post(self):
-        """ Retuns True if main post, and False if this is a comment (reply).
-        """
-        return self['depth'] == 0
-
-    def is_opening_post(self):
         """ Retuns True if main post, and False if this is a comment (reply).
         """
         return self['depth'] == 0
