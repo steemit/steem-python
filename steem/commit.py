@@ -321,14 +321,14 @@ class Commit(object):
     def vote(self,
              identifier,
              weight,
-             voter=None):
+             account=None):
         """ Vote for a post
 
             :param str identifier: Identifier for the post to upvote Takes
                                    the form ``@author/permlink``
             :param float weight: Voting weight. Range: -100.0 - +100.0. May
                                  not be 0.0
-            :param str voter: Voter to use for voting. (Optional)
+            :param str account: Voter to use for voting. (Optional)
 
             If ``voter`` is not defines, the ``default_voter`` will be taken or
             a ValueError will be raised
@@ -337,22 +337,22 @@ class Commit(object):
 
                 piston set default_voter <account>
         """
-        if not voter:
+        if not account:
             if "default_voter" in config:
-                voter = config["default_voter"]
-        if not voter:
+                account = config["default_voter"]
+        if not account:
             raise ValueError("You need to provide a voter account")
 
         post_author, post_permlink = resolveIdentifier(identifier)
 
         op = operations.Vote(
-            **{"voter": voter,
+            **{"voter": account,
                "author": post_author,
                "permlink": post_permlink,
                "weight": int(weight * STEEMIT_1_PERCENT)}
         )
 
-        return self.finalizeOp(op, voter, "posting")
+        return self.finalizeOp(op, account, "posting")
 
     def create_account(self,
                        account_name,
@@ -617,25 +617,25 @@ class Commit(object):
 
         return self.finalizeOp(op, account, "active")
 
-    def convert(self, amount, account=None, requestid=None):
+    def convert(self, amount, account=None, request_id=None):
         """ Convert SteemDollars to Steem (takes one week to settle)
 
             :param float amount: number of VESTS to withdraw over a period of 104 weeks
             :param str account: (optional) the source account for the transfer if not ``default_account``
-            :param str requestid: (optional) identifier for tracking the conversion`
+            :param str request_id: (optional) identifier for tracking the conversion`
         """
         if not account and "default_account" in config:
             account = config["default_account"]
         if not account:
             raise ValueError("You need to provide an account")
 
-        if requestid:
-            requestid = int(requestid)
+        if request_id:
+            request_id = int(request_id)
         else:
-            requestid = random.getrandbits(32)
+            request_id = random.getrandbits(32)
         op = operations.Convert(
             **{"owner": account,
-               "requestid": requestid,
+               "requestid": request_id,
                "amount": '{:.{prec}f} {asset}'.format(
                    float(amount),
                    prec=3,
@@ -645,16 +645,16 @@ class Commit(object):
 
         return self.finalizeOp(op, account, "active")
 
-    def transfer_to_savings(self, amount, currency, memo, to=None, account=None):
+    def transfer_to_savings(self, amount, asset, memo, to=None, account=None):
         """ Transfer SBD or STEEM into a 'savings' account.
 
             :param float amount: STEEM or SBD amount
-            :param float currency: 'STEEM' or 'SBD'
+            :param float asset: 'STEEM' or 'SBD'
             :param str memo: (optional) Memo
             :param str to: (optional) the source account for the transfer if not ``default_account``
             :param str account: (optional) the source account for the transfer if not ``default_account``
         """
-        assert currency in ['STEEM', 'SBD']
+        assert asset in ['STEEM', 'SBD']
 
         if not account:
             if "default_account" in config:
@@ -672,23 +672,23 @@ class Commit(object):
                 "amount": '{:.{prec}f} {asset}'.format(
                     float(amount),
                     prec=3,
-                    asset=currency),
+                    asset=asset),
                 "memo": memo,
             }
         )
         return self.finalizeOp(op, account, "active")
 
-    def transfer_from_savings(self, amount, currency, memo, request_id=None, to=None, account=None):
+    def transfer_from_savings(self, amount, asset, memo, request_id=None, to=None, account=None):
         """ Withdraw SBD or STEEM from 'savings' account.
 
             :param float amount: STEEM or SBD amount
-            :param float currency: 'STEEM' or 'SBD'
+            :param float asset: 'STEEM' or 'SBD'
             :param str memo: (optional) Memo
             :param str request_id: (optional) identifier for tracking or cancelling the withdrawal
             :param str to: (optional) the source account for the transfer if not ``default_account``
             :param str account: (optional) the source account for the transfer if not ``default_account``
         """
-        assert currency in ['STEEM', 'SBD']
+        assert asset in ['STEEM', 'SBD']
 
         if not account:
             if "default_account" in config:
@@ -712,7 +712,7 @@ class Commit(object):
                 "amount": '{:.{prec}f} {asset}'.format(
                     float(amount),
                     prec=3,
-                    asset=currency),
+                    asset=asset),
                 "memo": memo,
             }
         )
@@ -1220,4 +1220,4 @@ class Commit(object):
 
 if __name__ == "__main__":
     c = Commit()
-    c.transfer(to='fnait', amount='0.001', asset='STEEM', memo='libtest', account='furion')
+    c.transfer(to='fnait', amount=0.001, asset='STEEM', memo='libtest', account='furion')
