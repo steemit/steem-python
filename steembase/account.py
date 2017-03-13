@@ -136,7 +136,7 @@ class Address(object):
 
     """
 
-    def __init__(self, address=None, pubkey=None, prefix="STEEM"):
+    def __init__(self, address=None, pubkey=None, prefix="STM"):
         self.prefix = prefix
         if pubkey is not None:
             self._pubkey = Base58(pubkey, prefix=prefix)
@@ -210,7 +210,7 @@ class PublicKey(object):
 
     """
 
-    def __init__(self, pk, prefix="STEEM"):
+    def __init__(self, pk, prefix="STM"):
         self.prefix = prefix
         self._pk = Base58(pk, prefix=prefix)
         self.address = Address(pubkey=pk, prefix=prefix)
@@ -297,7 +297,7 @@ class PrivateKey(object):
 
     """
 
-    def __init__(self, wif=None, prefix="STEEM"):
+    def __init__(self, wif=None, prefix="STM"):
         if wif is None:
             import os
             self._wif = Base58(hexlify(os.urandom(32)).decode('ascii'))
