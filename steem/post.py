@@ -57,7 +57,7 @@ class Post(dict):
 
     def refresh(self):
         post_author, post_permlink = resolveIdentifier(self.identifier)
-        post = self.steemd.rpc.get_content(post_author, post_permlink)
+        post = self.steemd.get_content(post_author, post_permlink)
         if not post["permlink"]:
             raise PostDoesNotExist("Post does not exist: %s" % self.identifier)
 
@@ -68,8 +68,8 @@ class Post(dict):
 
         # Total reward
         post["total_payout_reward"] = (
-            Amount(post.get("total_payout_value", "0 %s" % self.steemd.symbol("SBD"))) +
-            Amount(post.get("total_pending_payout_value", "0 %s" % self.steemd.symbol("SBD")))
+            Amount(post.get("total_payout_value", "0 SBD")) +
+            Amount(post.get("total_pending_payout_value", "0 SBD"))
         )
 
         # Parse Times
@@ -92,7 +92,7 @@ class Post(dict):
             "promoted",
         ]
         for p in sbd_amounts:
-            post[p] = Amount(post.get(p, "0.000 %s" % self.steemd.symbol("SBD")))
+            post[p] = Amount(post.get(p, "0.000 SBD"))
 
         # Try to properly format json meta data
 
@@ -160,7 +160,7 @@ class Post(dict):
         """ Return **first-level** comments of the post.
         """
         post_author, post_permlink = resolveIdentifier(self.identifier)
-        posts = self.steemd.rpc.get_content_replies(post_author, post_permlink)
+        posts = self.steemd.get_content_replies(post_author, post_permlink)
         r = []
         for post in posts:
             r.append(Post(post, steemd_instance=self.steemd))

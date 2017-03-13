@@ -43,19 +43,19 @@ class Blockchain(object):
     def info(self):
         """ This call returns the *dynamic global properties*
         """
-        return self.steemd.rpc.get_dynamic_global_properties()
+        return self.steemd.get_dynamic_global_properties()
 
     def chain_parameters(self):
         return self.config()["parameters"]
 
     def get_network(self):
-        return self.steemd.rpc.get_network()
+        return self.steemd.get_network()
 
     def get_chain_properties(self):
-        return self.steemd.rpc.get_chain_properties()
+        return self.steemd.get_chain_properties()
 
     def config(self):
-        return self.steemd.rpc.get_config()
+        return self.steemd.get_config()
 
     def get_current_block_num(self):
         """ This call returns the current block
@@ -108,7 +108,7 @@ class Blockchain(object):
             # Blocks from start until head block
             for blocknum in range(start, head_block + 1):
                 # Get full block
-                block = self.steemd.rpc.get_block(blocknum)
+                block = self.steemd.get_block(blocknum)
                 if not block:
                     start = blocknum
                     retry = True
@@ -170,7 +170,7 @@ class Blockchain(object):
             # Blocks from start until head block
             for blocknum in range(start, head_block + 1):
                 # Get full block
-                yield from self.steemd.rpc.get_ops_in_block(blocknum, only_virtual_ops)
+                yield from self.steemd.get_ops_in_block(blocknum, only_virtual_ops)
 
             # Set new start
             start = head_block + 1
@@ -272,7 +272,7 @@ class Blockchain(object):
         """
         lastname = start
         while True:
-            names = self.steemd.rpc.lookup_accounts(lastname, steps)
+            names = self.steemd.lookup_accounts(lastname, steps)
             for name in names:
                 yield name
                 if name == stop:

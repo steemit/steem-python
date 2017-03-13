@@ -821,7 +821,7 @@ class Commit(object):
 
             :param str account: Account name to get interest for
         """
-        account = Account(account, steemd_instance=self.steemd.rpc)
+        account = Account(account, steemd_instance=self.steemd)
         last_payment = formatTimeString(account["sbd_last_interest_payment"])
         next_payment = last_payment + timedelta(days=30)
         interest_rate = self.steemd.get_dynamic_global_properties()["sbd_interest_rate"] / 100  # the result is in percent!

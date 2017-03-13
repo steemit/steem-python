@@ -22,7 +22,7 @@ class Block(dict):
             self.refresh()
 
     def refresh(self):
-        block = self.steemd.rpc.get_block(self.block)
+        block = self.steemd.get_block(self.block)
         if not block:
             raise BlockDoesNotExistsException
         super(Block, self).__init__(block)
