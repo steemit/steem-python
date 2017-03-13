@@ -43,15 +43,6 @@ Memo
 
 --------
 
-Objects
-=======
-
-.. automodule:: steembase.objects
-   :members:
-
-
---------
-
 Operations
 ==========
 
