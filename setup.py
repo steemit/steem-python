@@ -26,6 +26,10 @@ setup(
     install_requires=[
         'ecdsa==0.13',
         'pylibscrypt==1.5.3',
+        'scrypt==0.7.1',
+        'pycrypto==2.6.1',
+        'diff-match-patch',
+        'appdirs',
         'requests',
         'ujson',
         'urllib3',

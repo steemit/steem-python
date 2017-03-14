@@ -25,9 +25,6 @@ class Testcases(unittest.TestCase):
     def test_resolveIdentifier(self):
         self.assertEqual(resolveIdentifier("@A/B"), ("A", "B"))
 
-    def test_yaml_parse_file(self):
-        pass
-
     def test_formatTime(self):
         self.assertEqual(formatTime(1463480746), "20160517t102546")
 
