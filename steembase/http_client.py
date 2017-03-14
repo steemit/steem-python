@@ -85,16 +85,20 @@ class HttpClient(object):
         self.nodes = cycle(nodes)
         self.url = ''
         self.request = None
-        self.change_node()
+        self.next_node()
 
         logger.setLevel(log_level)
 
-    def change_node(self):
+    def next_node(self):
         """ Switch to the next available node.
 
         This method will change base URL of our requests.
         Use it when the current node goes down to change to a fallback node. """
-        self.url = next(self.nodes)
+        self.set_node(next(self.nodes))
+
+    def set_node(self, node_url):
+        """ Change current node to provided node URL. """
+        self.url = node_url
         self.request = partial(self.http.urlopen, 'POST', self.url)
 
     @property
@@ -139,7 +143,7 @@ class HttpClient(object):
                 time.sleep(5*_ret_cnt)
             elif _ret_cnt > 10:
                 raise e
-            self.change_node()
+            self.next_node()
             return self.exec(name, *args,
                              re_raise=re_raise,
                              return_with_args=return_with_args,
