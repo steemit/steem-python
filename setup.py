@@ -33,6 +33,7 @@ setup(
         'urllib3',
         'certifi',
         'ujson',
+        'w3lib',
         'maya',
         'toolz',
         'funcy',

@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
 import re
 from datetime import datetime
 from urllib.parse import urlparse
 
-import langdetect
-import sbds.sbds_logging
 import w3lib.url
-from langdetect import DetectorFactory
+from langdetect import DetectorFactory, detect
+from langdetect.lang_detect_exception import LangDetectException
 
-logger = sbds.sbds_logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 # https://github.com/matiasb/python-unidiff/blob/master/unidiff/constants.py#L37
 # @@ (source offset, length) (target offset, length) @@ (section header)
@@ -181,8 +181,8 @@ def detect_language(text):
         logger.debug('not enough text to perform langdetect')
         return None
     try:
-        return langdetect.detect(text)
-    except langdetect.lang_detect_exception.LangDetectException as e:
+        return detect(text)
+    except LangDetectException as e:
         logger.warning(e)
         return None
 
