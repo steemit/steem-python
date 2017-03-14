@@ -24,20 +24,20 @@ setup(
                    'pytest-console-scripts'],
 
     install_requires=[
+        'appdirs',
         'ecdsa',
         'pylibscrypt',
         'scrypt',
         'pycrypto',
-        'diff-match-patch',
-        'appdirs',
         'requests',
-        'ujson',
         'urllib3',
         'certifi',
+        'ujson',
         'maya',
         'toolz',
         'funcy',
-        'yapf',
+        'langdetect',
+        'diff-match-patch',
     ],
     entry_points={
         'console_scripts': [
