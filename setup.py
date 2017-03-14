@@ -10,7 +10,7 @@ setup(
     name='steem',
     version='0.1',
     description='Official Python STEEM Library',
-    long_description=open('README.rst').read(),
+    long_description=open('README.md').read(),
     packages=find_packages(),
     setup_requires=['pytest-runner'],
     tests_require=['pytest',
