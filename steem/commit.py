@@ -11,6 +11,7 @@ from steembase.exceptions import (
     AccountExistsException,
     MissingKeyError,
 )
+from steembase.storage import configStorage as config
 
 from .account import Account
 from .helpers import (
@@ -21,7 +22,6 @@ from .helpers import (
 )
 from .instance import shared_steemd_instance
 from .post import Post
-from .storage import configStorage as config
 from .transactionbuilder import TransactionBuilder
 
 log = logging.getLogger(__name__)

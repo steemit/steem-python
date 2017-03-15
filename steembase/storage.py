@@ -9,7 +9,7 @@ from datetime import datetime
 
 from appdirs import user_data_dir
 
-from .aes import AESCipher
+from steem.aes import AESCipher
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)

@@ -1,9 +1,9 @@
 import random
 
 from steembase import transactions, operations
+from steembase.storage import configStorage as config
 
 from .instance import shared_steemd_instance
-from .storage import configStorage as config
 
 
 class Dex(object):

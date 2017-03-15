@@ -51,7 +51,7 @@ class Wallet:
     keyMap = {}  # type:wif pairs to force certain keys
 
     def __init__(self, steemd_instance=None, **kwargs):
-        from .storage import configStorage
+        from steembase.storage import configStorage
         self.configStorage = configStorage
 
         # RPC
@@ -68,8 +68,8 @@ class Wallet:
             """ If no keys are provided manually we load the SQLite
                 keyStorage
             """
-            from .storage import (keyStorage,
-                                  MasterPassword)
+            from steembase.storage import (keyStorage,
+                                           MasterPassword)
             self.MasterPassword = MasterPassword
             self.keyStorage = keyStorage
 
