@@ -740,30 +740,30 @@ class Steemd(HttpClient):
 
     def get_ticker(self):
         """ Returns the market ticker for the internal SBD:STEEM market. """
-        return self.exec('get_ticker', api='market_history')
+        return self.exec('get_ticker', api='market_history_api')
 
     def get_volume(self):
         """ Returns the market volume for the past 24 hours. """
-        return self.exec('get_volume', api='market_history')
+        return self.exec('get_volume', api='market_history_api')
 
     # def get_order_book(self, limit: int):
-    #     return self.exec('get_order_book', limit, api='market_history')
+    #     return self.exec('get_order_book', limit, api='market_history_api')
 
     def get_trade_history(self, start: PointInTime, end: PointInTime, limit: int):
         """ Returns the trade history for the internal SBD:STEEM market. """
-        return self.exec('get_trade_history', start, end, limit, api='market_history')
+        return self.exec('get_trade_history', start, end, limit, api='market_history_api')
 
     def get_recent_trades(self, limit: int) -> List[Any]:
         """ Returns the N most recent trades for the internal SBD:STEEM market. """
-        return self.exec('get_recent_trades', limit, api='market_history')
+        return self.exec('get_recent_trades', limit, api='market_history_api')
 
     def get_market_history(self, bucket_seconds: int, start: PointInTime, end: PointInTime):
         """ Returns the market history for the internal SBD:STEEM market. """
-        return self.exec('get_market_history', bucket_seconds, start, end, api='market_history')
+        return self.exec('get_market_history', bucket_seconds, start, end, api='market_history_api')
 
     def get_market_history_buckets(self):
         """ Returns the bucket seconds being tracked by the plugin. """
-        return self.exec('get_market_history_buckets', api='market_history')
+        return self.exec('get_market_history_buckets', api='market_history_api')
 
 
 if __name__ == '__main__':
