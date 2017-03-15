@@ -1,5 +1,6 @@
 import random
 
+from amount import Amount
 from steembase import transactions, operations
 from steembase.storage import configStorage as config
 
@@ -48,7 +49,7 @@ class Dex(object):
         base = assets[0]
         return self._get_asset(quote), self._get_asset(base)
 
-    def returnTicker(self):
+    def get_ticker(self):
         """ Returns the ticker for all markets.
 
             Output Parameters:
@@ -77,92 +78,18 @@ class Dex(object):
 
 
         """
-        ticker = {}
         t = self.steemd.get_ticker()
-        ticker = {'highest_bid': float(t['highest_bid']),
-                  'latest': float(t["latest"]),
-                  'lowest_ask': float(t["lowest_ask"]),
-                  'percent_change': float(t["percent_change"]),
-                  'sbd_volume': t["sbd_volume"],
-                  'steem_volume': t["steem_volume"]}
-        return ticker
+        return {'highest_bid': float(t['highest_bid']),
+                'latest': float(t["latest"]),
+                'lowest_ask': float(t["lowest_ask"]),
+                'percent_change': float(t["percent_change"]),
+                'sbd_volume': Amount(t["sbd_volume"]),
+                'steem_volume': Amount(t["steem_volume"])}
 
-    def return24Volume(self):
-        """ Returns the 24-hour volume for all markets, plus totals for primary currencies.
-
-            Sample output:
-
-            .. code-block:: js
-
-                {'sbd_volume': 108329.611, 'steem_volume': 355094.043}
-
-        """
-        v = self.steemd.get_volume()
-        return {'sbd_volume': v["sbd_volume"],
-                'steem_volume': v["steem_volume"]}
-
-    def returnOrderBook(self, limit=25):
-        """ Returns the order book for the SBD/STEEM markets in both orientations.
-
-            :param int limit: Limit the amount of orders (default: 25)
-
-            .. note::
-
-                Market is STEEM:SBD and prices are SBD per STEEM!
-
-            Sample output:
-
-            .. code-block:: js
-
-                {'asks': [{'price': 3.086436224481787,
-                           'sbd': 318547,
-                           'steem': 983175},
-                          {'price': 3.086429621198315,
-                           'sbd': 2814903,
-                           'steem': 8688000}],
-                 'bids': [{'price': 3.0864376216446257,
-                           'sbd': 545133,
-                           'steem': 1682519},
-                          {'price': 3.086440512632327,
-                           'sbd': 333902,
-                           'steem': 1030568}]},
-        """
-        orders = self.steemd.get_order_book(limit, )
-        r = {"asks": [], "bids": []}
-        for side in ["bids", "asks"]:
-            for o in orders[side]:
-                r[side].append({
-                    'price': float(o["price"]),
-                    'sbd': o["sbd"] / 10 ** 3,
-                    'steem': o["steem"] / 10 ** 3,
-                })
-        return r
-
-    def returnBalances(self, account=None):
-        """ Return SBD and STEEM balance of the account
-
-            :param str account: (optional) the source account for the transfer if not ``default_account``
-        """
-        return self.steemd.get_balances(account)
-
-    def returnOpenOrders(self, account=None):
-        """ Return open Orders of the account
-
-            :param str account: (optional) the source account for the transfer if not ``default_account``
-        """
-        if not account:
-            if "default_account" in config:
-                account = config["default_account"]
-        if not account:
-            raise ValueError("You need to provide an account")
-
-        orders = self.steemd.get_open_orders(account, limit=1000)
-        return orders
-
-    def returnTradeHistory(self, time=1 * 60 * 60, limit=100):
+    def trade_history(self, time=1 * 60 * 60, limit=100):
         """ Returns the trade history for the internal market
 
-            :param int hours: Show the last x seconds of trades (default 1h)
+            :param int time: Show the last x seconds of trades (default 1h)
             :param int limit: amount of trades to show (<100) (default: 100)
         """
         assert limit <= 100, "'limit' has to be smaller than 100"
@@ -172,14 +99,14 @@ class Dex(object):
             limit,
         )
 
-    def returnMarketHistoryBuckets(self):
+    def market_history_buckets(self):
         return self.steemd.get_market_history_buckets()
 
-    def returnMarketHistory(
+    def market_history(
             self,
             bucket_seconds=60 * 5,
             start_age=1 * 60 * 60,
-            stop_age=0,
+            end_age=0,
     ):
         """ Return the market history (filled orders).
 
@@ -207,8 +134,8 @@ class Dex(object):
         """
         return self.steemd.get_market_history(
             bucket_seconds,
-            transactions.fmt_time_from_now(-start_age - stop_age),
-            transactions.fmt_time_from_now(-stop_age),
+            transactions.fmt_time_from_now(-start_age - end_age),
+            transactions.fmt_time_from_now(-end_age),
         )
 
     def buy(self,
@@ -218,7 +145,7 @@ class Dex(object):
             expiration=7 * 24 * 60 * 60,
             killfill=False,
             account=None,
-            orderid=None):
+            order_id=None):
         """ Places a buy order in a given market (buy ``quote``, sell
             ``base`` in market ``quote_base``). If successful, the
             method will return the order creating (signed) transaction.
@@ -229,7 +156,7 @@ class Dex(object):
             :param number expiration: (optional) expiration time of the order in seconds (defaults to 7 days)
             :param bool killfill: flag that indicates if the order shall be killed if it is not filled (defaults to False)
             :param str account: (optional) the source account for the transfer if not ``default_account``
-            :param int orderid: (optional) a 32bit orderid for tracking of the created order (random by default)
+            :param int order_id: (optional) a 32bit orderid for tracking of the created order (random by default)
 
             Prices/Rates are denoted in 'base', i.e. the STEEM:SBD market
             is priced in SBD per STEEM.
@@ -244,7 +171,7 @@ class Dex(object):
         quote, base = self._get_assets(quote=quote_symbol)
         op = operations.LimitOrderCreate(**{
             "owner": account,
-            "orderid": orderid or random.getrandbits(32),
+            "orderid": order_id or random.getrandbits(32),
             "amount_to_sell": '{:.{prec}f} {asset}'.format(
                 amount * rate,
                 prec=base["precision"],
@@ -256,7 +183,7 @@ class Dex(object):
             "fill_or_kill": killfill,
             "expiration": transactions.fmt_time_from_now(expiration)
         })
-        return self.steemd.finalizeOp(op, account, "active")
+        return self.steemd.commit.finalizeOp(op, account, "active")
 
     def sell(self,
              amount,
@@ -302,7 +229,7 @@ class Dex(object):
             "fill_or_kill": killfill,
             "expiration": transactions.fmt_time_from_now(expiration)
         })
-        return self.steemd.finalizeOp(op, account, "active")
+        return self.steemd.commit.finalizeOp(op, account, "active")
 
     def cancel(self, orderid, account=None):
         """ Cancels an order you have placed in a given market.
@@ -320,45 +247,4 @@ class Dex(object):
             "owner": account,
             "orderid": orderid,
         })
-        return self.steemd.finalizeOp(op, account, "active")
-
-    def get_lowest_ask(self):
-        """ Return the lowest ask.
-
-            .. note::
-
-                Market is STEEM:SBD and prices are SBD per STEEM!
-
-            Example:
-
-            .. code-block:: js
-
-                 {'price': '0.32399833185738391',
-                   'sbd': 320863,
-                   'steem': 990323}
-        """
-        orders = self.returnOrderBook(1)
-        return orders["asks"][0]
-
-    def get_higest_bid(self):
-        """ Return the highest bid.
-
-            .. note::
-
-                Market is STEEM:SBD and prices are SBD per STEEM!
-
-            Example:
-
-            .. code-block:: js
-
-                 {'price': '0.32399833185738391',
-                  'sbd': 320863,
-                  'steem': 990323}
-        """
-        orders = self.returnOrderBook(1)
-        return orders["bids"][0]
-
-    def transfer(self, *args, **kwargs):
-        """ Dummy to redirect to steem.transfer()
-        """
-        return self.steemd.transfer(*args, **kwargs)
+        return self.steemd.commit.finalizeOp(op, account, "active")
