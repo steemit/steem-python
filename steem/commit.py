@@ -23,6 +23,7 @@ from .helpers import (
 from .instance import shared_steemd_instance
 from .post import Post
 from .transactionbuilder import TransactionBuilder
+from .wallet import Wallet
 
 log = logging.getLogger(__name__)
 
@@ -60,14 +61,13 @@ class Commit(object):
 
     """
 
-    def __init__(self, steemd_instance=None, offline=False, debug=False, **kwargs):
+    def __init__(self, steemd_instance=None, no_broadcast=False, **kwargs):
         self.steemd = steemd_instance or shared_steemd_instance()
-        self.debug = debug
-        self.offline = offline
+        self.no_broadcast = no_broadcast
         self.unsigned = kwargs.get("unsigned", False)
-        self.expiration = int(kwargs.get("expiration", 30))
+        self.expiration = int(kwargs.get("expiration", 60))
 
-        # self.wallet = Wallet(self.rpc, **kwargs)
+        self.wallet = Wallet(self.steemd, **kwargs)
 
     def finalizeOp(self, ops, account, permission):
         """ This method obtains the required private keys if present in
@@ -88,7 +88,11 @@ class Commit(object):
                 posting permission. Neither can you use different
                 accounts for different operations!
         """
-        tx = TransactionBuilder(steemd_instance=self.steemd, expiration=self.expiration)
+        tx = TransactionBuilder(None,
+                                steemd_instance=self.steemd,
+                                wallet_instance=self.wallet,
+                                no_broadcast=self.no_broadcast,
+                                expiration=self.expiration)
         tx.appendOps(ops)
 
         if self.unsigned:
@@ -100,26 +104,34 @@ class Commit(object):
 
         return tx.broadcast()
 
-    def sign(self, tx, wifs=[]):
+    def sign(self, unsigned_trx, wifs=[]):
         """ Sign a provided transaction witht he provided key(s)
 
-            :param dict tx: The transaction to be signed and returned
+            :param dict unsigned_trx: The transaction to be signed and returned
             :param string wifs: One or many wif keys to use for signing
                 a transaction. If not present, the keys will be loaded
                 from the wallet as defined in "missing_signatures" key
-                of the transactions.
+                of the transactizions.
         """
-        tx = TransactionBuilder(tx, steemd_instance=self.steemd, expiration=self.expiration)
+        tx = TransactionBuilder(unsigned_trx,
+                                steemd_instance=self.steemd,
+                                wallet_instance=self.wallet,
+                                no_broadcast=self.no_broadcast,
+                                expiration=self.expiration)
         tx.appendMissingSignatures(wifs)
         tx.sign()
         return tx.json()
 
-    def broadcast(self, tx):
+    def broadcast(self, signed_trx):
         """ Broadcast a transaction to the Steem network
 
-            :param tx tx: Signed transaction to broadcast
+            :param tx signed_trx: Signed transaction to broadcast
         """
-        tx = TransactionBuilder(tx, steemd_instance=self.steemd, expiration=self.expiration)
+        tx = TransactionBuilder(signed_trx,
+                                steemd_instance=self.steemd,
+                                wallet_instance=self.wallet,
+                                no_broadcast=self.no_broadcast,
+                                expiration=self.expiration)
         return tx.broadcast()
 
     def reply(self, identifier, body, title="", author="", meta=None):
@@ -461,7 +473,7 @@ class Commit(object):
                 self.wallet.addPrivateKey(active_privkey)
                 self.wallet.addPrivateKey(posting_privkey)
                 self.wallet.addPrivateKey(memo_privkey)
-        elif (owner_key and posting_key and active_key and memo_key):
+        elif owner_key and posting_key and active_key and memo_key:
             posting_pubkey = PublicKey(posting_key, prefix=self.steemd.chain_params["prefix"])
             active_pubkey = PublicKey(active_key, prefix=self.steemd.chain_params["prefix"])
             owner_pubkey = PublicKey(owner_key, prefix=self.steemd.chain_params["prefix"])
@@ -802,7 +814,7 @@ class Commit(object):
         )
         return self.finalizeOp(op, account, "active")
 
-    def decode_memo(self, enc_memo, account):
+    def decode_memo(self, enc_memo):
         """ Try to decode an encrypted memo
         """
         assert enc_memo[0] == "#", "decode memo requires memos to start with '#'"
@@ -824,7 +836,7 @@ class Commit(object):
         account = Account(account, steemd_instance=self.steemd)
         last_payment = formatTimeString(account["sbd_last_interest_payment"])
         next_payment = last_payment + timedelta(days=30)
-        interest_rate = self.steemd.get_dynamic_global_properties()["sbd_interest_rate"] / 100  # the result is in percent!
+        interest_rate = self.steemd.get_dynamic_global_properties()["sbd_interest_rate"] / 100  # percent
         interest_amount = (interest_rate / 100) * int(
             int(account["sbd_seconds"]) / (60 * 60 * 24 * 356)
         ) * 10 ** -3
@@ -1113,13 +1125,12 @@ class Commit(object):
         if not account:
             raise ValueError("You need to provide an account")
         author, permlink = resolveIdentifier(identifier)
+        json_body = ["reblog", {"account": account,
+                                "author": author,
+                                "permlink": permlink}]
         return self.custom_json(
             id="follow",
-            json=["reblog",
-                  {"account": account,
-                   "author": author,
-                   "permlink": permlink
-                   }],
+            json=json_body,
             required_posting_auths=[account]
         )
 
@@ -1148,12 +1159,13 @@ class Commit(object):
                 account = config["default_account"]
         if not account:
             raise ValueError("You need to provide an account")
+
+        json_body = ['follow', {'follower': account,
+                                'following': follow,
+                                'what': what}]
         return self.custom_json(
             id="follow",
-            json=['follow', {
-                'follower': account,
-                'following': follow,
-                'what': what}],
+            json=json_body,
             required_posting_auths=[account]
         )
 

@@ -21,16 +21,16 @@ class TransactionBuilder(dict):
         operations and signers.
     """
 
-    def __init__(self, tx=None, steemd_instance=None, no_broadcast=False, expiration=60):
+    def __init__(self, tx=None, steemd_instance=None, wallet_instance=None, no_broadcast=False, expiration=60):
         self.steemd = steemd_instance or shared_steemd_instance()
         self.no_broadcast = no_broadcast
         self.expiration = expiration
-        self.wallet = Wallet(self.steemd)
+        self.wallet = wallet_instance or Wallet(self.steemd)
 
         self.op = []
         self.wifs = []
         if tx and not isinstance(tx, dict):
-            raise ValueError("Invalid TransactionBuilder Format")
+            raise ValueError("Invalid Transaction (self.tx) Format")
         super(TransactionBuilder, self).__init__(tx or {})
 
     def appendOps(self, ops):
