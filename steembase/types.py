@@ -4,7 +4,27 @@ import time
 from binascii import hexlify, unhexlify
 from calendar import timegm
 
-from .objecttypes import object_type
+object_type = {
+    "dynamic_global_property": 0,
+    "reserved0": 1,
+    "account": 2,
+    "witness": 3,
+    "transaction": 4,
+    "block_summary": 5,
+    "chain_property": 6,
+    "witness_schedule": 7,
+    "comment": 8,
+    "category": 9,
+    "comment_vote": 10,
+    "vote": 11,
+    "witness_vote": 12,
+    "limit_order": 13,
+    "feed_history": 14,
+    "convert_request": 15,
+    "liquidity_reward_balance": 16,
+    "operation": 17,
+    "account_history": 18,
+}
 
 timeformat = '%Y-%m-%dT%H:%M:%S%Z'
 

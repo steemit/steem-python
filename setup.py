@@ -39,6 +39,7 @@ setup(
         'funcy',
         'langdetect',
         'diff-match-patch',
+        'Click',
     ],
     entry_points={
         'console_scripts': [

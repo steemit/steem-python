@@ -21,7 +21,7 @@ class TransactionBuilder(dict):
         operations and signers.
     """
 
-    def __init__(self, tx=None, steemd_instance=None, no_broadcast=False, expiration=30):
+    def __init__(self, tx=None, steemd_instance=None, no_broadcast=False, expiration=60):
         self.steemd = steemd_instance or shared_steemd_instance()
         self.no_broadcast = no_broadcast
         self.expiration = expiration

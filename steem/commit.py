@@ -88,7 +88,7 @@ class Commit(object):
                 posting permission. Neither can you use different
                 accounts for different operations!
         """
-        tx = TransactionBuilder(steemd_instance=self.steemd)
+        tx = TransactionBuilder(steemd_instance=self.steemd, expiration=self.expiration)
         tx.appendOps(ops)
 
         if self.unsigned:
@@ -109,7 +109,7 @@ class Commit(object):
                 from the wallet as defined in "missing_signatures" key
                 of the transactions.
         """
-        tx = TransactionBuilder(tx, steemd_instance=self.steemd)
+        tx = TransactionBuilder(tx, steemd_instance=self.steemd, expiration=self.expiration)
         tx.appendMissingSignatures(wifs)
         tx.sign()
         return tx.json()
@@ -119,7 +119,7 @@ class Commit(object):
 
             :param tx tx: Signed transaction to broadcast
         """
-        tx = TransactionBuilder(tx, steemd_instance=self.steemd)
+        tx = TransactionBuilder(tx, steemd_instance=self.steemd, expiration=self.expiration)
         return tx.broadcast()
 
     def reply(self, identifier, body, title="", author="", meta=None):
