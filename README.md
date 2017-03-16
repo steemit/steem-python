@@ -20,11 +20,6 @@ TODO
 ====
 * [] piston like cli tool: steem.cli
 * [] HF17 Features
-* [] refactor dex module
-* [] refactor blockchain module
-* [] refactor blog module
-* [] refactor wallet module
-* [] 100% documentation coverage
 * [] write a tutorial
-* [] convert code documentation to google style
 * [] write more unit-tests
+* [] 100% documentation coverage

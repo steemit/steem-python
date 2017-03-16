@@ -16,11 +16,11 @@ class Blockchain(object):
     """ Access the blockchain and read data from it.
 
     Args:
-        steem_instance (Steemd): Steemd() instance to use when accessing a RPC
+        steemd_instance (Steemd): Steemd() instance to use when accessing a RPC
         mode (str): `irreversible` or `head`. `irreversible` is default.
     """
-    def __init__(self, steem_instance=None, mode="irreversible"):
-        self.steem = steem_instance or shared_steemd_instance()
+    def __init__(self, steemd_instance=None, mode="irreversible"):
+        self.steem = steemd_instance or shared_steemd_instance()
 
         if mode == "irreversible":
             self.mode = 'last_irreversible_block_num'
