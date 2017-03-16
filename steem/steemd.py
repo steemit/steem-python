@@ -1,6 +1,6 @@
 # coding=utf-8
 import logging
-from typing import List, Any
+from typing import List, Any, Union
 
 from funcy.seqs import first
 from steembase.chains import known_chains
@@ -395,7 +395,17 @@ class Steemd(HttpClient):
     def lookup_account_names(self, account_names: list):
         return self.exec('lookup_account_names', account_names, api='database_api')
 
-    def lookup_accounts(self, after: str, limit: int):
+    def lookup_accounts(self, after: Union[str, int], limit: int) -> List[str]:
+        """Get a list of usernames from all registered accounts.
+
+        Args:
+            after (str, int): Username to start with. If '', 0 or -1, it will start at beginning.
+            limit (int): How many results to return.
+
+        Returns:
+            list: List of usernames in requested chunk.
+
+        """
         return self.exec('lookup_accounts', after, limit, api='database_api')
 
     def get_account_count(self):
