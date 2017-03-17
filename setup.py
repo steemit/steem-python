@@ -40,9 +40,11 @@ setup(
         'langdetect',
         'diff-match-patch',
         'Click',
+        'prettytable',
     ],
     entry_points={
         'console_scripts': [
-            'steempy=steem.cli:sbds',
+            'steem=steem.cli:cli',
+            'piston=steem.cli:legacy',
         ]
     })
