@@ -11,7 +11,7 @@ setup(
     version='0.1',
     description='Official Python STEEM Library',
     long_description=open('README.md').read(),
-    packages=find_packages(),
+    packages=find_packages(exclude=['scripts']),
     setup_requires=['pytest-runner'],
     tests_require=['pytest',
                    'pep8',
