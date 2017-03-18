@@ -1,9 +1,9 @@
 import json
+import logging
 import re
 from datetime import datetime
 
 from funcy.colls import walk_values
-from steem.utils import parse_time
 from steembase.exceptions import (
     PostDoesNotExist,
     VotingInvalidOnArchivedPost
@@ -11,12 +11,15 @@ from steembase.exceptions import (
 from steembase.operations import CommentOptions
 
 from .amount import Amount
+from .commit import Commit
 from .helpers import (
     resolveIdentifier,
     constructIdentifier,
 )
 from .instance import shared_steemd_instance
-from .utils import remove_from_dict
+from .utils import parse_time, remove_from_dict
+
+log = logging.getLogger(__name__)
 
 
 class Post(dict):
@@ -30,6 +33,7 @@ class Post(dict):
 
     def __init__(self, post, steemd_instance=None):
         self.steemd = steemd_instance or shared_steemd_instance()
+        self.commit = Commit(steemd_instance=self.steemd)
 
         if isinstance(post, str):  # From identifier
             self.identifier = self.parse_identifier(post)
@@ -164,44 +168,6 @@ class Post(dict):
             r = sorted(r, key=lambda x: x[sort])
         return r
 
-    def reply(self, body, title="", author="", meta=None):
-        """ Reply to the post
-
-            :param str body: (required) body of the reply
-            :param str title: Title of the reply
-            :param str author: Author of reply
-            :param json meta: JSON Meta data
-        """
-        return self.steemd.reply(self.identifier, body, title, author, meta)
-
-    def upvote(self, weight=+100, voter=None):
-        """ Upvote the post
-
-            :param float weight: (optional) Weight for posting (-100.0 - +100.0) defaults to +100.0
-            :param str voter: (optional) Voting account
-        """
-        return self.vote(weight, voter=voter)
-
-    def downvote(self, weight=-100, voter=None):
-        """ Downvote the post
-
-            :param float weight: (optional) Weight for posting (-100.0 - +100.0) defaults to -100.0
-            :param str voter: (optional) Voting account
-        """
-        return self.vote(weight, voter=voter)
-
-    def vote(self, weight, voter=None):
-        """ Vote the post
-
-            :param float weight: Weight for posting (-100.0 - +100.0)
-            :param str voter: Voting account
-        """
-        # Test if post is archived, if so, voting is worthless but just
-        # pollutes the blockchain and account history
-        if getattr(self, "mode") == "archived":
-            raise VotingInvalidOnArchivedPost
-        return self.steemd.vote(self.identifier, weight, voter=voter)
-
     @property
     def reward(self):
         """Return a float value of estimated total SBD reward.
@@ -251,6 +217,101 @@ class Post(dict):
 
         return walk_values(decompose_amounts, safe_dict)
 
+    ######################
+    # Commital Properties
+    ######################
+    def upvote(self, weight=+100, voter=None):
+        """ Upvote the post
+
+            :param float weight: (optional) Weight for posting (-100.0 - +100.0) defaults to +100.0
+            :param str voter: (optional) Voting account
+        """
+        return self.vote(weight, voter=voter)
+
+    def downvote(self, weight=-100, voter=None):
+        """ Downvote the post
+
+            :param float weight: (optional) Weight for posting (-100.0 - +100.0) defaults to -100.0
+            :param str voter: (optional) Voting account
+        """
+        return self.vote(weight, voter=voter)
+
+    def vote(self, weight, voter=None):
+        """ Vote the post
+
+            :param float weight: Weight for posting (-100.0 - +100.0)
+            :param str voter: Voting account
+        """
+        # Test if post is archived, if so, voting is worthless but just
+        # pollutes the blockchain and account history
+        if getattr(self, "mode") == "archived":
+            raise VotingInvalidOnArchivedPost
+        return self.commit.vote(self.identifier, weight, account=voter)
+
+    def edit(self, body, meta=None, replace=False):
+        """ Edit an existing post
+
+            :param str body: Body of the reply
+            :param json meta: JSON meta object that can be attached to the
+                              post. (optional)
+            :param bool replace: Instead of calculating a *diff*, replace
+                                 the post entirely (defaults to ``False``)
+        """
+        if not meta:
+            meta = {}
+        original_post = self
+
+        if replace:
+            newbody = body
+        else:
+            import diff_match_patch
+            dmp = diff_match_patch.diff_match_patch()
+            patch = dmp.patch_make(original_post["body"], body)
+            newbody = dmp.patch_toText(patch)
+
+            if not newbody:
+                log.info("No changes made! Skipping ...")
+                return
+
+        reply_identifier = constructIdentifier(
+            original_post["parent_author"],
+            original_post["parent_permlink"]
+        )
+
+        new_meta = {}
+        if meta:
+            if original_post["json_metadata"]:
+                import json
+                new_meta = original_post["json_metadata"].update(meta)
+            else:
+                new_meta = meta
+
+        return self.post(
+            original_post["title"],
+            newbody,
+            reply_identifier=reply_identifier,
+            author=original_post["author"],
+            permlink=original_post["permlink"],
+            meta=new_meta,
+        )
+
+    def reply(self, body, title="", author="", meta=None):
+        """ Reply to an existing post
+
+            :param str body: Body of the reply
+            :param str title: Title of the reply post
+            :param str author: Author of reply (optional) if not provided
+                               ``default_user`` will be used, if present, else
+                               a ``ValueError`` will be raised.
+            :param json meta: JSON meta object that can be attached to the
+                              post. (optional)
+        """
+        return self.commit.post(title,
+                                body,
+                                meta=meta,
+                                author=author,
+                                reply_identifier=self.identifier)
+
     def set_comment_options(self, options):
         op = CommentOptions(
             **{"author": self["author"],
@@ -267,4 +328,4 @@ class Post(dict):
                    options.get("allow_curation_rewards", self["allow_curation_rewards"]),
                }
         )
-        return self.steemd.finalizeOp(op, self["author"], "posting")
+        return self.commit.finalizeOp(op, self["author"], "posting")

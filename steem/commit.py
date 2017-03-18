@@ -16,12 +16,10 @@ from steembase.storage import configStorage as config
 from .account import Account
 from .helpers import (
     resolveIdentifier,
-    constructIdentifier,
     derivePermlink,
     formatTimeString
 )
 from .instance import shared_steemd_instance
-from .post import Post
 from .transactionbuilder import TransactionBuilder
 from .wallet import Wallet
 
@@ -133,76 +131,6 @@ class Commit(object):
                                 no_broadcast=self.no_broadcast,
                                 expiration=self.expiration)
         return tx.broadcast()
-
-    def reply(self, identifier, body, title="", author="", meta=None):
-        """ Reply to an existing post
-
-            :param str identifier: Identifier of the post to reply to. Takes the
-                             form ``@author/permlink``
-            :param str body: Body of the reply
-            :param str title: Title of the reply post
-            :param str author: Author of reply (optional) if not provided
-                               ``default_user`` will be used, if present, else
-                               a ``ValueError`` will be raised.
-            :param json meta: JSON meta object that can be attached to the
-                              post. (optional)
-        """
-        return self.post(title,
-                         body,
-                         meta=meta,
-                         author=author,
-                         reply_identifier=identifier)
-
-    def edit(self,
-             identifier,
-             body,
-             meta={},
-             replace=False):
-        """ Edit an existing post
-
-            :param str identifier: Identifier of the post to reply to. Takes the
-                             form ``@author/permlink``
-            :param str body: Body of the reply
-            :param json meta: JSON meta object that can be attached to the
-                              post. (optional)
-            :param bool replace: Instead of calculating a *diff*, replace
-                                 the post entirely (defaults to ``False``)
-        """
-        original_post = Post(identifier, steemd_instance=self.steemd)
-
-        if replace:
-            newbody = body
-        else:
-            import diff_match_patch
-            dmp = diff_match_patch.diff_match_patch()
-            patch = dmp.patch_make(original_post["body"], body)
-            newbody = dmp.patch_toText(patch)
-
-            if not newbody:
-                log.info("No changes made! Skipping ...")
-                return
-
-        reply_identifier = constructIdentifier(
-            original_post["parent_author"],
-            original_post["parent_permlink"]
-        )
-
-        new_meta = {}
-        if meta:
-            if original_post["json_metadata"]:
-                import json
-                new_meta = original_post["json_metadata"].update(meta)
-            else:
-                new_meta = meta
-
-        return self.post(
-            original_post["title"],
-            newbody,
-            reply_identifier=reply_identifier,
-            author=original_post["author"],
-            permlink=original_post["permlink"],
-            meta=new_meta,
-        )
 
     def post(self,
              title,
