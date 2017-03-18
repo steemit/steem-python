@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+from contextlib import suppress
 from datetime import datetime
 
 from funcy.colls import walk_values
@@ -35,6 +36,11 @@ class Post(dict):
         self.steemd = steemd_instance or shared_steemd_instance()
         self.commit = Commit(steemd_instance=self.steemd)
 
+        # will set these during refresh()
+        self.patched = False
+        self.category = None
+        self.root_identifier = None
+
         if isinstance(post, str):  # From identifier
             self.identifier = self.parse_identifier(post)
             self.refresh()
@@ -61,8 +67,7 @@ class Post(dict):
 
         # If this 'post' comes from an operation, it might carry a patch
         if "body" in post and re.match("^@@", post["body"]):
-            self._patched = True
-            self._patch = post["body"]
+            self.patched = True
 
         # Total reward
         post["total_payout_reward"] = (
@@ -92,11 +97,10 @@ class Post(dict):
         for p in sbd_amounts:
             post[p] = Amount(post.get(p, "0.000 SBD"))
 
-        try:
+        post['json_metadata'] = dict()
+        with suppress(Exception):
             meta_str = post.get("json_metadata", "{}")
             post['json_metadata'] = json.loads(meta_str)
-        except:
-            post['json_metadata'] = dict()
 
         post["tags"] = []
         if post["depth"] == 0:
@@ -105,8 +109,8 @@ class Post(dict):
                 post["json_metadata"].get("tags", [])
             )
 
-        # Retrieve the root comment
-        self.openingPostIdentifier, self.category = self._getOpeningPost(post)
+        # If this post is a comment, retrieve the root comment
+        self.root_identifier, self.category = self._get_root_identifier(post)
 
         self._store_post(post)
 
@@ -133,7 +137,7 @@ class Post(dict):
 
     __str__ = __repr__
 
-    def _getOpeningPost(self, post=None):
+    def _get_root_identifier(self, post=None):
         if not post:
             post = self
         m = re.match("/([^/]*)/@([^/]*)/([^#]*).*",
