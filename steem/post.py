@@ -5,6 +5,8 @@ from contextlib import suppress
 from datetime import datetime
 
 from funcy.colls import walk_values
+from funcy.flow import silent
+from funcy.seqs import flatten
 from steembase.exceptions import (
     PostDoesNotExist,
     VotingInvalidOnArchivedPost
@@ -152,25 +154,30 @@ class Post(dict):
                 author, permlink
             ), category
 
-    def get_comments(self, sort="total_payout_reward"):
+    def get_replies(self):
         """ Return **first-level** comments of the post.
         """
         post_author, post_permlink = resolveIdentifier(self.identifier)
-        posts = self.steemd.get_content_replies(post_author, post_permlink)
-        r = []
-        for post in posts:
-            r.append(Post(post, steemd_instance=self.steemd))
-        if sort == "total_payout_value":
-            r = sorted(r, key=lambda x: float(
-                x["total_payout_value"]
-            ), reverse=True)
-        elif sort == "total_payout_reward":
-            r = sorted(r, key=lambda x: float(
-                x["total_payout_reward"]
-            ), reverse=True)
-        else:
-            r = sorted(r, key=lambda x: x[sort])
-        return r
+        replies = self.steemd.get_content_replies(post_author, post_permlink)
+        return map(silent(Post), replies)
+
+    @staticmethod
+    def get_all_replies(root_post=None, comments=list(), all_comments=list()):
+        """ Recursively fetch all the child comments, and return them as a list.
+
+        Usage: all_comments = Post.get_all_replies(Post('@foo/bar'))
+        """
+        # see if our root post has any comments
+        if root_post:
+            return Post.get_all_replies(comments=list(root_post.get_replies()))
+        if not comments:
+            return all_comments
+
+        # recursively scrape children one depth layer at a time
+        children = list(flatten([list(x.get_replies()) for x in comments]))
+        if not children:
+            return all_comments or comments
+        return Post.get_all_replies(comments=children, all_comments=comments + children)
 
     @property
     def reward(self):
