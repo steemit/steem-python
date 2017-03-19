@@ -18,9 +18,9 @@ from .amount import Amount
 from .block import Block
 from .blockchain import Blockchain
 from .dex import Dex
-from .utils import construct_identifier, strfage
 from .instance import shared_steemd_instance
 from .post import Post
+from .utils import construct_identifier, strfage
 from .witness import Witness
 
 context_settings = dict(help_option_names=['-h', '--help'])
@@ -187,66 +187,6 @@ def legacy():
     """
     listaccounts = subparsers.add_parser('listaccounts', help='List available accounts in your wallet')
     listaccounts.set_defaults(command="listaccounts")
-
-    """
-        Command "list"
-    """
-    parser_list = subparsers.add_parser('list', help='List posts on Steem')
-    parser_list.set_defaults(command="list")
-    parser_list.add_argument(
-        '--start',
-        type=str,
-        help='Start list from this identifier (pagination)'
-    )
-    parser_list.add_argument(
-        '--category',
-        type=str,
-        help='Only posts with in this category'
-    )
-    parser_list.add_argument(
-        '--sort',
-        type=str,
-        default=configStorage["list_sorting"],
-        choices=["trending", "created", "active", "cashout", "payout", "votes", "children", "hot"],
-        help='Sort posts'
-    )
-    parser_list.add_argument(
-        '--limit',
-        type=int,
-        default=configStorage["limit"],
-        help='Limit posts by number'
-    )
-    parser_list.add_argument(
-        '--columns',
-        type=str,
-        nargs="+",
-        help='Display custom columns'
-    )
-
-    """
-        Command "categories"
-    """
-    parser_categories = subparsers.add_parser('categories', help='Show categories')
-    parser_categories.set_defaults(command="categories")
-    parser_categories.add_argument(
-        '--sort',
-        type=str,
-        default=configStorage["categories_sorting"],
-        choices=["trending", "best", "active", "recent"],
-        help='Sort categories'
-    )
-    parser_categories.add_argument(
-        'category',
-        nargs="?",
-        type=str,
-        help='Only categories used by this author'
-    )
-    parser_categories.add_argument(
-        '--limit',
-        type=int,
-        default=configStorage["limit"],
-        help='Limit categories by number'
-    )
 
     """
         Command "upvote"
@@ -1307,18 +1247,21 @@ def legacy():
     elif args.command == "balance":
         t = PrettyTable(["Account", "STEEM", "SBD", "VESTS", "Savings (STEEM)", "Savings (SBD)"])
         t.align = "r"
-        if isinstance(args.account, str):
-            a = args.account
-            b = Account(a).balances
-            t.add_row([
-                a,
-                b["STEEM"],
-                b["SBD"],
-                b["VESTS"],
-                b["SAVINGS_STEEM"],
-                b["SAVINGS_SBD"],
-            ])
-        print(t)
+
+        if args.account and isinstance(args.account, list):
+            for account in args.account:
+                a = Account(account)
+                t.add_row([
+                    a.name,
+                    a.balances["STEEM"],
+                    a.balances["SBD"],
+                    a.balances["VESTS"],
+                    a.balances["SAVINGS_STEEM"],
+                    a.balances["SAVINGS_SBD"],
+                ])
+            print(t)
+        else:
+            print("Please specify an account: piston balance <account>")
 
     elif args.command == "history":
         header = ["#", "time (block)", "operation", "details"]
