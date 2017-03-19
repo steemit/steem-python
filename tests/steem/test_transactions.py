@@ -5,6 +5,7 @@ from steembase.account import PrivateKey
 from steembase.transactions import SignedTransaction
 from steembase import operations
 from collections import OrderedDict
+import steem as stm
 
 wif = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
 ref_block_num = 34294
@@ -16,6 +17,7 @@ class Testcases(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(Testcases, self).__init__(*args, **kwargs)
         self.maxDiff = None
+        self.steem = stm.Steem()
 
     def test_Comment(self):
         op = operations.Comment(
@@ -34,16 +36,16 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c80457010107666f6f6261726107666f6f626172620"
                    "7666f6f6261726307666f6f6261726407666f6f6261726507666f6f62"
                    "6172660e7b22666f6f223a2022626172227d00011f34a882f3b06894c"
                    "29f52e06b8a28187b84b817c0e40f124859970b32511a778736d682f2"
                    "4d3a6e6da124b340668d25bbcf85ffa23ca622b307ffe10cf182bb82")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_Vote(self):
         op = operations.Vote(
@@ -59,17 +61,17 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx.verify([PrivateKey(wif).pubkey])
+        tx.verify([PrivateKey(wif).pubkey], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c80457010007666f6f6261726107666f6f62617263"
                    "07666f6f62617264e8030001202e09123f732a438ef6d6138484d7ad"
                    "edfdcf4a4f3d171f7fcafe836efa2a3c8877290bd34c67eded824ac0"
                    "cc39e33d154d0617f64af936a83c442f62aef08fec")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_create_account(self):
         op = operations.AccountCreate(
@@ -107,9 +109,9 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c804570109102700000000000003535445454d000"
                    "0057865726f63086673616661617366010000000002026f6231b8ed"
@@ -126,7 +128,7 @@ class Testcases(unittest.TestCase):
                    "beb34bb74f3c62699e0000012031827ea70b06e413d124d14ed8db3"
                    "99597fa5f94566e031b706533a9090395be1c0ed317c8af01d12ca7"
                    "9258ac4d800adff92a84630b567e5ff48cd4b5f716d6")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_Transfer(self):
         op = operations.Transfer(
@@ -143,16 +145,16 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c80457010203666f6f046261617206b201000000"
                    "000003535445454d000004466f6f6f00012025416c234dd5ff15d8"
                    "b45486833443c128002bcafa57269cada3ad213ef88adb5831f63a"
                    "58d8b81bbdd92d494da01eeb13ee1786d02ce075228b25d7132f8f"
                    "3e")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_Transfer_to_vesting(self):
         op = operations.TransferToVesting(
@@ -168,21 +170,20 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c80457010303666f6f046261617206b201000000"
                    "000003535445454d00000001203a34cd45fb4a2585514614be2c1"
                    "ba2365257ce5470d20c6c6abda39204eeba0b7e057d889ca8b1b1"
                    "406f1441520a25d32df2ab9fdb532c3377dc66d0fe41bb3d")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_withdraw_vesting(self):
         op = operations.WithdrawVesting(
-            **{"from": "foo",
-               "to": "baar",
-               "amount": "111.110 STEEM",
+            **{"account": "foo",
+               "vesting_shares": "100 VESTS",
                }
         )
         ops = [operations.Operation(op)]
@@ -192,15 +193,14 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
 
-        compare = ("f68585abf4dce7c80457010303666f6f046261617206b2010000000"
-                   "00003535445454d00000001203a34cd45fb4a2585514614be2c1ba"
-                   "2365257ce5470d20c6c6abda39204eeba0b7e057d889ca8b1b1406"
-                   "f1441520a25d32df2ab9fdb532c3377dc66d0fe41bb3d")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        compare = ("f68585abf4dce7c80457010403666f6f00e1f5050000000006564553545300000"
+                   "00120772da57b15b62780ee3d8afedd8d46ffafb8c62788eab5ce01435df99e1d3"
+                   "6de549f260444866ff4e228cac445548060e018a872e7ee99ace324af9844f4c50a")
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_Transfer_to_savings(self):
         op = operations.TransferToSavings(
@@ -218,14 +218,14 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c804570120087465737475736572087465737475736572e8030000000000000353"
                    "5445454d000008746573746d656d6f00011f4df74457bf8824c02da6a722a7c604676c97aad1a51eb"
                    "cfb7086b0b7c1f19f9257388a06b3c24ae51d97c9eee5e0ecb7b6c32a29af6f56697f0c7516e70a75ce")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_Transfer_from_savings(self):
         op = operations.TransferFromSavings(
@@ -244,15 +244,15 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c804570121087465737475736572292300000774657374736"
                    "572a0860100000000000353424400000000086d656d6f6865726500012058760"
                    "45f4869b6459438019d71d25bdea461899e0a96635c05f19caf424fa1453fc1fe"
                    "103d9ca6470d629b9971adddf757c829bb47cc96b29662f294bebb4fb2")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_Cancel_transfer_from_savings(self):
         op = operations.CancelTransferFromSavings(
@@ -268,14 +268,14 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c8045701220774657375736572292300000001200942474f6723937b8"
                    "8e19fb8cade26cc97f68cb626362d0764d134fe837df5262200b5e71bec13a0673995a58"
                    "4a47674897e959d8c1f83389505895fb64ceda5")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_order_create(self):
         op = operations.LimitOrderCreate(
@@ -294,15 +294,15 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c8045701050000000000000000000000000003535"
                    "445454d0000000000000000000003535445454d0000007f46685800"
                    "011f28a2fc52dcfc19378c5977917b158dfab93e7760259aab7ecdb"
                    "cb82df7b22e1a5527e02fd3aab7d64302ec550c3edcbba29d73226c"
                    "f088273e4fafda89eb7de8")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_account_update(self):
         op = operations.AccountUpdate(
@@ -335,9 +335,9 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c80457010a0973747265656d69616e01010000"
                    "00000202bbcf38855c9ae9d55704ee50ff56552af1242266c105"
                    "44a75b61005e17fa78a601000389d28937022880a7f0c7deaa6f"
@@ -353,7 +353,7 @@ class Testcases(unittest.TestCase):
                    "0c949d901c44232694252348004cf9a74ec2f391c0e0b7a4108e"
                    "7f71522c186a92c17e23a07cdb108a745b9760316daf16f20434"
                    "53fbeccb331067")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_order_cancel(self):
         op = operations.LimitOrderCancel(
@@ -368,14 +368,14 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c804570106003cac20000001206c9888d0c2c3"
                    "1dba1302566f524dfac01a15760b93a8726241a7ae6ba00edfd"
                    "e5b83edaf94a4bd35c2957ded6023576dcbe936338fb9d340e2"
                    "1b5dad6f0028f6")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_set_route(self):
         op = operations.SetWithdrawVestingRoute(
@@ -392,14 +392,14 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c804570114057865726f63057865726f63e803"
                    "0000011f12d2b8f93f9528f31979e0e1f59a6d45346a88c02ab2"
                    "c4115b10c9e273fc1e99621af0c2188598c84762b7e99ca63f6b"
                    "6be6fca318dd85b0d7a4f09f95579290")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_convert(self):
         op = operations.Convert(
@@ -414,14 +414,14 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c804570108057865726f6343529d8ba0860100000"
                    "00000035342440000000000011f3d22eb66e5cddcc90f5d6ca0bd7a"
                    "43e0ab811ecd480022af8a847c45eac720b342188d55643d8cb1711"
                    "f516e9879be2fa7dfa329b518f19df4afaaf4f41f7715")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_utf8tests(self):
         op = operations.Comment(
@@ -440,9 +440,9 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
+        tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c804570101000001610161012dec1f75303030307"
                    "5303030317530303032753030303375303030347530303035753030"
                    "3036753030303762090a7530303062660d753030306575303030667"
@@ -595,7 +595,7 @@ class Testcases(unittest.TestCase):
                    "f0000011f45c8e1ed9289f5ec7d4f6d7ce891a30ede7470e28d4639"
                    "8e0dc15c41c784b1862f132378382230d68b59e3592e72a32f310f8"
                    "8ea4baddb361a3709b664ba7375")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_feed_publish(self):
         op = operations.FeedPublish(
@@ -609,14 +609,14 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx = tx.sign([wif], chain=self.steem.chain_params)
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c804570107057865726f63e803000000000"
                    "00003534244000000001b1000000000000003535445454d00"
                    "000001203847a02aa76964cacfb41565c23286cc64b18f6bb"
                    "9260832823839b3b90dff18738e1b686ad22f79c42fca73e6"
                    "1bf633505a2a66cac65555b0ac535ca5ee5a61")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_witness_update(self):
         op = operations.WitnessUpdate(
@@ -636,8 +636,8 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx = tx.sign([wif], chain=self.steem.chain_params)
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c80457010b057865726f6308666f6f6f6f6261"
                    "720314aa202c9158990b3ec51a1aa49b2ab5d300c97b391df3be"
                    "b34bb74f3c62699e102700000000000003535445454d000047f4"
@@ -645,7 +645,7 @@ class Testcases(unittest.TestCase):
                    "bebc872e8d792caeb3b729e9a5e8af90c07ab3f744fb4d0f19d5"
                    "7b3bec32f5a43f5acdfc065f0227e45e599745c46e41c023d69f"
                    "b9f2405478badadb4c")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_witness_vote(self):
         op = operations.AccountWitnessVote(
@@ -661,14 +661,14 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx = tx.sign([wif], chain=self.steem.chain_params)
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c80457010c057865726f630a636"
                    "861696e73717561640100011f16b43411e11f4739"
                    "4c1624a3c4d3cf4daba700b8690f494e6add7ad9b"
                    "ac735ce7775d823aa66c160878cb3348e6857c531"
                    "114d229be0202dc0857f8f03a00369")
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_custom_json(self):
         op = operations.CustomJson(
@@ -690,8 +690,8 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx = tx.sign([wif], chain=self.steem.chain_params)
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
         compare = (
             "f68585abf4dce7c8045701120001057865726f6306666f6c6c"
             "6f777f5b227265626c6f67222c207b226163636f756e74223a"
@@ -703,7 +703,7 @@ class Testcases(unittest.TestCase):
             "0bf2fac5f9a40d37d5773deef048217db79cabbf15ef29452d"
             "e4ed1c5face51d998348188d66eb9fc1ccef79a0c0d4"
         )
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_comment_options(self):
         op = operations.CommentOptions(
@@ -724,8 +724,8 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx = tx.sign([wif], chain=self.steem.chain_params)
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
         compare = (
             "f68585abf4dce7c804570113057865726f6306706973746f6e"
             "00ca9a3b000000000353424400000000102701010000011f20"
@@ -733,7 +733,7 @@ class Testcases(unittest.TestCase):
             "56d259e59fc54ee582a5a86073508f69ffebea4283f13d1a89"
             "6243754a4a82fa18077f832225"
         )
-        self.assertEqual(compare[:-130], txWire[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def compareConstructedTX(self):
         #    def test_online(self):
@@ -756,22 +756,22 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops
         )
-        tx = tx.sign([wif])
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        tx = tx.sign([wif], chain=self.steem.chain_params)
+        tx_wire = hexlify(bytes(tx)).decode("ascii")
 
         # todo
-        rpc = Wallet()
+        rpc = self.steem.commit.wallet
         compare = rpc.serialize_transaction(tx.json())
 
         pprint(tx.json())
 
         print("\n")
         print(compare[:-130])
-        print(txWire[:-130])
+        print(tx_wire[:-130])
         print("\n")
 
-        print(txWire[:-130] == compare[:-130])
-        self.assertEqual(compare[:-130], txWire[:-130])
+        print(tx_wire[:-130] == compare[:-130])
+        self.assertEqual(compare[:-130], tx_wire[:-130])
 
 
 if __name__ == '__main__':

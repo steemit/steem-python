@@ -377,7 +377,7 @@ class Commit(object):
             raise AccountExistsException
 
         " Generate new keys from password"
-        from pistonbase.account import PasswordKey, PublicKey
+        from steembase.account import PasswordKey, PublicKey
         if password:
             posting_key = PasswordKey(account_name, password, role="posting")
             active_key = PasswordKey(account_name, password, role="active")

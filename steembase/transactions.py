@@ -171,7 +171,7 @@ class SignedTransaction(GrapheneObject):
 
     def verify(self, pubkeys=[], chain=None):
         if not chain:
-            raise
+            raise ValueError("Chain needs to be provided!")
         chain_params = self.getChainParams(chain)
         self.deriveDigest(chain)
         signatures = self.data["signatures"].data
@@ -231,7 +231,7 @@ class SignedTransaction(GrapheneObject):
 
         """
         if not chain:
-            raise Exception("Chain needs to be provided!")
+            raise ValueError("Chain needs to be provided!")
         self.deriveDigest(chain)
 
         # Get Unique private keys

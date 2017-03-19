@@ -1324,7 +1324,7 @@ def legacy():
 
     elif args.command == "allow":
         if not args.foreign_account:
-            from pistonbase.account import PasswordKey
+            from steembase.account import PasswordKey
             pwd = get_terminal(text="Password for Key Derivation: ", confirm=True)
             args.foreign_account = format(PasswordKey(args.account, pwd, args.permission).get_public(), "STM")
         pprint(steem.commit.allow(
@@ -1346,7 +1346,7 @@ def legacy():
     elif args.command == "updatememokey":
         if not args.key:
             # Loop until both match
-            from pistonbase.account import PasswordKey
+            from steembase.account import PasswordKey
             pw = get_terminal(text="Password for Memo Key: ", confirm=True, allowedempty=False)
             memo_key = PasswordKey(args.account, pw, "memo")
             args.key = format(memo_key.get_public_key(), "STM")
@@ -1381,7 +1381,7 @@ def legacy():
         ))
 
     elif args.command == "importaccount":
-        from pistonbase.account import PasswordKey
+        from steembase.account import PasswordKey
         import getpass
         password = getpass.getpass("Account Passphrase: ")
         account = Account(args.account)

@@ -1,6 +1,6 @@
 import unittest
-from graphenebase.base58 import Base58
-from graphenebase.account import BrainKey, Address, PublicKey, PrivateKey, PasswordKey
+from steembase.base58 import Base58
+from steembase.account import BrainKey, Address, PublicKey, PrivateKey, PasswordKey
 
 
 class Testcases(unittest.TestCase):

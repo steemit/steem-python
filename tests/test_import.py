@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from steem import *
+from steembase import *
+
 
 # pylint: disable=unused-import,unused-variable
 def test_import():
-    import steempy
-    import steempy.steem
-    import steempy.http_client
-    import steempy.utils
+    _ = Steem()
+    _ = account.PasswordKey
