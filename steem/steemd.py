@@ -10,7 +10,7 @@ from steembase.types import PointInTime
 
 from .block import Block
 from .blockchain import Blockchain
-from .helpers import resolveIdentifier
+from .utils import resolve_identifier
 from .post import Post
 
 logger = logging.getLogger(__name__)
@@ -104,7 +104,7 @@ class Steemd(HttpClient):
                             "limit": limit,
                             }
         if start:
-            author, permlink = resolveIdentifier(start)
+            author, permlink = resolve_identifier(start)
             discussion_query["start_author"] = author
             discussion_query["start_permlink"] = permlink
 

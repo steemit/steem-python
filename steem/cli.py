@@ -18,7 +18,7 @@ from .amount import Amount
 from .block import Block
 from .blockchain import Blockchain
 from .dex import Dex
-from .helpers import strfage, constructIdentifier
+from .utils import construct_identifier, strfage
 from .instance import shared_steemd_instance
 from .post import Post
 from .witness import Witness
@@ -1700,12 +1700,12 @@ def format_operation_details(op, memos=False):
     if op[0] == "vote":
         return "%s: %s" % (
             op[1]["voter"],
-            constructIdentifier(op[1]["author"], op[1]["permlink"])
+            construct_identifier(op[1]["author"], op[1]["permlink"])
         )
     elif op[0] == "comment":
         return "%s: %s" % (
             op[1]["author"],
-            constructIdentifier(op[1]["author"], op[1]["permlink"])
+            construct_identifier(op[1]["author"], op[1]["permlink"])
         )
     elif op[0] == "transfer":
         str_ = "%s -> %s %s" % (

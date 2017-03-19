@@ -14,11 +14,7 @@ from steembase.exceptions import (
 from steembase.storage import configStorage as config
 
 from .account import Account
-from .helpers import (
-    resolveIdentifier,
-    derivePermlink,
-    formatTimeString
-)
+from .utils import derive_permlink, resolve_identifier, fmt_time_string
 from .instance import shared_steemd_instance
 from .transactionbuilder import TransactionBuilder
 from .wallet import Wallet
@@ -213,19 +209,19 @@ class Commit(object):
 
         # Deal with replies
         if reply_identifier and not category:
-            parent_author, parent_permlink = resolveIdentifier(reply_identifier)
+            parent_author, parent_permlink = resolve_identifier(reply_identifier)
             if not permlink:
-                permlink = derivePermlink(title, parent_permlink)
+                permlink = derive_permlink(title, parent_permlink)
         elif category and not reply_identifier:
-            parent_permlink = derivePermlink(category)
+            parent_permlink = derive_permlink(category)
             parent_author = ""
             if not permlink:
-                permlink = derivePermlink(title)
+                permlink = derive_permlink(title)
         elif not category and not reply_identifier:
             parent_author = ""
             parent_permlink = ""
             if not permlink:
-                permlink = derivePermlink(title)
+                permlink = derive_permlink(title)
         else:
             raise ValueError(
                 "You can't provide a category while replying to a post"
@@ -283,7 +279,7 @@ class Commit(object):
         if not account:
             raise ValueError("You need to provide a voter account")
 
-        post_author, post_permlink = resolveIdentifier(identifier)
+        post_author, post_permlink = resolve_identifier(identifier)
 
         op = operations.Vote(
             **{"voter": account,
@@ -762,7 +758,7 @@ class Commit(object):
             :param str account: Account name to get interest for
         """
         account = Account(account, steemd_instance=self.steemd)
-        last_payment = formatTimeString(account["sbd_last_interest_payment"])
+        last_payment = fmt_time_string(account["sbd_last_interest_payment"])
         next_payment = last_payment + timedelta(days=30)
         interest_rate = self.steemd.get_dynamic_global_properties()["sbd_interest_rate"] / 100  # percent
         interest_amount = (interest_rate / 100) * int(
@@ -1052,7 +1048,7 @@ class Commit(object):
                 account = config["default_author"]
         if not account:
             raise ValueError("You need to provide an account")
-        author, permlink = resolveIdentifier(identifier)
+        author, permlink = resolve_identifier(identifier)
         json_body = ["reblog", {"account": account,
                                 "author": author,
                                 "permlink": permlink}]
@@ -1143,7 +1139,7 @@ class Commit(object):
         if not account:
             raise ValueError("You need to provide an account")
         account = Account(account, steemd_instance=self.steemd)
-        author, permlink = resolveIdentifier(identifier)
+        author, permlink = resolve_identifier(identifier)
         default_max_payout = "1000000.000 SBD"
         op = operations.CommentOptions(
             **{

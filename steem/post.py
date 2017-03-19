@@ -15,10 +15,7 @@ from steembase.operations import CommentOptions
 
 from .amount import Amount
 from .commit import Commit
-from .helpers import (
-    resolveIdentifier,
-    constructIdentifier,
-)
+from .utils import construct_identifier, resolve_identifier
 from .instance import shared_steemd_instance
 from .utils import parse_time, remove_from_dict
 
@@ -48,7 +45,7 @@ class Post(dict):
             self.refresh()
         elif isinstance(post, dict) and "author" in post and "permlink" in post:
             post["author"] = post["author"].replace('@', '')
-            self.identifier = constructIdentifier(post["author"], post["permlink"])
+            self.identifier = construct_identifier(post["author"], post["permlink"])
 
             if "created" in post:
                 self._store_post(post)
@@ -62,7 +59,7 @@ class Post(dict):
         return '@%s' % uri.split('@')[-1]
 
     def refresh(self):
-        post_author, post_permlink = resolveIdentifier(self.identifier)
+        post_author, post_permlink = resolve_identifier(self.identifier)
         post = self.steemd.get_content(post_author, post_permlink)
         if not post["permlink"]:
             raise PostDoesNotExist("Post does not exist: %s" % self.identifier)
@@ -150,14 +147,14 @@ class Post(dict):
             category = m.group(1)
             author = m.group(2)
             permlink = m.group(3)
-            return constructIdentifier(
+            return construct_identifier(
                 author, permlink
             ), category
 
     def get_replies(self):
         """ Return **first-level** comments of the post.
         """
-        post_author, post_permlink = resolveIdentifier(self.identifier)
+        post_author, post_permlink = resolve_identifier(self.identifier)
         replies = self.steemd.get_content_replies(post_author, post_permlink)
         return map(silent(Post), replies)
 
@@ -284,7 +281,7 @@ class Post(dict):
                 log.info("No changes made! Skipping ...")
                 return
 
-        reply_identifier = constructIdentifier(
+        reply_identifier = construct_identifier(
             original_post["parent_author"],
             original_post["parent_permlink"]
         )
