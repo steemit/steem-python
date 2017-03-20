@@ -27,3 +27,14 @@ Upgrade
 ::
 
    $ pip install -U steem
+
+
+
+Namespace Collision
+===================
+
+If you have used a piston stack before v0.5, please remove it before installing official version of ``python-steem``.
+
+::
+
+   curl https://raw.githubusercontent.com/steemit/steem-python/master/scripts/nuke_legacy.sh | sh
