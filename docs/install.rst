@@ -19,7 +19,7 @@ You can also perform the installation manually using `setup.py`:
 
     $ git clone https://github.com/steemit/steem-python
     $ cd steem-python
-    $ python setup.py install --user
+    $ make install
 
 Upgrade
 #######

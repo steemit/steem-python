@@ -2,7 +2,7 @@ Convenience Utilities
 ~~~~~~~~~~~~~~~~~~~~~
 
 
-Convenience utilities provide an abstraction layer for dealing with STEEM blockchain and underlying types.
+Convenience utils provide abstraction layers for dealing with STEEM blockchain and underlying types.
 
 Example:
 
@@ -70,13 +70,6 @@ Post
 
 --------
 
-Storage
-=======
-
-.. automodule:: steem.storage
-   :members:
-
---------
 
 TransactionBuilder
 ==================
@@ -86,3 +79,11 @@ TransactionBuilder
 
 --------
 
+
+steem.utils
+===========
+
+.. automodule:: steem.utils
+   :members:
+
+--------

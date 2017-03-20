@@ -1,10 +1,10 @@
 from contextlib import suppress
 
 from funcy.seqs import rest, first
-from instance import shared_steemd_instance
 from steembase.exceptions import PostDoesNotExist
 
 from .account import Account
+from .instance import shared_steemd_instance
 from .post import Post
 from .utils import is_comment
 
