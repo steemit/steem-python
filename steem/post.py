@@ -69,7 +69,7 @@ class Post(dict):
             self.patched = True
 
         # Total reward
-        post["total_payout_reward"] = (
+        post["total_payout_value"] = (
             Amount(post.get("total_payout_value", "0 SBD")) +
             Amount(post.get("total_pending_payout_value", "0 SBD"))
         )
@@ -86,7 +86,7 @@ class Post(dict):
 
         # Parse Amounts
         sbd_amounts = [
-            "total_payout_reward",
+            "total_payout_value",
             "max_accepted_payout",
             "pending_payout_value",
             "curator_payout_value",
@@ -180,7 +180,7 @@ class Post(dict):
     def reward(self):
         """Return a float value of estimated total SBD reward.
         """
-        return self['total_payout_reward']
+        return self['total_payout_value']
 
     @property
     def meta(self):
