@@ -552,10 +552,10 @@ def inspect_steemd_implementation():
 
     avail_methods = set(avail_methods)
 
-    print("\n Missing Methods:")
+    print("\nMissing Methods:")
     pprint(avail_methods - _methods)
 
-    print("\n Likely Deprecated Methods:")
+    print("\nLikely Deprecated Methods:")
     pprint(_methods - avail_methods)
 
 
