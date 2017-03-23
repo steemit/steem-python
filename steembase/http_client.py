@@ -132,10 +132,8 @@ class HttpClient(object):
         else:
             return body_dict
 
-    def exec(self, name, *args, api=None, re_raise=None, return_with_args=None, _ret_cnt=0):
+    def exec(self, name, *args, api=None, return_with_args=None, _ret_cnt=0):
         """ Execute a method against steemd RPC."""
-        if not re_raise:
-            re_raise = self.re_raise
         body = HttpClient.json_rpc_body(name, *args, api=api)
         response = None
         try:
@@ -148,11 +146,10 @@ class HttpClient(object):
                 raise e
             self.next_node()
             return self.exec(name, *args,
-                             re_raise=re_raise,
                              return_with_args=return_with_args,
                              _ret_cnt=_ret_cnt+1)
         except Exception as e:
-            if re_raise:
+            if self.re_raise:
                 raise e
             else:
                 extra = dict(err=e, request=self.request)
@@ -160,7 +157,6 @@ class HttpClient(object):
                 return self._return(
                     response=response,
                     args=args,
-                    re_raise=re_raise,
                     return_with_args=return_with_args)
         else:
             if response.status not in tuple(
@@ -170,12 +166,9 @@ class HttpClient(object):
             return self._return(
                 response=response,
                 args=args,
-                re_raise=re_raise,
                 return_with_args=return_with_args)
 
-    def _return(self, response=None, args=None, re_raise=None, return_with_args=None):
-        if not re_raise:
-            re_raise = self.re_raise
+    def _return(self, response=None, args=None, return_with_args=None):
         return_with_args = return_with_args or self.return_with_args
         result = None
 
@@ -190,7 +183,7 @@ class HttpClient(object):
                 if 'error' in response_json:
                     error = response_json['error']
 
-                    if re_raise:
+                    if self.re_raise:
                         error_message = error.get(
                             'detail', response_json['error']['message'])
                         raise RPCError(error_message)
