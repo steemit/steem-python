@@ -71,7 +71,7 @@ class Post(dict):
         # Total reward
         post["total_payout_value"] = (
             Amount(post.get("total_payout_value", "0 SBD")) +
-            Amount(post.get("total_pending_payout_value", "0 SBD"))
+            Amount(post.get("pending_payout_value", "0 SBD"))
         )
 
         # Parse Times

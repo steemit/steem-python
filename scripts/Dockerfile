@@ -12,6 +12,6 @@ MAINTAINER furion <_@furion.me>
 ENV UNLOCK test123
 
 RUN pip install ipython
-RUN pip install git+git://github.com/Netherdrake/steem-python.git
+RUN pip install git+git://github.com/steemit/steem-python.git
 
 CMD "ipython"
