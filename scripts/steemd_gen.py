@@ -1,13 +1,14 @@
 import sys
 from functools import partial
+from pprint import pprint
 
-from funcy.colls import where
-from funcy.seqs import first
+from funcy.colls import where, pluck
+from funcy.seqs import first, distinct, flatten
+from steem import Steem
 
 # todo
 # "get_expiring_vesting_delegations": [('author', 'str'), ('from_time', 'object'), ('limit', 'int')],  # ?
 # "get_reward_fund": [('fund_name', 'str')],  # ?
-
 
 api_methods = [
     {
@@ -538,5 +539,26 @@ def find_api(method_name):
         return endpoint.get('api')
 
 
+def inspect_steemd_implementation():
+    """ Compare implemented methods with current live deployment of steemd. """
+    _apis = distinct(pluck('api', api_methods))
+    _methods = set(pluck('method', api_methods))
+
+    avail_methods = []
+    s = Steem(re_raise=False)
+    for api in _apis:
+        err = s.exec('nonexistentmethodcall', api=api)
+        [avail_methods.append(x) for x in err['data']['stack'][0]['data']['api'].keys()]
+
+    avail_methods = set(avail_methods)
+
+    print("\n Missing Methods:")
+    pprint(avail_methods - _methods)
+
+    print("\n Likely Deprecated Methods:")
+    pprint(_methods - avail_methods)
+
+
 if __name__ == '__main__':
-    steemd_codegen()
+    # steemd_codegen()
+    inspect_steemd_implementation()
