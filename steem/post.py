@@ -15,8 +15,8 @@ from steembase.operations import CommentOptions
 
 from .amount import Amount
 from .commit import Commit
-from .utils import construct_identifier, resolve_identifier
 from .instance import shared_steemd_instance
+from .utils import construct_identifier, resolve_identifier
 from .utils import parse_time, remove_from_dict
 
 log = logging.getLogger(__name__)
@@ -67,12 +67,6 @@ class Post(dict):
         # If this 'post' comes from an operation, it might carry a patch
         if "body" in post and re.match("^@@", post["body"]):
             self.patched = True
-
-        # Total reward
-        post["total_payout_value"] = (
-            Amount(post.get("total_payout_value", "0 SBD")) +
-            Amount(post.get("pending_payout_value", "0 SBD"))
-        )
 
         # Parse Times
         parse_times = ["active",
@@ -180,7 +174,8 @@ class Post(dict):
     def reward(self):
         """Return a float value of estimated total SBD reward.
         """
-        return self['total_payout_value']
+        return Amount(self.get("total_payout_value", "0 SBD")) + \
+               Amount(self.get("pending_payout_value", "0 SBD"))
 
     @property
     def meta(self):
@@ -252,7 +247,7 @@ class Post(dict):
         """
         # Test if post is archived, if so, voting is worthless but just
         # pollutes the blockchain and account history
-        if getattr(self, "mode") == "archived":
+        if not self.get('net_rshares'):
             raise VotingInvalidOnArchivedPost
         return self.commit.vote(self.identifier, weight, account=voter)
 
