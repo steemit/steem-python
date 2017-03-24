@@ -199,7 +199,7 @@ def legacy():
         help='@author/permlink-identifier of the post to upvote to (e.g. @xeroc/python-steem-0-1)'
     )
     parser_upvote.add_argument(
-        '--voter',
+        '--account',
         type=str,
         required=False,
         default=configStorage["default_voter"],
@@ -219,7 +219,7 @@ def legacy():
     parser_downvote = subparsers.add_parser('downvote', help='Downvote a post')
     parser_downvote.set_defaults(command="downvote")
     parser_downvote.add_argument(
-        '--voter',
+        '--account',
         type=str,
         default=configStorage["default_voter"],
         help='The voter account name'
@@ -1203,10 +1203,10 @@ def legacy():
             weight = -float(args.weight)
         else:
             weight = +float(args.weight)
-        if not args.voter:
+        if not args.account:
             print("Not voter provided!")
             return
-        pprint(post.vote(weight, voter=args.voter))
+        pprint(post.vote(weight, voter=args.account))
 
     elif args.command == "transfer":
         pprint(steem.commit.transfer(

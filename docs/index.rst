@@ -62,6 +62,13 @@ Digging Deeper
    commit
    convenience
 
+CLI
+---
+.. toctree::
+   :maxdepth: 1
+
+   cli
+
 Low Level
 ---------
 .. toctree::

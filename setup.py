@@ -44,7 +44,8 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'steem=steem.cli:cli',
+            'steempy2=steem.cli:cli',
             'piston=steem.cli:legacy',
+            'steempy=steem.cli:legacy',
         ]
     })
