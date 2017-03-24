@@ -61,7 +61,7 @@ def legacy():
         '--node',
         type=str,
         default=configStorage["node"],
-        help='Websocket URL for public Steem API (default: "wss://this.piston.rocks/")'
+        help='URL for public Steem API (default: "https://steemd.steemit.com")'
     )
 
     parser.add_argument(

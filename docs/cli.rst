@@ -93,8 +93,8 @@ You can see all available commands with ``steempy -h``
 
    optional arguments:
      -h, --help            show this help message and exit
-     --node NODE           Websocket URL for public Steem API (default:
-                           "wss://this.piston.rocks/")
+     --node NODE           URL for public Steem API (default:
+                           "https://steemd.steemit.com")
      --nobroadcast, -d     Do not broadcast anything
      --nowallet, -p        Do not load the wallet
      --unsigned, -x        Do not try to sign the transaction
