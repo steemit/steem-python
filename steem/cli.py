@@ -65,12 +65,12 @@ def legacy():
     )
 
     parser.add_argument(
-        '--nobroadcast', '-d',
+        '--no-broadcast', '-d',
         action='store_true',
         help='Do not broadcast anything'
     )
     parser.add_argument(
-        '--nowallet', '-p',
+        '--no-wallet', '-p',
         action='store_true',
         help='Do not load the wallet'
     )
@@ -1001,10 +1001,10 @@ def legacy():
     }
     if args.command == "sign":
         options.update({"offline": True})
-    if args.nowallet:
+    if args.no_wallet:
         options.update({"wif": []})
 
-    steem = stm.Steem(no_broadcast=args.nobroadcast, **options)
+    steem = stm.Steem(no_broadcast=args.no_broadcast, **options)
 
     if args.command == "set":
         if (args.key in ["default_author",
@@ -1352,7 +1352,7 @@ def legacy():
             args.key = format(memo_key.get_public_key(), "STM")
             memo_privkey = memo_key.get_private_key()
             # Add the key to the wallet
-            if not args.nobroadcast:
+            if not args.no_broadcast:
                 steem.commit.wallet.addPrivateKey(memo_privkey)
         pprint(steem.commit.update_memo_key(
             args.key,
