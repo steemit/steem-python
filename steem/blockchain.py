@@ -47,7 +47,7 @@ class Blockchain(object):
         """
         return Block(self.get_current_block_num())
 
-    def ops(self, start=None, stop=None, full_blocks=False, only_virtual_ops=False):
+    def ops(self, start=None, stop=None, full_blocks=False, only_virtual_ops=False, **kwargs):
         """
         Yields all operations (including virtual operations) starting from ``start``.
         This call returns a generator with blocks or operations depending on full_blocks param.
@@ -59,6 +59,7 @@ class Blockchain(object):
             :param bool only_virtual_ops: Only yield virtual operations
         """
 
+        _ = kwargs  # we need this
         # Let's find out how often blocks are generated!
         block_interval = self.config().get("STEEMIT_BLOCK_INTERVAL")
 
