@@ -3,10 +3,10 @@ import concurrent.futures
 import json
 import logging
 import socket
+import time
 from functools import partial
 from itertools import cycle
 from urllib.parse import urlparse
-import time
 
 import certifi
 import urllib3
@@ -152,13 +152,15 @@ class HttpClient(object):
 
             # try switching nodes before giving up
             if _ret_cnt > 2:
-                time.sleep(5*_ret_cnt)
+                time.sleep(5 * _ret_cnt)
             elif _ret_cnt > 10:
                 raise e
             self.next_node()
+            logging.debug('Switched node to %s due to exception: %s' %
+                          (self.hostname, e.__class__.__name__))
             return self.exec(name, *args,
                              return_with_args=return_with_args,
-                             _ret_cnt=_ret_cnt+1)
+                             _ret_cnt=_ret_cnt + 1)
         except Exception as e:
             if self.re_raise:
                 raise e
