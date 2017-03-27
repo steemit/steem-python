@@ -12,7 +12,7 @@ import certifi
 import urllib3
 from steembase.exceptions import RPCError
 from urllib3.connection import HTTPConnection
-from urllib3.exceptions import MaxRetryError
+from urllib3.exceptions import MaxRetryError, ReadTimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -133,12 +133,23 @@ class HttpClient(object):
             return body_dict
 
     def exec(self, name, *args, api=None, return_with_args=None, _ret_cnt=0):
-        """ Execute a method against steemd RPC."""
+        """ Execute a method against steemd RPC.
+
+        Warnings:
+            This command will auto-retry in case of node failure, as well as handle
+            node fail-over, unless we are broadcasting a transaction.
+            In latter case, the exception is **re-raised**.
+        """
         body = HttpClient.json_rpc_body(name, *args, api=api)
         response = None
         try:
             response = self.request(body=body)
-        except MaxRetryError as e:
+        except (MaxRetryError, ReadTimeoutError) as e:
+            # if we broadcasted a transaction, always raise
+            # this is to prevent potential for double spend scenario
+            if api == 'network_broadcast_api':
+                raise e
+
             # try switching nodes before giving up
             if _ret_cnt > 2:
                 time.sleep(5*_ret_cnt)
