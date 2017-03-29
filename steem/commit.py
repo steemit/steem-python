@@ -132,90 +132,92 @@ class Commit(object):
     def post(self,
              title,
              body,
-             author=None,
+             author,
              permlink=None,
+             reply_identifier=None,
              json_metadata=None,
              comment_options=None,
-             reply_identifier=None,
-             category=None,
-             tags=[]):
-        """ New post
+             community=None,
+             tags=None,
+             self_vote=False):
+        """ Create a new post.
 
-            :param str title: Title of the reply post
-            :param str body: Body of the reply
-            :param str author: Author of reply (optional) if not provided
-                               ``default_user`` will be used, if present, else
-                               a ``ValueError`` will be raised.
-            :param str permlink: Specify the permlink (defaults to None).
-            :param json json_metadata: JSON meta object that can be attached to the post.
-            :param json comment_options: JSON options object that can be attached to the post.
-                  The default options are:::
+        If this post is intended as a reply/comment, `reply_identifier` needs to be set with the identifier of the parent
+        post/comment (eg. `@author/permlink`).
 
-                       {
-                            "author": "",
-                            "permlink": "",
-                            "max_accepted_payout": "1000000.000 SBD",
-                            "percent_steem_dollars": 10000,
-                            "allow_votes": True,
-                            "allow_curation_rewards": True,
-                        }
+        Optionally you can also set json_metadata, comment_options and upvote the newly created post as an author.
 
-            :param str reply_identifier: Identifier of the post to reply to. Takes the
-                                         form ``@author/permlink``
-            :param str category: (deprecated, see ``tags``) Allows to
-                define a category for new posts.  It is highly recommended
-                to provide a category as posts end up in ``spam`` otherwise.
-                If no category is provided but ``tags``, then the first tag
-                will be used as category
-            :param list tags: The tags to flag the post with. If no
-                category is used, then the first tag will be used as
-                category
+        Setting category, tags or community will override the values provided in json_metadata and/or comment_options
+        where appropriate.
+
+        Args:
+            title (str): Title of the post
+            body (str): Body of the post/comment
+            author (str): Account are you posting from
+            permlink (str): Manually set the permlink (defaults to None).
+                If left empty, it will be derived from title automatically.
+            reply_identifier (str): Identifier of the parent post/comment (only if this post is a reply/comment).
+            json_metadata (str, dict): JSON meta object that can be attached to the post.
+            comment_options (str, dict): JSON options object that can be attached to the post.
+                The default options are:::
+
+                    {
+                        "max_accepted_payout": "1000000.000 SBD",
+                        "percent_steem_dollars": 10000,
+                        "allow_votes": True,
+                        "allow_curation_rewards": True,
+                    }
+
+            community (str): (Optional) Name of the community we are posting into. This will also override the
+                community specified in `json_metadata`.
+            tags (str, list): (Optional) A list of tags (5 max) to go with the post. This will also override the
+                tags specified in `json_metadata`. The first tag will be used as a 'category'.
+                If provided as a string, it should be space separated.
+            self_vote (bool): (Optional) Upvote the post as author, right after posting.
         """
-
-        if not author and config["default_author"]:
-            author = config["default_author"]
-
-        if not author:
-            raise ValueError("Please define an author.")
 
         # prepare json_metadata
         json_metadata = json_metadata or {}
         if isinstance(json_metadata, str):
             json_metadata = silent(json.loads)(json_metadata) or {}
 
+        # override the community
+        if community:
+            json_metadata.update({'community': community})
+
         # deal with the category and tags
         if isinstance(tags, str):
-            tags = list(filter(None, (re.split("[\W_]", tags))))
-        if not category and tags:
-            # extract the first tag
-            category = tags[0]
-            tags = list(set(tags))
-            # do not use the first tag in tags
-            json_metadata.update({"tags": tags[1:]})
-        elif tags:
-            # store everything in tags
-            tags = list(set(tags))
-            json_metadata.update({"tags": tags})
+            tags = list(set(filter(None, (re.split("[\W_]", tags)))))
 
-        # deal with replies
-        if reply_identifier and not category:
+        category = None
+        tags = tags or json_metadata.get('tags', [])
+        if tags:
+            if len(tags) > 5:
+                raise ValueError('Can only specify up to 5 tags per post.')
+
+            # first tag should be a category
+            category = tags[0]
+            json_metadata.update({"tags": tags[1:]})
+
+        # can't provide a category while replying to a post
+        if reply_identifier and category:
+            category = None
+
+        # deal with replies/categories
+        if reply_identifier:
             parent_author, parent_permlink = resolve_identifier(reply_identifier)
             if not permlink:
                 permlink = derive_permlink(title, parent_permlink)
-        elif category and not reply_identifier:
+        elif category:
             parent_permlink = derive_permlink(category)
             parent_author = ""
             if not permlink:
                 permlink = derive_permlink(title)
-        elif not category and not reply_identifier:
+        else:
             parent_author = ""
             parent_permlink = ""
             if not permlink:
                 permlink = derive_permlink(title)
-        else:
-            raise ValueError(
-                "You can't provide a category while replying to a post"
-            )
 
         post_op = operations.Comment(
             **{"parent_author": parent_author,
@@ -228,16 +230,14 @@ class Commit(object):
         )
         ops = [post_op]
 
-        # filter out the comment options
-        options = keep_in_dict(comment_options,
-                               ['max_accepted_payout',
-                                'percent_steem_dollars',
-                                'allow_votes',
-                                'allow_curation_rewards',
-                                ])
-
         # if comment_options are used, add a new op to the transaction
-        if options:
+        if comment_options:
+            options = keep_in_dict(comment_options,
+                                   ['max_accepted_payout',
+                                    'percent_steem_dollars',
+                                    'allow_votes',
+                                    'allow_curation_rewards',
+                                    ])
             default_max_payout = "1000000.000 SBD"
             comment_op = operations.CommentOptions(
                 **{"author": author,
@@ -250,6 +250,16 @@ class Commit(object):
                    "allow_curation_rewards": options.get("allow_curation_rewards", True)}
             )
             ops.append(comment_op)
+
+        if self_vote:
+            vote_op = operations.Vote(
+                **{'voter': author,
+                   'author': author,
+                   'permlink': permlink,
+                   'weight': 10000,
+                   }
+            )
+            ops.append(vote_op)
 
         return self.finalizeOp(ops, author, "posting")
 
