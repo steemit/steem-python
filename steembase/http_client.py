@@ -18,10 +18,9 @@ logger = logging.getLogger(__name__)
 
 
 class HttpClient(object):
-    """Simple Steem JSON-HTTP-RPC API
+    """ Simple Steem JSON-HTTP-RPC API
 
-        This class serves as an abstraction layer for easy use of the
-        Steem API.
+    This class serves as an abstraction layer for easy use of the Steem API.
 
     Args:
       nodes (list): A list of Steem HTTP RPC nodes to connect to.

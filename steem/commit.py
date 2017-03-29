@@ -4,6 +4,7 @@ import random
 import re
 from datetime import datetime, timedelta
 
+from funcy.flow import silent
 from steembase import memo
 from steembase import operations
 from steembase.account import PrivateKey, PublicKey
@@ -14,9 +15,9 @@ from steembase.exceptions import (
 from steembase.storage import configStorage as config
 
 from .account import Account
-from .utils import derive_permlink, resolve_identifier, fmt_time_string
 from .instance import shared_steemd_instance
 from .transactionbuilder import TransactionBuilder
+from .utils import derive_permlink, resolve_identifier, fmt_time_string, keep_in_dict
 from .wallet import Wallet
 
 log = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class Commit(object):
         :param Steemd steemd: Steemd node to connect to*
         :param bool offline: Do **not** broadcast transactions! *(optional)*
         :param bool debug: Enable Debugging *(optional)*
-        :param array,dict,string keys: Predefine the wif keys to shortcut the wallet database
+        :param list,dict,string keys: Predefine the wif keys to shortcut the wallet database
 
         Three wallet operation modes are possible:
 
@@ -133,7 +134,8 @@ class Commit(object):
              body,
              author=None,
              permlink=None,
-             meta={},
+             json_metadata=None,
+             comment_options=None,
              reply_identifier=None,
              category=None,
              tags=[]):
@@ -144,18 +146,19 @@ class Commit(object):
             :param str author: Author of reply (optional) if not provided
                                ``default_user`` will be used, if present, else
                                a ``ValueError`` will be raised.
-            :param json meta: JSON meta object that can be attached to the
-                              post. This can be used to add ``tags`` or ``options``.
-                              The default options are:::
+            :param str permlink: Specify the permlink (defaults to None).
+            :param json json_metadata: JSON meta object that can be attached to the post.
+            :param json comment_options: JSON options object that can be attached to the post.
+                  The default options are:::
 
-                                   {
-                                        "author": "",
-                                        "permlink": "",
-                                        "max_accepted_payout": "1000000.000 SBD",
-                                        "percent_steem_dollars": 10000,
-                                        "allow_votes": True,
-                                        "allow_curation_rewards": True,
-                                    }
+                       {
+                            "author": "",
+                            "permlink": "",
+                            "max_accepted_payout": "1000000.000 SBD",
+                            "percent_steem_dollars": 10000,
+                            "allow_votes": True,
+                            "allow_curation_rewards": True,
+                        }
 
             :param str reply_identifier: Identifier of the post to reply to. Takes the
                                          form ``@author/permlink``
@@ -164,7 +167,7 @@ class Commit(object):
                 to provide a category as posts end up in ``spam`` otherwise.
                 If no category is provided but ``tags``, then the first tag
                 will be used as category
-            :param array tags: The tags to flag the post with. If no
+            :param list tags: The tags to flag the post with. If no
                 category is used, then the first tag will be used as
                 category
         """
@@ -175,23 +178,10 @@ class Commit(object):
         if not author:
             raise ValueError("Please define an author.")
 
-        # Deal with meta data
-        if not isinstance(meta, dict):
-            try:
-                meta = json.loads(meta)
-            except:
-                meta = {}
-
-        # Identify the comment options
-        options = {}
-        if "max_accepted_payout" in meta:
-            options["max_accepted_payout"] = meta.pop("max_accepted_payout", None)
-        if "percent_steem_dollars" in meta:
-            options["percent_steem_dollars"] = meta.pop("percent_steem_dollars", None)
-        if "allow_votes" in meta:
-            options["allow_votes"] = meta.pop("allow_votes", None)
-        if "allow_curation_rewards" in meta:
-            options["allow_curation_rewards"] = meta.pop("allow_curation_rewards", None)
+        # prepare json_metadata
+        json_metadata = json_metadata or {}
+        if isinstance(json_metadata, str):
+            json_metadata = silent(json.loads)(json_metadata) or {}
 
         # deal with the category and tags
         if isinstance(tags, str):
@@ -201,13 +191,13 @@ class Commit(object):
             category = tags[0]
             tags = list(set(tags))
             # do not use the first tag in tags
-            meta.update({"tags": tags[1:]})
+            json_metadata.update({"tags": tags[1:]})
         elif tags:
             # store everything in tags
             tags = list(set(tags))
-            meta.update({"tags": tags})
+            json_metadata.update({"tags": tags})
 
-        # Deal with replies
+        # deal with replies
         if reply_identifier and not category:
             parent_author, parent_permlink = resolve_identifier(reply_identifier)
             if not permlink:
@@ -227,32 +217,41 @@ class Commit(object):
                 "You can't provide a category while replying to a post"
             )
 
-        postOp = operations.Comment(
+        post_op = operations.Comment(
             **{"parent_author": parent_author,
                "parent_permlink": parent_permlink,
                "author": author,
                "permlink": permlink,
                "title": title,
                "body": body,
-               "json_metadata": meta}
+               "json_metadata": json_metadata}
         )
-        op = [postOp]
+        ops = [post_op]
 
-        # If comment_options are used, add a new op to the transaction
+        # filter out the comment options
+        options = keep_in_dict(comment_options,
+                               ['max_accepted_payout',
+                                'percent_steem_dollars',
+                                'allow_votes',
+                                'allow_curation_rewards',
+                                ])
+
+        # if comment_options are used, add a new op to the transaction
         if options:
             default_max_payout = "1000000.000 SBD"
-            op.append(
-                operations.CommentOptions(**{
-                    "author": author,
-                    "permlink": permlink,
-                    "max_accepted_payout": options.get("max_accepted_payout", default_max_payout),
-                    "percent_steem_dollars": int(
-                        options.get("percent_steem_dollars", 100) * STEEMIT_1_PERCENT
-                    ),
-                    "allow_votes": options.get("allow_votes", True),
-                    "allow_curation_rewards": options.get("allow_curation_rewards", True)}))
+            comment_op = operations.CommentOptions(
+                **{"author": author,
+                   "permlink": permlink,
+                   "max_accepted_payout": options.get("max_accepted_payout", default_max_payout),
+                   "percent_steem_dollars": int(
+                       options.get("percent_steem_dollars", 100) * STEEMIT_1_PERCENT
+                   ),
+                   "allow_votes": options.get("allow_votes", True),
+                   "allow_curation_rewards": options.get("allow_curation_rewards", True)}
+            )
+            ops.append(comment_op)
 
-        return self.finalizeOp(op, author, "posting")
+        return self.finalizeOp(ops, author, "posting")
 
     def vote(self,
              identifier,
@@ -345,12 +344,12 @@ class Commit(object):
             :param str password: Alternatively to providing keys, one
                                  can provide a password from which the
                                  keys will be derived
-            :param array additional_owner_keys:  Additional owner public keys
-            :param array additional_active_keys: Additional active public keys
-            :param array additional_posting_keys: Additional posting public keys
-            :param array additional_owner_accounts: Additional owner account names
-            :param array additional_active_accounts: Additional acctive account names
-            :param array additional_posting_accounts: Additional posting account names
+            :param list additional_owner_keys:  Additional owner public keys
+            :param list additional_active_keys: Additional active public keys
+            :param list additional_posting_keys: Additional posting public keys
+            :param list additional_owner_accounts: Additional owner account names
+            :param list additional_active_accounts: Additional acctive account names
+            :param list additional_posting_accounts: Additional posting account names
             :param bool storekeys: Store new keys in the wallet (default: ``True``)
             :raises AccountExistsException: if the account already exists on the blockchain
 
@@ -803,7 +802,8 @@ class Commit(object):
 
         return self.finalizeOp(op, account, "active")
 
-    def _test_weights_treshold(self, authority):
+    @staticmethod
+    def _test_weights_treshold(authority):
         weights = 0
         for a in authority["account_auths"]:
             weights += a[1]

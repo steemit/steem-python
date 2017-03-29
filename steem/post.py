@@ -4,7 +4,7 @@ import re
 from contextlib import suppress
 from datetime import datetime
 
-from funcy.colls import walk_values
+from funcy.colls import walk_values, get_in
 from funcy.flow import silent
 from funcy.seqs import flatten
 from steembase.exceptions import (
@@ -90,10 +90,9 @@ class Post(dict):
         for p in sbd_amounts:
             post[p] = Amount(post.get(p, "0.000 SBD"))
 
-        post['json_metadata'] = dict()
-        with suppress(Exception):
-            meta_str = post.get("json_metadata", "{}")
-            post['json_metadata'] = json.loads(meta_str)
+        # turn json_metadata into python dict
+        meta_str = post.get("json_metadata", "{}")
+        post['json_metadata'] = silent(json.loads)(meta_str) or {}
 
         post["tags"] = []
         if post["depth"] == 0:
@@ -101,6 +100,8 @@ class Post(dict):
                 [post["parent_permlink"]] +
                 post["json_metadata"].get("tags", [])
             )
+
+        post['community'] = get_in(post, ['json_metadata', 'community']) or ''
 
         # If this post is a comment, retrieve the root comment
         self.root_identifier, self.category = self._get_root_identifier(post)
@@ -311,7 +312,7 @@ class Post(dict):
         """
         return self.commit.post(title,
                                 body,
-                                meta=meta,
+                                json_metadata=meta,
                                 author=author,
                                 reply_identifier=self.identifier)
 
