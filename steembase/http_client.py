@@ -5,6 +5,7 @@ import logging
 import socket
 import time
 from functools import partial
+from http.client import RemoteDisconnected
 from itertools import cycle
 from urllib.parse import urlparse
 
@@ -143,7 +144,7 @@ class HttpClient(object):
         response = None
         try:
             response = self.request(body=body)
-        except (MaxRetryError, ReadTimeoutError) as e:
+        except (MaxRetryError, ReadTimeoutError, RemoteDisconnected) as e:
             # if we broadcasted a transaction, always raise
             # this is to prevent potential for double spend scenario
             if api == 'network_broadcast_api':
