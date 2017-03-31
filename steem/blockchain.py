@@ -2,6 +2,7 @@ import hashlib
 import json
 import re
 import time
+import warnings
 from typing import Union
 
 from funcy.colls import walk_values
@@ -19,6 +20,7 @@ class Blockchain(object):
         steemd_instance (Steemd): Steemd() instance to use when accessing a RPC
         mode (str): `irreversible` or `head`. `irreversible` is default.
     """
+
     def __init__(self, steemd_instance=None, mode="irreversible"):
         self.steem = steemd_instance or shared_steemd_instance()
 
@@ -107,24 +109,32 @@ class Blockchain(object):
             for event in events:
                 op_type, op = event['op']
                 if not filter_by or op_type in filter_by:
-                    yield {
-                        "_id": self.hash_op(event),
-                        **op,
-                        "type": op_type,
-                        "timestamp": parse_time(event.get("timestamp")),
-                        "block_num": event.get("block"),
-                        "trx_id": event.get("trx_id"),
-                    }
+                    raw_output = kwargs.get('raw_output')
+                    if raw_output:
+                        yield event
+                    else:
+                        yield {
+                            **op,
+                            "_id": self.hash_op(event),
+                            "type": op_type,
+                            "timestamp": parse_time(event.get("timestamp")),
+                            "block_num": event.get("block"),
+                            "trx_id": event.get("trx_id"),
+                        }
 
-    def replay(self, start_block=1, end_block=None, filter_by=list(), **kwargs):
-        """ Same as ``stream`` with different prototype
-        """
+    def history(self, filter_by=list(), start_block=1, end_block=None, raw_output=False, **kwargs):
+        """ Similar to Blockchain.stream, but with explicit arguments for start and end blocks. """
         return self.stream(
             filter_by=filter_by,
             start=start_block,
             stop=end_block,
+            raw_output=raw_output,
             **kwargs
         )
+
+    def replay(self, **kwargs):
+        warnings.warn('Blockchain.replay() is deprecated. Please use Blockchain.history() instead.')
+        return self.history(**kwargs)
 
     @staticmethod
     def hash_op(event: dict):
@@ -167,12 +177,3 @@ def typify(value: Union[dict, list, set, str]):
             return parse_time(value)
 
     return value
-
-
-if __name__ == '__main__':
-    b = Blockchain()
-    print(len(list(b.stream(start=9563511, stop=9563511))))
-    quit(0)
-    for event in b.stream(start=9563511, full_blocks=True):
-        if event['trx_id'] == '0000000000000000000000000000000000000000':
-            print(event)
