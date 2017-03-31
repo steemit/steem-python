@@ -245,7 +245,7 @@ def legacy():
     parser_transfer.add_argument(
         'to',
         type=str,
-        help='Recepient'
+        help='Recipient'
     )
     parser_transfer.add_argument(
         'amount',
@@ -255,7 +255,7 @@ def legacy():
     parser_transfer.add_argument(
         'asset',
         type=str,
-        choices=["STEEM", "SBD", "GOLOS", "GBG"],
+        choices=["STEEM", "SBD"],
         help='Asset to transfer (i.e. STEEM or SDB)'
     )
     parser_transfer.add_argument(
@@ -616,7 +616,7 @@ def legacy():
     parser_buy.add_argument(
         'asset',
         type=str,
-        choices=["STEEM", "SBD", "GOLOS", "GBG"],
+        choices=["STEEM", "SBD"],
         help='Asset to buy (i.e. STEEM or SDB)'
     )
     parser_buy.add_argument(
@@ -645,7 +645,7 @@ def legacy():
     parser_sell.add_argument(
         'asset',
         type=str,
-        choices=["STEEM", "SBD", "GOLOS", "GBG"],
+        choices=["STEEM", "SBD"],
         help='Asset to sell (i.e. STEEM or SDB)'
     )
     parser_sell.add_argument(
