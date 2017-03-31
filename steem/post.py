@@ -1,7 +1,7 @@
 import json
 import logging
 import re
-from contextlib import suppress
+import warnings
 from datetime import datetime
 
 from funcy.colls import walk_values, get_in
@@ -42,16 +42,14 @@ class Post(dict):
 
         if isinstance(post, str):  # From identifier
             self.identifier = self.parse_identifier(post)
-            self.refresh()
         elif isinstance(post, dict) and "author" in post and "permlink" in post:
             post["author"] = post["author"].replace('@', '')
             self.identifier = construct_identifier(post["author"], post["permlink"])
-
-            if "created" in post:
-                self._store_post(post)
         else:
             raise ValueError("Post expects an identifier or a dict "
                              "with author and permlink!")
+
+        self.refresh()
 
     @staticmethod
     def parse_identifier(uri):
@@ -180,7 +178,8 @@ class Post(dict):
 
     @property
     def meta(self):
-        return self.get('json_metadata', dict())
+        warnings.warn("Post.meta is deprecated. Please change it to Post.json_metadata")
+        return self.json_metadata
 
     def time_elapsed(self):
         """Return a timedelta on how old the post is.
@@ -211,7 +210,7 @@ class Post(dict):
         self.refresh()
 
         # Remove Steem instance object
-        safe_dict = remove_from_dict(self, ['steem'])
+        safe_dict = remove_from_dict(self, ['steemd', 'commit'])
 
         # Convert Amount class objects into pure dictionaries
         def decompose_amounts(item):
