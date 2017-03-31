@@ -1,4 +1,5 @@
 import logging
+
 from steem.instance import shared_steemd_instance
 
 from .commit import Commit
@@ -39,7 +40,24 @@ class Steem(Steemd):
                              no_broadcast=no_broadcast,
                              **kwargs)
 
+        # self._apply_commit_methods()
+
         super(Steem, self).__init__(nodes=nodes, log_level=_log_level, **kwargs)
+
+    def __getattr__(self, item):
+        """ Bind .commit methods here as a convenience. """
+        if hasattr(self.commit, item):
+            return getattr(self.commit, item)
+        raise AttributeError('Steem has no attribute "%s"' % item)
+
+    def _apply_commit_methods(self):
+        """ Binds self.commit methods to this class for auto-complete purposes. """
+        methods = [x for x in dir(self.commit)
+                   if type(getattr(self.commit, x)).__name__ == 'method'
+                   and not x.startswith('_')]
+        for method_name in methods:
+            to_call = getattr(self.commit, method_name)
+            setattr(self, method_name, to_call)
 
 
 if __name__ == '__main__':
