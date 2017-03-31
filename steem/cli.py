@@ -397,55 +397,6 @@ def legacy():
     )
 
     """
-        Command "history"
-    """
-    parser_history = subparsers.add_parser('history', help='Show the history of an account')
-    parser_history.set_defaults(command="history")
-    parser_history.add_argument(
-        'account',
-        type=str,
-        nargs="?",
-        default=configStorage["default_author"],
-        help='History of this account'
-    )
-    parser_history.add_argument(
-        '--limit',
-        type=int,
-        default=configStorage["limit"],
-        help='Limit number of entries'
-    )
-    parser_history.add_argument(
-        '--memos',
-        action='store_true',
-        help='Show (decode) memos'
-    )
-    parser_history.add_argument(
-        '--csv',
-        action='store_true',
-        help='Output in CSV format'
-    )
-    parser_history.add_argument(
-        '--first',
-        type=int,
-        default=99999999999999,
-        help='Transaction number (#) of the last transaction to show.'
-    )
-    parser_history.add_argument(
-        '--types',
-        type=str,
-        nargs="*",
-        default=[],
-        help='Show only these operation types'
-    )
-    parser_history.add_argument(
-        '--exclude_types',
-        type=str,
-        nargs="*",
-        default=[],
-        help='Do not show operations of this type'
-    )
-
-    """
         Command "interest"
     """
     interest = subparsers.add_parser('interest', help='Get information about interest payment')
@@ -1245,57 +1196,40 @@ def legacy():
         ))
 
     elif args.command == "balance":
-        t = PrettyTable(["Account", "STEEM", "SBD", "VESTS", "Savings (STEEM)", "Savings (SBD)"])
+        t = PrettyTable(["Account", "STEEM", "SBD", "VESTS"])
         t.align = "r"
 
         if args.account and isinstance(args.account, list):
             for account in args.account:
                 a = Account(account)
                 t.add_row([
-                    a.name,
-                    a.balances["STEEM"],
-                    a.balances["SBD"],
-                    a.balances["VESTS"],
-                    a.balances["SAVINGS_STEEM"],
-                    a.balances["SAVINGS_SBD"],
+                    'Available',
+                    a.balances['available']['STEEM'],
+                    a.balances['available']['SBD'],
+                    a.balances['available']['VESTS'],
                 ])
+                t.add_row([
+                    'Rewards',
+                    a.balances['rewards']['STEEM'],
+                    a.balances['rewards']['SBD'],
+                    a.balances['rewards']['VESTS'],
+                ])
+                t.add_row([
+                    'Savings',
+                    a.balances['savings']['STEEM'],
+                    a.balances['savings']['SBD'],
+                    'N/A',
+                ])
+                t.add_row([
+                    'TOTAL',
+                    a.balances['total']['STEEM'],
+                    a.balances['total']['SBD'],
+                    a.balances['total']['VESTS'],
+                ])
+
             print(t)
         else:
             print("Please specify an account: piston balance <account>")
-
-    elif args.command == "history":
-        header = ["#", "time (block)", "operation", "details"]
-        if args.csv:
-            import csv
-            t = csv.writer(sys.stdout, delimiter=";")
-            t.writerow(header)
-        else:
-            t = PrettyTable(header)
-            t.align = "l"
-        if isinstance(args.account, str):
-            args.account = [args.account]
-        if isinstance(args.types, str):
-            args.types = [args.types]
-
-        for a in args.account:
-            for b in Account(a).rawhistory(
-                    first=args.first,
-                    limit=args.limit,
-                    only_ops=args.types,
-                    exclude_ops=args.exclude_types
-            ):
-                row = [
-                    b[0],
-                    "%s (%s)" % (b[1]["timestamp"], b[1]["block"]),
-                    b[1]["op"][0],
-                    format_operation_details(b[1]["op"], memos=args.memos),
-                ]
-                if args.csv:
-                    t.writerow(row)
-                else:
-                    t.add_row(row)
-        if not args.csv:
-            print(t)
 
     elif args.command == "interest":
         t = PrettyTable(["Account",

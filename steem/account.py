@@ -4,6 +4,8 @@ import math
 import time
 from contextlib import suppress
 
+from funcy.colls import walk_values
+from funcy.simple_funcs import rpartial
 from steembase.exceptions import AccountDoesNotExistsException
 from toolz import dissoc
 
@@ -68,18 +70,38 @@ class Account(dict):
     def balances(self):
         return self.get_balances()
 
-    def get_balances(self, as_float=False):
-        balances = {
-            "STEEM": self["balance"],
-            "SBD": self["sbd_balance"],
-            "VESTS": self["vesting_shares"],
-            "SAVINGS_STEEM": self["savings_balance"],
-            "SAVINGS_SBD": self["savings_sbd_balance"]
+    def get_balances(self):
+        available = {
+            'STEEM': Amount(self['balance']).amount,
+            'SBD': Amount(self['sbd_balance']).amount,
+            'VESTS': Amount(self['vesting_shares']).amount,
         }
-        if as_float:
-            return {k: Amount(v).amount for k, v in balances.items()}
-        else:
-            return {k: Amount(v) for k, v in balances.items()}
+
+        savings = {
+            'STEEM': Amount(self['savings_balance']).amount,
+            'SBD': Amount(self['savings_sbd_balance']).amount,
+        }
+
+        rewards = {
+            'STEEM': Amount(self['reward_steem_balance']).amount,
+            'SBD': Amount(self['reward_sbd_balance']).amount,
+            'VESTS': Amount(self['reward_vesting_balance']).amount,
+        }
+
+        totals = {
+            'STEEM': sum([available['STEEM'], savings['STEEM'], rewards['STEEM']]),
+            'SBD': sum([available['SBD'], savings['SBD'], rewards['SBD']]),
+            'VESTS': sum([available['VESTS'], rewards['VESTS']]),
+        }
+
+        total = walk_values(rpartial(round, 3), totals)
+
+        return {
+            'available': available,
+            'savings': savings,
+            'rewards': rewards,
+            'total': total,
+        }
 
     def reputation(self, precision=2):
         rep = int(self['reputation'])
@@ -273,7 +295,7 @@ class Account(dict):
             yield from self.get_account_history(
                 index=i,
                 limit=batch_size,
-                start=i-batch_size,
+                start=i - batch_size,
                 stop=max_index,
                 order=1,
                 filter_by=filter_by,
