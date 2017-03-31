@@ -5,8 +5,10 @@ import time
 from contextlib import suppress
 
 from steembase.exceptions import AccountDoesNotExistsException
+from toolz import dissoc
 
 from .amount import Amount
+from .blockchain import Blockchain
 from .converter import Converter
 from .instance import shared_steemd_instance
 from .utils import parse_time
@@ -199,99 +201,102 @@ class Account(dict):
             "balances": self.get_balances(as_float=True),
         }
 
-    def history(self, filter_by=None, start=0):
+    def get_account_history(self, index, limit, start=None, stop=None, order=-1, filter_by=None, raw_output=False):
+        """ A generator over steemd.get_account_history.
+
+        It offers serialization, filtering and fine grained iteration control.
+
+        Args:
+            index (int): start index for get_account_history
+            limit (int): end index for get_account_history
+            start (int): (Optional) skip items until this index
+            stop (int): (Optional) stop iteration early at this index
+            order: (1, -1): 1 for chronological, -1 for reverse order
+            filter_by (str, list): filter out all but these operations
+            raw_output (bool): (Defaults to False). If True, return history in steemd format (unchanged).
         """
-        Take all elements from start to last from history, oldest first.
+        history = self.steemd.get_account_history(self.name, index, limit)
+        for item in history[::order]:
+            index, event = item
+
+            # start and stop utilities for chronological generator
+            if start and index < start:
+                continue
+
+            if stop and index > stop:
+                return
+
+            op_type, op = event['op']
+            block_props = dissoc(event, 'op')
+
+            def construct_op(account_name):
+                # verbatim output from steemd
+                if raw_output:
+                    return item
+
+                # index can change during reindexing in
+                # future hard-forks. Thus we cannot take it for granted.
+                immutable = {
+                    **op,
+                    **block_props,
+                    'account': account_name,
+                    'type': op_type,
+                }
+                _id = Blockchain.hash_op(immutable)
+                return {
+                    **immutable,
+                    '_id': _id,
+                    'index': index,
+                }
+
+            if filter_by is None:
+                yield construct_op(self.name)
+            else:
+                if type(filter_by) is list:
+                    if op_type in filter_by:
+                        yield construct_op(self.name)
+
+                if type(filter_by) is str:
+                    if op_type == filter_by:
+                        yield construct_op(self.name)
+
+    def history(self, filter_by=None, start=0, batch_size=1000, raw_output=False):
+        """ Stream account history in chronological order.
         """
-        batch_size = 1000
         max_index = self.virtual_op_count()
         if not max_index:
             return
 
         start_index = start + batch_size
         i = start_index
-        while True:
-            if i == start_index:
-                limit = batch_size
-            else:
-                limit = batch_size - 1
-            history = self.steemd.get_account_history(self.name, i, limit)
-            for item in history:
-                index = item[0]
-                if index >= max_index:
-                    return
+        while i < max_index + batch_size:
+            yield from self.get_account_history(
+                index=i,
+                limit=batch_size,
+                start=i-batch_size,
+                stop=max_index,
+                order=1,
+                filter_by=filter_by,
+                raw_output=raw_output,
+            )
+            i += (batch_size + 1)
 
-                op_type = item[1]['op'][0]
-                op = item[1]['op'][1]
-                timestamp = item[1]['timestamp']
-                trx_id = item[1]['trx_id']
-
-                def construct_op(account_name):
-                    r = {
-                        "index": index,
-                        "account": account_name,
-                        "trx_id": trx_id,
-                        "timestamp": timestamp,
-                        "type": op_type,
-                    }
-                    r.update(op)
-                    return r
-
-                if filter_by is None:
-                    yield construct_op(self.name)
-                else:
-                    if type(filter_by) is list:
-                        if op_type in filter_by:
-                            yield construct_op(self.name)
-
-                    if type(filter_by) is str:
-                        if op_type == filter_by:
-                            yield construct_op(self.name)
-            i += batch_size
-
-    def history2(self, filter_by=None, take=1000):
+    def history_reverse(self, filter_by=None, batch_size=1000, raw_output=False):
+        """ Stream account history in reverse chronological order.
         """
-        Take X elements from most recent history, oldest first.
-        """
-        max_index = self.virtual_op_count()
-        start_index = max_index - take
-        if start_index < 0:
-            start_index = 0
+        start_index = self.virtual_op_count()
+        if not start_index:
+            return
 
-        return self.history(filter_by, start=start_index)
-
-    def rawhistory(
-            self, first=99999999999,
-            limit=-1, only_ops=[], exclude_ops=[]
-    ):
-        """ Returns a generator for individual account transactions. The
-            latest operation will be first. This call can be used in a
-            ``for`` loop.
-
-            :param str account: account name to get history for
-            :param int first: sequence number of the first transaction to return
-            :param int limit: limit number of transactions to return
-            :param array only_ops: Limit generator by these operations
-        """
-        cnt = 0
-        _limit = 100
-        if _limit > first:
-            _limit = first
-        while first > 0:
-            # RPC call
-            txs = self.steemd.get_account_history(self.name, first, _limit)
-            for i in txs[::-1]:
-                if exclude_ops and i[1]["op"][0] in exclude_ops:
-                    continue
-                if not only_ops or i[1]["op"][0] in only_ops:
-                    cnt += 1
-                    yield i
-                    if 0 <= limit <= cnt:
-                        break
-            if 0 <= limit <= cnt:
-                break
-            if len(txs) < _limit:
-                break
-            first = txs[0][0] - 1  # new first
-            if _limit > first:
-                _limit = first
+        i = start_index
+        while i > 0:
+            if i - batch_size < 0:
+                batch_size = i
+            yield from self.get_account_history(
+                index=i,
+                limit=batch_size,
+                order=-1,
+                filter_by=filter_by,
+                raw_output=raw_output,
+            )
+            i -= (batch_size + 1)
