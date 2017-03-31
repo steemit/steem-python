@@ -238,25 +238,6 @@ def legacy():
     )
 
     """
-        Command "replies"
-    """
-    replies = subparsers.add_parser('replies', help='Show recent replies to your posts')
-    replies.set_defaults(command="replies")
-    replies.add_argument(
-        '--author',
-        type=str,
-        required=False,
-        default=configStorage["default_author"],
-        help='Show replies to this author'
-    )
-    replies.add_argument(
-        '--limit',
-        type=int,
-        default=configStorage["limit"],
-        help='Limit posts by number'
-    )
-
-    """
         Command "transfer"
     """
     parser_transfer = subparsers.add_parser('transfer', help='Transfer STEEM')
