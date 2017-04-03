@@ -63,7 +63,7 @@ def variable_buffer(s):
 def JsonObj(data):
     """ Returns json object from data
     """
-    return json.loads(str(data))
+    return json.loads(str(data).replace("'", '"'))
 
 
 class Uint8:
@@ -172,7 +172,7 @@ class String:
                 r.append("f")
             elif o == 13:
                 r.append("\r")
-            elif o > 13 and o < 32:
+            elif 13 < o < 32:
                 r.append("u%04x" % o)
             else:
                 r.append(s)
@@ -303,7 +303,7 @@ class StaticVariant:
         return varint(self.type_id) + bytes(self.data)
 
     def __str__(self):
-        return {self._type_id: str(self.data)}
+        return {self.type_id: str(self.data)}
 
 
 class Map:
