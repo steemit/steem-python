@@ -4,6 +4,7 @@ import random
 import re
 from datetime import datetime, timedelta
 
+import voluptuous as vo
 from funcy.flow import silent
 from steembase import memo
 from steembase import operations
@@ -139,6 +140,7 @@ class Commit(object):
              comment_options=None,
              community=None,
              tags=None,
+             beneficiaries=None,
              self_vote=False):
         """ Create a new post.
 
@@ -159,13 +161,19 @@ class Commit(object):
             reply_identifier (str): Identifier of the parent post/comment (only if this post is a reply/comment).
             json_metadata (str, dict): JSON meta object that can be attached to the post.
             comment_options (str, dict): JSON options object that can be attached to the post.
-                The default options are:::
+                Example::
 
-                    {
-                        "max_accepted_payout": "1000000.000 SBD",
-                        "percent_steem_dollars": 10000,
-                        "allow_votes": True,
-                        "allow_curation_rewards": True,
+                    comment_options = {
+                        'max_accepted_payout': '1000000.000 SBD',
+                        'percent_steem_dollars': 10000,
+                        'allow_votes': True,
+                        'allow_curation_rewards': True,
+                        'extensions': [[0, {
+                            'beneficiaries': [
+                                {'account': 'account1', 'weight': 5000},
+                                {'account': 'account2', 'weight': 5000},
+                            ]}
+                        ]]
                     }
 
             community (str): (Optional) Name of the community we are posting into. This will also override the
@@ -173,6 +181,16 @@ class Commit(object):
             tags (str, list): (Optional) A list of tags (5 max) to go with the post. This will also override the
                 tags specified in `json_metadata`. The first tag will be used as a 'category'.
                 If provided as a string, it should be space separated.
+            beneficiaries (list of dicts): (Optional) A list of beneficiaries for posting reward distribution.
+                This argument overrides beneficiaries as specified in `comment_options`.
+
+                For example, if we would like to split rewards between account1 and account2::
+
+                    beneficiaries = [
+                        {'account': 'account1', 'weight': 5000},
+                        {'account': 'account2', 'weight': 5000}
+                    ]
+
             self_vote (bool): (Optional) Upvote the post as author, right after posting.
         """
 
@@ -197,7 +215,7 @@ class Commit(object):
 
             # first tag should be a category
             category = tags[0]
-            json_metadata.update({"tags": tags[1:]})
+            json_metadata.update({"tags": tags})
 
         # can't provide a category while replying to a post
         if reply_identifier and category:
@@ -231,23 +249,37 @@ class Commit(object):
         ops = [post_op]
 
         # if comment_options are used, add a new op to the transaction
-        if comment_options:
-            options = keep_in_dict(comment_options,
+        if comment_options or beneficiaries:
+            options = keep_in_dict(comment_options or {},
                                    ['max_accepted_payout',
                                     'percent_steem_dollars',
                                     'allow_votes',
                                     'allow_curation_rewards',
+                                    'extensions'
                                     ])
+            # override beneficiaries extension
+            if beneficiaries:
+                # validate schema
+                # or just simply vo.Schema([{'account': str, 'weight': int}])
+                schema = vo.Schema([
+                    {
+                        vo.Required('account'): vo.All(str, vo.Length(max=16)),
+                        vo.Required('weight', default=10000): vo.All(int, vo.Range(min=1, max=10000))
+                    }
+                ])
+                schema(beneficiaries)
+                ext = [[0, beneficiaries]]
+                options['extensions'] = ext
+
             default_max_payout = "1000000.000 SBD"
             comment_op = operations.CommentOptions(
                 **{"author": author,
                    "permlink": permlink,
                    "max_accepted_payout": options.get("max_accepted_payout", default_max_payout),
-                   "percent_steem_dollars": int(
-                       options.get("percent_steem_dollars", 100) * STEEMIT_1_PERCENT
-                   ),
+                   "percent_steem_dollars": int(options.get("percent_steem_dollars", 10000)),
                    "allow_votes": options.get("allow_votes", True),
-                   "allow_curation_rewards": options.get("allow_curation_rewards", True)}
+                   "allow_curation_rewards": options.get("allow_curation_rewards", True),
+                   "extensions": options.get("extensions", [])}
             )
             ops.append(comment_op)
 
