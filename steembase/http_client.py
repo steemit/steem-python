@@ -144,7 +144,10 @@ class HttpClient(object):
         response = None
         try:
             response = self.request(body=body)
-        except (MaxRetryError, ReadTimeoutError, RemoteDisconnected) as e:
+        except (MaxRetryError,
+                ConnectionResetError,
+                ReadTimeoutError,
+                RemoteDisconnected) as e:
             # if we broadcasted a transaction, always raise
             # this is to prevent potential for double spend scenario
             if api == 'network_broadcast_api':
@@ -211,11 +214,11 @@ class HttpClient(object):
 
     def exec_multi(self, name, params):
         body_gen = ({
-                        "method": name,
-                        "params": [i],
-                        "jsonrpc": "2.0",
-                        "id": 0
-                    } for i in params)
+            "method": name,
+            "params": [i],
+            "jsonrpc": "2.0",
+            "id": 0
+        } for i in params)
         for body in body_gen:
             json_body = json.dumps(body, ensure_ascii=False).encode('utf8')
             yield self._return(
