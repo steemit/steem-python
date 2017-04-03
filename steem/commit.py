@@ -13,7 +13,7 @@ from steembase.exceptions import (
     AccountExistsException,
     MissingKeyError,
 )
-from steembase.storage import configStorage as config
+from steembase.storage import configStorage
 
 from .account import Account
 from .instance import shared_steemd_instance
@@ -25,6 +25,32 @@ log = logging.getLogger(__name__)
 
 STEEMIT_100_PERCENT = 10000
 STEEMIT_1_PERCENT = (STEEMIT_100_PERCENT / 100)
+
+
+# TODO
+# account_witness_proxy [active]
+# account_update [owner, active]
+# decline_voting_rights [owner]
+
+# challenge_authority [posting]
+# prove_authority [active, owner]
+# request_account_recovery [active]
+# change_recovery_account [owner]
+# reset_account [active]
+# set_reset_account [active, owner]
+
+# escrow_transfer [active]
+# escrow_dispute [active]
+# escrow_release [active]
+# escrow_approve [active]
+# custom_binary [any]
+
+# custom [active]
+# delete_comment [posting]
+
+# claim_reward_balance [posting]
+# delegate_vesting_shares [active]
+# account_create_with_delegation [active]
 
 
 class Commit(object):
@@ -268,7 +294,8 @@ class Commit(object):
                     }
                 ])
                 schema(beneficiaries)
-                ext = [[0, beneficiaries]]
+                # ext = [[0, beneficiaries]]
+                ext = beneficiaries
                 options['extensions'] = ext
 
             default_max_payout = "1000000.000 SBD"
@@ -307,16 +334,15 @@ class Commit(object):
                                  not be 0.0
             :param str account: Voter to use for voting. (Optional)
 
-            If ``voter`` is not defines, the ``default_voter`` will be taken or
+            If ``voter`` is not defines, the ``default_account`` will be taken or
             a ValueError will be raised
 
             .. code-block:: python
 
-                piston set default_voter <account>
+                piston set default_account <account>
         """
         if not account:
-            if "default_voter" in config:
-                account = config["default_voter"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide a voter account")
 
@@ -353,7 +379,7 @@ class Commit(object):
             The brainkey/password can be used to recover all generated keys (see
             `pistonbase.account` for more details.
 
-            By default, this call will use ``default_author`` to
+            By default, this call will use ``default_account`` to
             register a new name ``account_name`` with all keys being
             derived from a new brain key that will be returned. The
             corresponding keys will automatically be installed in the
@@ -378,7 +404,7 @@ class Commit(object):
             :param str account_name: (**required**) new account name
             :param str json_meta: Optional meta data for the account
             :param str creator: which account should pay the registration fee
-                                (defaults to ``default_author``)
+                                (defaults to ``default_account``)
             :param str owner_key: Main owner key
             :param str active_key: Main active key
             :param str posting_key: Main posting key
@@ -398,12 +424,12 @@ class Commit(object):
         """
         assert len(account_name) <= 16, "Account name must be at most 16 chars long"
 
-        if not creator and config["default_author"]:
-            creator = config["default_author"]
+        if not creator:
+            creator = configStorage.get("default_account")
         if not creator:
             raise ValueError(
                 "Not creator account given. Define it with " +
-                "creator=x, or set the default_author using piston")
+                "creator=x, or set the default_account using piston")
         if password and (owner_key or posting_key or active_key or memo_key):
             raise ValueError(
                 "You cannot use 'password' AND provide keys!"
@@ -507,8 +533,7 @@ class Commit(object):
             :param str account: (optional) the source account for the transfer if not ``default_account``
         """
         if not account:
-            if "default_account" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -549,8 +574,7 @@ class Commit(object):
             :param str account: (optional) the source account for the transfer if not ``default_account``
         """
         if not account:
-            if "default_account" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -574,8 +598,7 @@ class Commit(object):
             :param str account: (optional) the source account for the transfer if not ``default_account``
         """
         if not account:
-            if "default_account" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -601,8 +624,8 @@ class Commit(object):
             :param str account: (optional) the source account for the transfer if not ``default_account``
             :param str request_id: (optional) identifier for tracking the conversion`
         """
-        if not account and "default_account" in config:
-            account = config["default_account"]
+        if not account:
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -634,8 +657,7 @@ class Commit(object):
         assert asset in ['STEEM', 'SBD']
 
         if not account:
-            if "default_account" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -668,8 +690,7 @@ class Commit(object):
         assert asset in ['STEEM', 'SBD']
 
         if not account:
-            if "default_account" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -702,8 +723,7 @@ class Commit(object):
             :param str account: (optional) the source account for the transfer if not ``default_account``
         """
         if not account:
-            if "default_account" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -723,8 +743,7 @@ class Commit(object):
             :param str account: (optional) the source account for the transfer if not ``default_account``
         """
         if not account:
-            if "default_account" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -757,8 +776,7 @@ class Commit(object):
 
         """
         if not account:
-            if "default_account" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -829,8 +847,7 @@ class Commit(object):
                 receive them as STEEM. (defaults to ``False``)
         """
         if not account:
-            if "default_account" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -867,13 +884,12 @@ class Commit(object):
             :param str permission: (optional) The actual permission to
                 modify (defaults to ``posting``)
             :param str account: (optional) the account to allow access
-                to (defaults to ``default_author``)
+                to (defaults to ``default_account``)
             :param int threshold: The threshold that needs to be reached
                 by signatures to be able to interact
         """
         if not account:
-            if "default_author" in config:
-                account = config["default_author"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -928,13 +944,12 @@ class Commit(object):
             :param str permission: (optional) The actual permission to
                 modify (defaults to ``posting``)
             :param str account: (optional) the account to allow access
-                to (defaults to ``default_author``)
+                to (defaults to ``default_account``)
             :param int threshold: The threshold that needs to be reached
                 by signatures to be able to interact
         """
         if not account:
-            if "default_author" in config:
-                account = config["default_author"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -1006,11 +1021,10 @@ class Commit(object):
 
             :param str key: New memo public key
             :param str account: (optional) the account to allow access
-                to (defaults to ``default_author``)
+                to (defaults to ``default_account``)
         """
         if not account:
-            if "default_author" in config:
-                account = config["default_author"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -1030,11 +1044,10 @@ class Commit(object):
 
             :param str witness: witness to approve
             :param str account: (optional) the account to allow access
-                to (defaults to ``default_author``)
+                to (defaults to ``default_account``)
         """
         if not account:
-            if "default_author" in config:
-                account = config["default_author"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
         account = Account(account, steemd_instance=self.steemd)
@@ -1045,14 +1058,14 @@ class Commit(object):
                })
         return self.finalizeOp(op, account["name"], "active")
 
-    def disapprove_witness(self, witness, account=None, approve=True):
+    def disapprove_witness(self, witness, account=None):
         """ Remove vote for a witness. This method removes
             a witness from your set of approved witnesses. To add
             witnesses see ``approve_witness``.
 
             :param str witness: witness to approve
             :param str account: (optional) the account to allow access
-                to (defaults to ``default_author``)
+                to (defaults to ``default_account``)
         """
         return self.approve_witness(witness=witness, account=account, approve=False)
 
@@ -1083,11 +1096,10 @@ class Commit(object):
 
             :param str identifier: post identifier (@<account>/<permlink>)
             :param str account: (optional) the account to allow access
-                to (defaults to ``default_author``)
+                to (defaults to ``default_account``)
         """
         if not account:
-            if "default_author" in config:
-                account = config["default_author"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
         author, permlink = resolve_identifier(identifier)
@@ -1121,8 +1133,7 @@ class Commit(object):
                 to (defaults to ``default_account``)
         """
         if not account:
-            if "default_account" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
 
@@ -1143,8 +1154,7 @@ class Commit(object):
                 to (defaults to ``default_account``)
         """
         if not account:
-            if "default_author" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
         account = Account(account, steemd_instance=self.steemd)
@@ -1176,8 +1186,7 @@ class Commit(object):
 
         """
         if not account:
-            if "default_author" in config:
-                account = config["default_account"]
+            account = configStorage.get("default_account")
         if not account:
             raise ValueError("You need to provide an account")
         account = Account(account, steemd_instance=self.steemd)
@@ -1197,5 +1206,4 @@ class Commit(object):
 
 
 if __name__ == "__main__":
-    c = Commit()
-    c.transfer(to='fnait', amount=0.001, asset='STEEM', memo='libtest', account='furion')
+    pass

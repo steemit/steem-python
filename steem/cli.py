@@ -35,14 +35,8 @@ def cli(ctx, **kwargs):
 
 
 availableConfigurationKeys = [
-    "default_author",
-    "default_voter",
     "default_account",
     "default_vote_weight",
-    "list_sorting",
-    "categories_sorting",
-    "limit",
-    "post_category",
 ]
 
 
@@ -126,7 +120,7 @@ def legacy():
     """
         Command "info"
     """
-    parser_info = subparsers.add_parser('info', help='Show infos about piston and Steem')
+    parser_info = subparsers.add_parser('info', help='Show basic STEEM blockchain info')
     parser_info.set_defaults(command="info")
     parser_info.add_argument(
         'objects',
@@ -202,7 +196,7 @@ def legacy():
         '--account',
         type=str,
         required=False,
-        default=configStorage["default_voter"],
+        default=configStorage["default_account"],
         help='The voter account name'
     )
     parser_upvote.add_argument(
@@ -221,7 +215,7 @@ def legacy():
     parser_downvote.add_argument(
         '--account',
         type=str,
-        default=configStorage["default_voter"],
+        default=configStorage["default_account"],
         help='The voter account name'
     )
     parser_downvote.add_argument(
@@ -269,7 +263,7 @@ def legacy():
         '--account',
         type=str,
         required=False,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='Transfer from this account'
     )
 
@@ -287,7 +281,7 @@ def legacy():
         '--account',
         type=str,
         required=False,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='Powerup from this account'
     )
     parser_powerup.add_argument(
@@ -301,7 +295,7 @@ def legacy():
     """
         Command "powerdown"
     """
-    parser_powerdown = subparsers.add_parser('powerdown', help='Power down (start withdrawing STEEM from piston POWER)')
+    parser_powerdown = subparsers.add_parser('powerdown', help='Power down (start withdrawing STEEM from steem POWER)')
     parser_powerdown.set_defaults(command="powerdown")
     parser_powerdown.add_argument(
         'amount',
@@ -312,7 +306,7 @@ def legacy():
         '--account',
         type=str,
         required=False,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='powerdown from this account'
     )
 
@@ -324,7 +318,7 @@ def legacy():
     parser_powerdownroute.add_argument(
         'to',
         type=str,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='The account receiving either VESTS/SteemPower or STEEM.'
     )
     parser_powerdownroute.add_argument(
@@ -336,7 +330,7 @@ def legacy():
     parser_powerdownroute.add_argument(
         '--account',
         type=str,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='The account which is powering down'
     )
     parser_powerdownroute.add_argument(
@@ -360,7 +354,7 @@ def legacy():
         '--account',
         type=str,
         required=False,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='Convert from this account'
     )
 
@@ -373,7 +367,7 @@ def legacy():
         'account',
         type=str,
         nargs="*",
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='balance of these account (multiple accounts allowed)'
     )
 
@@ -386,7 +380,7 @@ def legacy():
         'account',
         type=str,
         nargs="*",
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='Inspect these accounts'
     )
 
@@ -399,7 +393,7 @@ def legacy():
         'account',
         type=str,
         nargs="?",
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='Account to show permissions for'
     )
 
@@ -412,7 +406,7 @@ def legacy():
         '--account',
         type=str,
         nargs="?",
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='The account to allow action for'
     )
     parser_allow.add_argument(
@@ -454,7 +448,7 @@ def legacy():
         '--account',
         type=str,
         nargs="?",
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='The account to disallow action for'
     )
     parser_disallow.add_argument(
@@ -491,7 +485,7 @@ def legacy():
         '--account',
         type=str,
         required=False,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='Account that pays the fee'
     )
 
@@ -522,7 +516,7 @@ def legacy():
         '--account',
         type=str,
         nargs="?",
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='The account to updateMemoKey action for'
     )
     parser_updateMemoKey.add_argument(
@@ -546,7 +540,7 @@ def legacy():
         '--account',
         type=str,
         required=False,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='Your account'
     )
 
@@ -564,7 +558,7 @@ def legacy():
         '--account',
         type=str,
         required=False,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='Your account'
     )
 
@@ -692,7 +686,7 @@ def legacy():
         '--account',
         type=str,
         required=False,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='Resteem as this user (requires to have the key installed in the wallet)'
     )
 
@@ -757,7 +751,7 @@ def legacy():
         '--account',
         type=str,
         required=False,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='setprofile as this user (requires to have the key installed in the wallet)'
     )
     parser_setprofile_a = parser_setprofile.add_argument_group('Multiple keys at once')
@@ -790,7 +784,7 @@ def legacy():
         '--account',
         type=str,
         required=False,
-        default=configStorage["default_author"],
+        default=configStorage["default_account"],
         help='delprofile as this user (requires to have the key installed in the wallet)'
     )
     parser_delprofile.add_argument(
@@ -939,8 +933,8 @@ def legacy():
     steem = stm.Steem(no_broadcast=args.no_broadcast, **options)
 
     if args.command == "set":
-        if (args.key in ["default_author",
-                         "default_voter",
+        if (args.key in ["default_account",
+                         "default_account",
                          "default_account"] and
                     args.value[0] == "@"):
             args.value = args.value[1:]
@@ -1088,16 +1082,11 @@ def legacy():
                 if len(installed_keys) == 1:
                     name = steem.commit.wallet.getAccountFromPublicKey(installed_keys[0])
                     print("=" * 30)
-                    print("Setting new default user: %s" % name)
+                    print("Would you like to make %s a default user?" % name)
                     print()
-                    print("You can change these settings with:")
-                    print("    piston set default_author <account>")
-                    print("    piston set default_voter <account>")
-                    print("    piston set default_account <account>")
+                    print("You can set it with with:")
+                    print("    steempy set default_account <account>")
                     print("=" * 30)
-                    configStorage["default_author"] = name
-                    configStorage["default_voter"] = name
-                    configStorage["default_account"] = name
 
     elif args.command == "delkey":
         if confirm(
@@ -1210,7 +1199,7 @@ def legacy():
 
             print(t)
         else:
-            print("Please specify an account: piston balance <account>")
+            print("Please specify an account: steempy balance <account>")
 
     elif args.command == "interest":
         t = PrettyTable(["Account",
