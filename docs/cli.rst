@@ -2,9 +2,19 @@ steempy - CLI Utility for STEEM
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 `steempy` lets you leverage your encrypted wallet to perform various actions on your accounts.
 
-Examples
---------
-Importing a private key into your wallet:
+The first time you use `steempy`, you will be prompted to enter a password. This password will be used to encrypt
+the `steempy` wallet, which contains your private keys.
+
+Quick Guide
+-----------
+First, you may like to import your Steem account:
+
+::
+
+    steempy importaccount
+
+
+You can also import individual private keys:
 
 ::
 
@@ -28,6 +38,32 @@ Upvoting a post:
 ::
 
    steempy upvote --account <account_name> https://steemit.com/funny/@mynameisbrian/the-content-stand-a-comic
+
+
+Setting Defaults
+----------------
+For a more convenient use of ``steempy`` as well as the ``steem`` library, you can set some defaults.
+This is especially useful if you have a single Steem account.
+
+::
+
+   steempy set default_account furion
+   steempy set default_vote_weight 100
+
+   steempy config
+    +---------------------+--------+
+    | Key                 | Value  |
+    +---------------------+--------+
+    | default_account     | furion |
+    | default_vote_weight | 100    |
+    +---------------------+--------+
+
+If you've set up your `default_account`, you can now send funds by omitting this field:
+
+::
+
+    steempy transfer 100 STEEM <recipient_name> memo
+
 
 Help
 ----
