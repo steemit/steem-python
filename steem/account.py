@@ -5,6 +5,7 @@ import time
 from contextlib import suppress
 
 from funcy.colls import walk_values
+from funcy.seqs import take
 from funcy.simple_funcs import rpartial
 from steembase.exceptions import AccountDoesNotExistsException
 from toolz import dissoc
@@ -141,7 +142,7 @@ class Account(dict):
         reward_24h = 0.0
         reward_7d = 0.0
 
-        for reward in self.history2(filter_by="curation_reward", take=10000):
+        for reward in take(5000, self.history_reverse(filter_by="curation_reward")):
 
             timestamp = parse_time(reward['timestamp']).timestamp()
             if timestamp > trailing_7d_t:
@@ -220,7 +221,7 @@ class Account(dict):
             "profile": self.profile,
             "sp": self.sp,
             "rep": self.rep,
-            "balances": self.get_balances(as_float=True),
+            "balances": self.get_balances(),
         }
 
     def get_account_history(self, index, limit, start=None, stop=None, order=-1, filter_by=None, raw_output=False):
