@@ -2,6 +2,7 @@ import json
 import logging
 import random
 import re
+from contextlib import suppress
 from datetime import datetime, timedelta
 
 import voluptuous as vo
@@ -361,6 +362,7 @@ class Commit(object):
                        account_name,
                        json_meta={},
                        creator=None,
+                       delegation=None,
                        owner_key=None,
                        active_key=None,
                        posting_key=None,
@@ -405,6 +407,8 @@ class Commit(object):
             :param str json_meta: Optional meta data for the account
             :param str creator: which account should pay the registration fee
                                 (defaults to ``default_account``)
+            :param str delegation: (Optional) If set, `crator` will delegate an asset
+                                for account creation.
             :param str owner_key: Main owner key
             :param str active_key: Main active key
             :param str posting_key: Main posting key
@@ -435,11 +439,9 @@ class Commit(object):
                 "You cannot use 'password' AND provide keys!"
             )
 
-        account = None
-        try:
+        # check if account already exists
+        with suppress(Exception):
             account = Account(account_name, steemd_instance=self.steemd)
-        except:
-            pass
         if account:
             raise AccountExistsException
 
@@ -519,7 +521,12 @@ class Commit(object):
                          'weight_threshold': 1},
              'prefix': self.steemd.chain_params["prefix"]}
 
-        op = operations.AccountCreate(**s)
+        create_account_op = operations.AccountCreate
+        if delegation:
+            s['delegation'] = delegation
+            create_account_op = operations.AccountCreateWithDelegation
+
+        op = create_account_op(**s)
 
         return self.finalizeOp(op, creator, "active")
 
