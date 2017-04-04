@@ -41,6 +41,7 @@ setup(
         'diff-match-patch',
         'Click',
         'prettytable',
+        'voluptuous',
     ],
     entry_points={
         'console_scripts': [
