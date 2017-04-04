@@ -389,6 +389,16 @@ class Commit(object):
             .. note:: Account creations cost a fee that is defined by
                        the network. If you create an account, you will
                        need to pay for that fee!
+                       
+                       **You can partially pay that fee by delegating VESTS.**
+                       
+                       To pay the fee in full in STEEM, leave ``delegation_fee_steem`` set to ``0 STEEM`` (Default).
+                       
+                       To pay the fee partially in STEEM, partially with delegated VESTS, set ``delegation_fee_steem``
+                       to a value greater than ``1 STEEM``. `Required VESTS will be calculated automatically.`
+                       
+                       To pay the fee with maximum amount of delegation, set ``delegation_fee_steem`` to ``1 STEEM``.
+                       `Required VESTS will be calculated automatically.`
 
             .. warning:: Don't call this method unless you know what
                           you are doing! Be sure to understand what this
@@ -509,7 +519,7 @@ class Commit(object):
             posting_accounts_authority.append([k, 1])
 
         props = self.steemd.get_chain_properties()
-        required_fee_steem = Amount(Amount(props["account_creation_fee"]) * 30).amount
+        required_fee_steem = Amount(props["account_creation_fee"]).amount * 30
 
         required_fee_vests = 0
         delegation_fee_steem = Amount(delegation_fee_steem).amount
