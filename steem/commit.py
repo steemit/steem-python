@@ -6,7 +6,9 @@ from contextlib import suppress
 from datetime import datetime, timedelta
 
 import voluptuous as vo
+from funcy.colls import none
 from funcy.flow import silent
+from funcy.seqs import first
 from steembase import memo
 from steembase import operations
 from steembase.account import PrivateKey, PublicKey
@@ -17,6 +19,7 @@ from steembase.exceptions import (
 from steembase.storage import configStorage
 
 from .account import Account
+from .amount import Amount
 from .instance import shared_steemd_instance
 from .transactionbuilder import TransactionBuilder
 from .utils import derive_permlink, resolve_identifier, fmt_time_string, keep_in_dict
@@ -48,11 +51,6 @@ STEEMIT_1_PERCENT = (STEEMIT_100_PERCENT / 100)
 
 # custom [active]
 # delete_comment [posting]
-
-# claim_reward_balance [posting]
-# delegate_vesting_shares [active]
-# account_create_with_delegation [active]
-
 
 class Commit(object):
     """ Commit things to the Steem network.
@@ -738,6 +736,66 @@ class Commit(object):
             **{
                 "from": account,
                 "request_id": request_id,
+            }
+        )
+        return self.finalizeOp(op, account, "active")
+
+    def claim_reward_balance(self,
+                             reward_steem='0 STEEM',
+                             reward_sbd='0 SBD',
+                             reward_vests='0 VESTS',
+                             account=None):
+        """ Claim reward balances.
+
+        By default, this will claim ``all`` outstanding balances. To bypass this behaviour,
+        set desired claim amount by setting any of `reward_steem`, `reward_sbd` or `reward_vests`.
+
+        Args:
+            reward_steem (string): Amount of STEEM you would like to claim.
+            reward_sbd (string): Amount of SBD you would like to claim.
+            reward_vests (string): Amount of VESTS you would like to claim.
+            account (string): The source account for the claim if not ``default_account`` is used.
+        """
+        if not account:
+            account = configStorage.get("default_account")
+        if not account:
+            raise ValueError("You need to provide an account")
+
+        # if no values were set by user, claim all outstanding balances on account
+        if none(int(first(x.split(' '))) for x in [reward_sbd, reward_steem, reward_vests]):
+            a = Account(account)
+            reward_steem = a['reward_steem_balance']
+            reward_sbd = a['reward_sbd_balance']
+            reward_vests = a['reward_vesting_balance']
+
+        op = operations.ClaimRewardBalance(
+            **{
+                "account": account,
+                "reward_steem": reward_steem,
+                "reward_sbd": reward_sbd,
+                "reward_vests": reward_vests,
+            }
+        )
+        return self.finalizeOp(op, account, "posting")
+
+    def delegate_vesting_shares(self, to_account: str, vesting_shares: str, account=None):
+        """ Delegate SP to another account.
+
+        Args:
+            to_account (string): Account we are delegating shares to (delegatee).
+            vesting_shares (string): Amount of VESTS to delegate eg. `10000 VESTS`.
+            account (string): The source account (delegator). If not specified, ``default_account`` is used.
+        """
+        if not account:
+            account = configStorage.get("default_account")
+        if not account:
+            raise ValueError("You need to provide an account")
+
+        op = operations.DelegateVestingShares(
+            **{
+                "delegator": account,
+                "delegatee": to_account,
+                "vesting_shares": str(Amount(vesting_shares)),
             }
         )
         return self.finalizeOp(op, account, "active")
