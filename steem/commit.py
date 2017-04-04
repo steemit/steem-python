@@ -2,7 +2,6 @@ import json
 import logging
 import random
 import re
-from contextlib import suppress
 from datetime import datetime, timedelta
 
 import voluptuous as vo
@@ -20,6 +19,7 @@ from steembase.storage import configStorage
 
 from .account import Account
 from .amount import Amount
+from .converter import Converter
 from .instance import shared_steemd_instance
 from .transactionbuilder import TransactionBuilder
 from .utils import derive_permlink, resolve_identifier, fmt_time_string, keep_in_dict
@@ -358,26 +358,27 @@ class Commit(object):
 
     def create_account(self,
                        account_name,
-                       json_meta={},
-                       creator=None,
-                       delegation=None,
+                       json_meta=None,
+                       password=None,
                        owner_key=None,
                        active_key=None,
                        posting_key=None,
                        memo_key=None,
-                       password=None,
                        additional_owner_keys=[],
                        additional_active_keys=[],
                        additional_posting_keys=[],
                        additional_owner_accounts=[],
                        additional_active_accounts=[],
                        additional_posting_accounts=[],
-                       storekeys=True,
+                       store_keys=True,
+                       store_owner_key=False,
+                       delegation_fee_steem='0 STEEM',
+                       creator=None,
                        ):
         """ Create new account in Steem
 
             The brainkey/password can be used to recover all generated keys (see
-            `pistonbase.account` for more details.
+            `steembase.account` for more details.
 
             By default, this call will use ``default_account`` to
             register a new name ``account_name`` with all keys being
@@ -397,16 +398,12 @@ class Commit(object):
             .. note:: Please note that this imports private keys
                       (if password is present) into the wallet by
                       default. However, it **does not import the owner
-                      key** for security reasons. Do NOT expect to be
-                      able to recover it from the wallet if you lose
+                      key** unless `store_owner_key` is set to True (default False).
+                      Do NOT expect to be able to recover it from the wallet if you lose
                       your password!
 
             :param str account_name: (**required**) new account name
             :param str json_meta: Optional meta data for the account
-            :param str creator: which account should pay the registration fee
-                                (defaults to ``default_account``)
-            :param str delegation: (Optional) If set, `crator` will delegate an asset
-                                for account creation.
             :param str owner_key: Main owner key
             :param str active_key: Main active key
             :param str posting_key: Main posting key
@@ -418,9 +415,16 @@ class Commit(object):
             :param list additional_active_keys: Additional active public keys
             :param list additional_posting_keys: Additional posting public keys
             :param list additional_owner_accounts: Additional owner account names
-            :param list additional_active_accounts: Additional acctive account names
+            :param list additional_active_accounts: Additional active account names
             :param list additional_posting_accounts: Additional posting account names
-            :param bool storekeys: Store new keys in the wallet (default: ``True``)
+            :param bool store_keys: Store new keys in the wallet (default: ``True``)
+            :param bool store_owner_key: Store owner key in the wallet (default: ``False``)
+            :param str delegation_fee_steem: (Optional) If set, `creator` pay a fee of this amount,
+                                        and delegate the rest with VESTS (calculated automatically).
+                                        Minimum: 1 STEEM. If left to 0 (Default), full fee is paid
+                                        without VESTS delegation.
+            :param str creator: which account should pay the registration fee
+                                (defaults to ``default_account``)
             :raises AccountExistsException: if the account already exists on the blockchain
 
         """
@@ -438,9 +442,11 @@ class Commit(object):
             )
 
         # check if account already exists
-        with suppress(Exception):
-            account = Account(account_name, steemd_instance=self.steemd)
-        if account:
+        try:
+            Account(account_name, steemd_instance=self.steemd)
+        except:
+            pass
+        else:
             raise AccountExistsException
 
         " Generate new keys from password"
@@ -456,11 +462,12 @@ class Commit(object):
             memo_pubkey = memo_key.get_public_key()
             posting_privkey = posting_key.get_private_key()
             active_privkey = active_key.get_private_key()
-            # owner_privkey   = owner_key.get_private_key()
+            owner_privkey = owner_key.get_private_key()
             memo_privkey = memo_key.get_private_key()
             # store private keys
-            if storekeys:
-                # self.wallet.addPrivateKey(owner_privkey)
+            if store_keys:
+                if store_owner_key:
+                    self.wallet.addPrivateKey(owner_privkey)
                 self.wallet.addPrivateKey(active_privkey)
                 self.wallet.addPrivateKey(posting_privkey)
                 self.wallet.addPrivateKey(memo_privkey)
@@ -502,10 +509,29 @@ class Commit(object):
             posting_accounts_authority.append([k, 1])
 
         props = self.steemd.get_chain_properties()
-        fee = props["account_creation_fee"]
+        required_fee_steem = Amount(Amount(props["account_creation_fee"]) * 30).amount
+
+        required_fee_vests = 0
+        delegation_fee_steem = Amount(delegation_fee_steem).amount
+        if delegation_fee_steem:
+            # creating accounts without delegation requires 30x account_creation_fee
+            # creating account with delegation allows one to use VESTS to pay the fee
+            # where the ratio must satisfy 1 STEEM in fee == 5 STEEM in delegated VESTS
+            delegated_sp_fee_mult = 5
+
+            if delegation_fee_steem < 1:
+                raise ValueError("When creating account with delegation, at least 1 STEEM in fee must be paid.")
+
+            # calculate required remaining fee in vests
+            remaining_fee = required_fee_steem - delegation_fee_steem
+            if remaining_fee > 0:
+                required_sp = remaining_fee * delegated_sp_fee_mult
+                required_fee_vests = Converter().sp_to_vests(required_sp) + 1
+
         s = {'creator': creator,
-             'fee': fee,
-             'json_metadata': json_meta,
+             'fee': '%s STEEM' % (delegation_fee_steem or required_fee_steem),
+             'delegation': '%s VESTS' % required_fee_vests,
+             'json_metadata': json_meta or {},
              'memo_key': memo,
              'new_account_name': account_name,
              'owner': {'account_auths': owner_accounts_authority,
@@ -519,12 +545,7 @@ class Commit(object):
                          'weight_threshold': 1},
              'prefix': self.steemd.chain_params["prefix"]}
 
-        create_account_op = operations.AccountCreate
-        if delegation:
-            s['delegation'] = delegation
-            create_account_op = operations.AccountCreateWithDelegation
-
-        op = create_account_op(**s)
+        op = operations.AccountCreateWithDelegation(**s)
 
         return self.finalizeOp(op, creator, "active")
 
