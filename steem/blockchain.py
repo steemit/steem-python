@@ -171,7 +171,7 @@ def typify(value: Union[dict, list, set, str]):
 
     if type(value) == str:
         if re.match('^\d+\.\d+ (STEEM|SBD|VESTS)$', value):
-            return keep_in_dict(Amount(value).__dict__, ['amount', 'asset'])
+            return keep_in_dict(dict(Amount(value)), ['amount', 'asset'])
 
         if re.match('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$', value):
             return parse_time(value)
