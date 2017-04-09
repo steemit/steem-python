@@ -191,6 +191,34 @@ class Steemd(HttpClient):
     def cancel_all_subscriptions(self):
         return self.exec('cancel_all_subscriptions', api='database_api')
 
+    def get_reward_fund(self, fund_name: str = 'post'):
+        """ Get details for a reward fund.
+
+        Right now the only pool available is 'post'.
+
+        Example:
+
+            .. code-block:: python
+
+                s.get_reward_fund('post')
+
+            ::
+
+                {'content_constant': '2000000000000',
+                 'id': 0,
+                 'last_update': '2017-04-09T19:18:57',
+                 'name': 'post',
+                 'percent_content_rewards': 10000,
+                 'percent_curation_rewards': 2500,
+                 'recent_claims': '10971122501158586840771928156084',
+                 'reward_balance': '555660.895 STEEM'}
+
+        """
+        return self.exec('get_reward_fund', fund_name, api='database_api')
+
+    def get_expiring_vesting_delegations(self, account: str, start: PointInTime, limit: int):
+        return self.exec('get_expiring_vesting_delegations', account, start, limit, api='database_api')
+
     def get_trending_tags(self, after_tag: str, limit: int):
         return self.exec('get_trending_tags', after_tag, limit, api='database_api')
 
@@ -200,8 +228,11 @@ class Steemd(HttpClient):
     def get_discussions_by_trending(self, discussion_query: dict):
         return self.exec('get_discussions_by_trending', discussion_query, api='database_api')
 
-    def get_discussions_by_trending30(self, discussion_query: dict):
-        return self.exec('get_discussions_by_trending30', discussion_query, api='database_api')
+    def get_comment_discussions_by_payout(self, discussion_query: dict):
+        return self.exec('get_comment_discussions_by_payout', discussion_query, api='database_api')
+
+    def get_post_discussions_by_payout(self, discussion_query: dict):
+        return self.exec('get_post_discussions_by_payout', discussion_query, api='database_api')
 
     def get_discussions_by_created(self, discussion_query: dict):
         return self.exec('get_discussions_by_created', discussion_query, api='database_api')

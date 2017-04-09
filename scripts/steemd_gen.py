@@ -33,6 +33,16 @@ api_methods = [
     },
     {
         'api': 'database_api',
+        'method': 'get_reward_fund',
+        'params': [('fund_name', 'str')],
+    },
+    {
+        'api': 'database_api',
+        'method': 'get_expiring_vesting_delegations',
+        'params': [('account', 'str'), ('start', 'PointInTime'), ('limit', 'int')],
+    },
+    {
+        'api': 'database_api',
         'method': 'get_trending_tags',
         'params': [('after_tag', 'str'), ('limit', 'int')],
     },
@@ -48,7 +58,12 @@ api_methods = [
     },
     {
         'api': 'database_api',
-        'method': 'get_discussions_by_trending30',
+        'method': 'get_post_discussions_by_payout',
+        'params': [('discussion_query', 'dict')],
+    },
+    {
+        'api': 'database_api',
+        'method': 'get_comment_discussions_by_payout',
         'params': [('discussion_query', 'dict')],
     },
     {
@@ -560,5 +575,5 @@ def inspect_steemd_implementation():
 
 
 if __name__ == '__main__':
-    # steemd_codegen()
+    steemd_codegen()
     inspect_steemd_implementation()
