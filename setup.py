@@ -39,14 +39,12 @@ setup(
         'funcy',
         'langdetect',
         'diff-match-patch',
-        'Click',
         'prettytable',
         'voluptuous',
     ],
     entry_points={
         'console_scripts': [
-            'steempy2=steem.cli:cli',
-            'piston=steem.cli:legacy',
             'steempy=steem.cli:legacy',
+            'piston=steem.cli:legacy',
         ]
     })

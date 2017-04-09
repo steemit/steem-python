@@ -5,10 +5,8 @@ import re
 import sys
 from pprint import pprint
 
-import click
 import pkg_resources
 import steem as stm
-from click import echo
 from datashape import json
 from prettytable import PrettyTable
 from steembase.storage import configStorage
@@ -23,17 +21,6 @@ from .post import Post
 from .utils import construct_identifier, strfage
 from .witness import Witness
 
-context_settings = dict(help_option_names=['-h', '--help'])
-
-
-@click.group(context_settings=context_settings)
-def cli(ctx, **kwargs):
-    ctx.obj = {}
-    for k, v in kwargs.items():
-        ctx.obj[k] = v
-    echo()
-
-
 availableConfigurationKeys = [
     "default_account",
     "default_vote_weight",
@@ -41,6 +28,10 @@ availableConfigurationKeys = [
 
 
 def legacy():
+    """
+    Piston like cli application.
+    This will be re-written as a @click app in the future.
+    """
     global args
 
     parser = argparse.ArgumentParser(
@@ -1166,12 +1157,13 @@ def legacy():
         ))
 
     elif args.command == "balance":
-        t = PrettyTable(["Account", "STEEM", "SBD", "VESTS"])
-        t.align = "r"
-
         if args.account and isinstance(args.account, list):
             for account in args.account:
                 a = Account(account)
+
+                print("\n@%s" % a.name)
+                t = PrettyTable(["Account", "STEEM", "SBD", "VESTS"])
+                t.align = "r"
                 t.add_row([
                     'Available',
                     a.balances['available']['STEEM'],
@@ -1196,8 +1188,7 @@ def legacy():
                     a.balances['total']['SBD'],
                     a.balances['total']['VESTS'],
                 ])
-
-            print(t)
+                print(t)
         else:
             print("Please specify an account: steempy balance <account>")
 
