@@ -71,20 +71,20 @@ You can see all available commands with ``steempy -h``
 
 ::
 
-    % steempy -h
+    ~ % steempy -h
     usage: steempy [-h] [--node NODE] [--no-broadcast] [--no-wallet] [--unsigned]
                    [--expires EXPIRES] [--verbose VERBOSE] [--version]
-                   {set,config,info,changewalletpassphrase,addkey,delkey,getkey,listkeys,listaccounts,upvote,downvote,replies,transfer,powerup,powerdown,powerdownroute,convert,balance,history,interest,permissions,allow,disallow,newaccount,importaccount,updatememokey,approvewitness,disapprovewitness,sign,broadcast,orderbook,buy,sell,cancel,resteem,follow,unfollow,setprofile,delprofile,witnessupdate,witnesscreate}
+                   {set,config,info,changewalletpassphrase,addkey,delkey,getkey,listkeys,listaccounts,upvote,downvote,transfer,powerup,powerdown,powerdownroute,convert,balance,interest,permissions,allow,disallow,newaccount,importaccount,updatememokey,approvewitness,disapprovewitness,sign,broadcast,orderbook,buy,sell,cancel,resteem,follow,unfollow,setprofile,delprofile,witnessupdate,witnesscreate}
                    ...
 
     Command line tool to interact with the Steem network
 
     positional arguments:
-      {set,config,info,changewalletpassphrase,addkey,delkey,getkey,listkeys,listaccounts,upvote,downvote,replies,transfer,powerup,powerdown,powerdownroute,convert,balance,history,interest,permissions,allow,disallow,newaccount,importaccount,updatememokey,approvewitness,disapprovewitness,sign,broadcast,orderbook,buy,sell,cancel,resteem,follow,unfollow,setprofile,delprofile,witnessupdate,witnesscreate}
+      {set,config,info,changewalletpassphrase,addkey,delkey,getkey,listkeys,listaccounts,upvote,downvote,transfer,powerup,powerdown,powerdownroute,convert,balance,interest,permissions,allow,disallow,newaccount,importaccount,updatememokey,approvewitness,disapprovewitness,sign,broadcast,orderbook,buy,sell,cancel,resteem,follow,unfollow,setprofile,delprofile,witnessupdate,witnesscreate}
                             sub-command help
         set                 Set configuration
         config              Show local configuration
-        info                Show infos about piston and Steem
+        info                Show basic STEEM blockchain info
         changewalletpassphrase
                             Change wallet password
         addkey              Add a new key to the wallet
@@ -94,14 +94,12 @@ You can see all available commands with ``steempy -h``
         listaccounts        List available accounts in your wallet
         upvote              Upvote a post
         downvote            Downvote a post
-        replies             Show recent replies to your posts
         transfer            Transfer STEEM
         powerup             Power up (vest STEEM as STEEM POWER)
-        powerdown           Power down (start withdrawing STEEM from piston POWER)
+        powerdown           Power down (start withdrawing STEEM from steem POWER)
         powerdownroute      Setup a powerdown route
         convert             Convert STEEMDollars to Steem (takes a week to settle)
         balance             Show the balance of one more more accounts
-        history             Show the history of an account
         interest            Get information about interest payment
         permissions         Show permissions of an account
         allow               Allow an account/key to interact with your account

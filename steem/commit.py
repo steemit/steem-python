@@ -338,7 +338,7 @@ class Commit(object):
 
             .. code-block:: python
 
-                piston set default_account <account>
+                steempy set default_account <account>
         """
         if not account:
             account = configStorage.get("default_account")
@@ -445,7 +445,7 @@ class Commit(object):
         if not creator:
             raise ValueError(
                 "Not creator account given. Define it with " +
-                "creator=x, or set the default_account using piston")
+                "creator=x, or set the default_account using steempy")
         if password and (owner_key or posting_key or active_key or memo_key):
             raise ValueError(
                 "You cannot use 'password' AND provide keys!"

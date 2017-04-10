@@ -296,7 +296,7 @@ def strfage(time, fmt=None):
     """ Format time/age
     """
     if not hasattr(time, "days"):  # dirty hack
-        now = datetime.now()
+        now = datetime.utcnow()
         if isinstance(time, str):
             time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
         time = (now - time)
