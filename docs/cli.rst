@@ -1,12 +1,33 @@
-steempy - CLI Utility for STEEM
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-`steempy` lets you leverage your encrypted wallet to perform various actions on your accounts.
+steempy CLI
+~~~~~~~~~~~
+`steempy` is a convenient CLI utility that enables you to manage your wallet, transfer funds, check
+balances and more.
+
+Using the Wallet
+----------------
+`steempy` lets you leverage your BIP38 encrypted wallet to perform various actions on your accounts.
 
 The first time you use `steempy`, you will be prompted to enter a password. This password will be used to encrypt
 the `steempy` wallet, which contains your private keys.
 
-Quick Guide
------------
+You can change the password via `changewalletpassphrase` command.
+
+::
+
+    steempy changewalletpassphrase
+
+
+From this point on, every time an action requires your private keys, you will be prompted ot enter
+this password (from CLI as well as while using `steem` library).
+
+To bypass password entry, you can set an environmnet variable ``UNLOCK``.
+
+::
+
+    UNLOCK=mysecretpassword steempy transfer 100 STEEM <recipient>
+
+Common Commands
+---------------
 First, you may like to import your Steem account:
 
 ::
@@ -26,6 +47,11 @@ Listing accounts:
 
    steempy listaccounts
 
+Show balances:
+
+::
+
+   steempy balance account_name1 account_name2
 
 Sending funds:
 
