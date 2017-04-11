@@ -2,23 +2,22 @@
 Official Python STEEM Library
 -----------------------------
 
+Installation
+============
+You can install `steem-python` with `pip`:
 
-Notice
-======
-This library is under **active development**. Use at own discretion.
-
+```
+pip install -U steem
+```
 
 Documentation
 =============
-A documentation preview is available at http://steem.readthedocs.io/en/latest/
+Documentation is available at **http://steem.readthedocs.io**
 
-Tutorial
-========
-todo
-
-TODO
-====
-* HF17 Features
-* write a tutorial
-* write more unit-tests
+## TODO
+* more unit-tests
 * 100% documentation coverage
+
+## Notice
+This library is under *active development*. Use at own discretion.
+
