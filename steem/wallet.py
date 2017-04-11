@@ -58,10 +58,6 @@ class Wallet:
         self.steemd = steemd_instance or shared_steemd_instance()
         self.prefix = "STM"
 
-        # Compatibility after name change from wif->keys
-        if "wif" in kwargs and "keys" not in kwargs:
-            kwargs["keys"] = kwargs["wif"]
-
         if "keys" in kwargs:
             self.setKeys(kwargs["keys"])
         else:

@@ -5,6 +5,10 @@ from steem.instance import shared_steemd_instance
 from .commit import Commit
 from .steemd import Steemd
 
+# TODO:
+# Steem() already supports node overloading, however, not trough defaults.
+# ideally, we should be able to over-load this with:
+# `steempy set nodes https://node1, https://node2`
 
 class Steem(Steemd):
     """ Connect to the Steem network.
@@ -13,6 +17,17 @@ class Steem(Steemd):
             nodes (list): A list of Steem HTTP RPC nodes to connect to. If not provided, official Steemit nodes will be used.
             debug (bool): Elevate logging level to `logging.DEBUG`. Defaults to `logging.INFO`.
             no_broadcast (bool): If set to ``True``, committal actions like sending funds will have no effect (simulation only).
+
+
+        Optional Arguments (kwargs):
+
+        Args:
+            keys (list): A list of wif keys. If provided, the Wallet will use these keys rather than the
+                            ones found in BIP38 encrypted wallet.
+            unsigned (bool): (Defaults to False) Use this for offline signing.
+            expiration (int): (Defualts to 60) Size of window in seconds that the transaction
+                                needs to be broadcasted in, before it expires.
+
 
         Returns:
             Steemd class instance. It can be used to execute commands against steem node.
@@ -36,9 +51,12 @@ class Steem(Steemd):
     def __init__(self, nodes=None, debug=False, no_broadcast=False, **kwargs):
         _steemd = Steemd(nodes=nodes) if nodes else shared_steemd_instance()
         _log_level = logging.DEBUG if debug else logging.INFO
-        self.commit = Commit(steemd_instance=_steemd,
-                             no_broadcast=no_broadcast,
-                             **kwargs)
+
+        self.commit = Commit(
+            steemd_instance=_steemd,
+            no_broadcast=no_broadcast,
+            **kwargs
+        )
 
         # self._apply_commit_methods()
 
