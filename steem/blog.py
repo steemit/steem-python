@@ -1,6 +1,6 @@
 from contextlib import suppress
 
-from funcy.seqs import rest, first
+from funcy.seqs import take, first
 from steembase.exceptions import PostDoesNotExist
 
 from .account import Account
@@ -9,73 +9,91 @@ from .post import Post
 from .utils import is_comment
 
 
-class Blog:
-    """ Obtain a list of blog posts of an account
+class Blog():
+    """ Obtain a list of blog posts for an account
 
-        :param str account_name: Name of the account
-        :param Steemd steemd_instance: Steemd() instance to use when accessing a RPC
+        Args:
+            account_name (str): Name of the account
+            comments_only (bool): (Default False). Toggle between posts and comments.
+            steemd_instance (Steemd): Steemd instance overload
+
+        Returns:
+            Generator with Post objects in reverse chronological order.
+
+        Example:
+            To get all posts, you can use either generator:
+
+            ::
+
+                b = Blog('furion')
+                b2 = b.all()
+
+                next(b)
+                next(b2)
+
+            To get some posts, you can call `take()`:
+
+            ::
+
+                b = Blog('furion')
+                gen = b.take(5)
 
     """
 
-    def __init__(self, account_name, steemd_instance=None):
+    def __init__(account_name: str, comments_only=False, steemd_instance=None):
         self.steem = steemd_instance or shared_steemd_instance()
-
+        self.comments_only = comments_only
         self.account = Account(account_name)
-        self.current_index = self.account.virtual_op_count()
-        self.history = None
-
-        # prevent duplicates
+        self.history = self.account.history_reverse(filter_by='comment')
         self.seen_items = set()
 
-    def refresh(self):
-        # fetch the next batch
-        if self.current_index == 0:
-            raise StopIteration
+    def take(limit=5):
+        """ Take up to n (n = limit) posts/comments at a time.
 
-        limit = 1000
-        if self.current_index < 1000:
-            # avoid duplicates on last batch
-            limit = 1000 - self.current_index
-            self.current_index = 1000
+        You can call this method as many times as you want. Once
+        there are no more posts to take, it will return [].
 
-        h = self.steem.get_account_history(self.account.name, self.current_index, limit)
-        if not h:
-            raise StopIteration
+        Returns:
+            List of posts/comments in a batch of size up to `limit`.
+        """
+        # get main posts only
+        comment_filter = is_comment if self.comments_only else complement(is_comment)
+        hist = filter(comment_filter, self.history)
 
-        self.current_index -= 1000
+        # filter out reblogs
+        match_author = lambda x: x['author'] == self.account.name
+        hist2 = filter(match_author, hist)
 
-        # filter out irrelevant items
-        def blogpost_only(item):
-            op_type, op = item[1]['op']
-            return op_type == 'comment' and not is_comment(op)
-
-        hist = filter(blogpost_only, h)
-        hist = map(lambda x: x[1]['op'][1], hist)
-        hist = [x for x in hist if x['author'] == self.account.name]
-
-        # filter out items that have been already passed on
-        # this is necessary because post edits create multiple entries in the chain
-        hist_uniq = []
-        for item in hist:
-            if item['permlink'] not in self.seen_items:
+        # post edits will re-appear in history
+        # we should therefore filter out already seen posts
+        def ensure_unique(post):
+            if post['permlink'] not in self.seen_items:
                 self.seen_items.add(item['permlink'])
-                hist_uniq.append(item)
+                return True
 
-        # LIFO
-        self.history = hist_uniq[::-1]
+        unique = filter(ensure_unique, hist2)
+
+        serialized = filter(Bool, map(silent(Post), unique))
+
+        batch = take(limit, serialized)
+        return batch
+
+    def all():
+        """ A generator that will return ALL of account history. """
+        while True:
+            chunk = self.take(10)
+            if chunk:
+                yield from iter(chunk)
+            else:
+                break
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        while not self.history:
-            self.refresh()
+        next_item = first(self.take(1))
+        if not next_item:
+            raise StopIteration
 
-        while self.history:
-            # consume an item from history
-            next_item = first(self.history)
-            self.history = list(rest(self.history))
+        return next_item
 
-            # stay in while loop until we find a post that exists
-            with suppress(PostDoesNotExist):
-                return Post(next_item)
