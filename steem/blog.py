@@ -2,7 +2,7 @@ from contextlib import suppress
 
 from funcy.seqs import take, first
 from funcy.funcs import complement
-from funcy import silent
+from funcy.flow import silent
 from steembase.exceptions import PostDoesNotExist
 
 from .account import Account
@@ -27,18 +27,18 @@ class Blog():
 
             ::
 
-                b = Blog('furion')
-                b2 = b.all()
+                gen1 = Blog('furion')
+                gen2 = b.all()
 
-                next(b)
-                next(b2)
+                next(gen1)
+                next(gen2)
 
             To get some posts, you can call `take()`:
 
             ::
 
                 b = Blog('furion')
-                gen = b.take(5)
+                posts = b.take(5)
 
     """
 

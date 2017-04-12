@@ -2,7 +2,7 @@ Welcome to steem-python
 =======================
 
 ``steem-python`` is the official STEEM library for Python.
-It can be used to interface with the STEEM blockchain.
+It comes with a BIP38 encrypted wallet and a practical CLI utility called `stemepy`.
 
 
 Installation
