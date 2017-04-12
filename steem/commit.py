@@ -293,9 +293,7 @@ class Commit(object):
                     }
                 ])
                 schema(beneficiaries)
-                # ext = [[0, beneficiaries]]
-                ext = beneficiaries
-                options['extensions'] = ext
+                options['beneficiaries'] = beneficiaries
 
             default_max_payout = "1000000.000 SBD"
             comment_op = operations.CommentOptions(
@@ -305,7 +303,10 @@ class Commit(object):
                    "percent_steem_dollars": int(options.get("percent_steem_dollars", 10000)),
                    "allow_votes": options.get("allow_votes", True),
                    "allow_curation_rewards": options.get("allow_curation_rewards", True),
-                   "extensions": options.get("extensions", [])}
+                   "extensions": options.get("extensions", []),
+                   "beneficiaries": options.get("beneficiaries"),
+                   }
+
             )
             ops.append(comment_op)
 
