@@ -1,6 +1,8 @@
 from contextlib import suppress
 
 from funcy.seqs import take, first
+from funcy.funcs import complement
+from funcy import silent
 from steembase.exceptions import PostDoesNotExist
 
 from .account import Account
@@ -40,14 +42,14 @@ class Blog():
 
     """
 
-    def __init__(account_name: str, comments_only=False, steemd_instance=None):
+    def __init__(self, account_name: str, comments_only=False, steemd_instance=None):
         self.steem = steemd_instance or shared_steemd_instance()
         self.comments_only = comments_only
         self.account = Account(account_name)
         self.history = self.account.history_reverse(filter_by='comment')
         self.seen_items = set()
 
-    def take(limit=5):
+    def take(self, limit=5):
         """ Take up to n (n = limit) posts/comments at a time.
 
         You can call this method as many times as you want. Once
@@ -68,17 +70,17 @@ class Blog():
         # we should therefore filter out already seen posts
         def ensure_unique(post):
             if post['permlink'] not in self.seen_items:
-                self.seen_items.add(item['permlink'])
+                self.seen_items.add(post['permlink'])
                 return True
 
         unique = filter(ensure_unique, hist2)
 
-        serialized = filter(Bool, map(silent(Post), unique))
+        serialized = filter(bool, map(silent(Post), unique))
 
         batch = take(limit, serialized)
         return batch
 
-    def all():
+    def all(self):
         """ A generator that will return ALL of account history. """
         while True:
             chunk = self.take(10)
