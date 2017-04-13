@@ -9,7 +9,7 @@ from .operationids import operations
 from .types import (
     Int16, Uint16, Uint32, Uint64,
     String, Bytes, Array, PointInTime, Bool,
-    Optional, Map, Id, JsonObj, Set, StaticVariant2)
+    Optional, Map, Id, JsonObj, Set, StaticVariant)
 
 default_prefix = "STM"
 
@@ -285,33 +285,50 @@ class WitnessProps(GrapheneObject):
             ]))
 
 
-class CommentPayoutBeneficiary(GrapheneObject):
+class Beneficiary(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):
             self.data = args[0].data
         else:
             if len(args) == 1 and len(kwargs) == 0:
                 kwargs = args[0]
-
             super().__init__(OrderedDict([
                 ('account', String(kwargs["account"])),
                 ('weight', Int16(kwargs["weight"])),
             ]))
 
 
-class CommentPayoutBeneficiaries(GrapheneObject):
-    def __init__(self, *args, **kwargs):
-        if isArgsThisClass(self, args):
-            self.data = args[0].data
+class Beneficiaries(GrapheneObject):
+    def __init__(self, kwargs):
+        super().__init__(OrderedDict([
+            ('beneficiaries',
+                Array([Beneficiary(o) for o in kwargs["beneficiaries"]])),
+        ]))
+
+
+class CommentOptionExtensions(StaticVariant):
+    """ Serialize Comment Payout Beneficiaries.
+
+    Args:
+        beneficiaries (list): A static_variant containing beneficiaries.
+
+    Example:
+
+        ::
+
+            [0,
+                {'beneficiaries': [
+                    {'account': 'furion', 'weight': 10000}
+                ]}
+            ]
+    """
+    def __init__(self, o):
+        type_id, data = o
+        if type_id == 0:
+            data = Beneficiaries(data)
         else:
-            if len(args) == 1 and len(kwargs) == 0:
-                kwargs = args[0]
-
-            super().__init__(OrderedDict([
-                ('beneficiaries',
-                 Array([CommentPayoutBeneficiary(o) for o in kwargs["beneficiaries"]])),
-            ]))
-
+            raise Exception("Unknown CommentOptionExtension")
+        super().__init__(data, type_id)
 
 ########################################################
 # Actual Operations
@@ -675,8 +692,9 @@ class CommentOptions(GrapheneObject):
             extensions = Array([])
             beneficiaries = kwargs.get('beneficiaries')
             if beneficiaries and type(beneficiaries) == list:
-                bene = CommentPayoutBeneficiaries(**kwargs)
-                extensions = Array([StaticVariant2(bene)])
+                ext_obj = [0, {'beneficiaries': beneficiaries}]
+                ext = CommentOptionExtensions(ext_obj)
+                extensions = Array([ext])
 
             super().__init__(OrderedDict([
                 ('author', String(kwargs["author"])),

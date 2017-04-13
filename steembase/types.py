@@ -310,24 +310,7 @@ class StaticVariant:
         return varint(self.type_id) + bytes(self.data)
 
     def __str__(self):
-        return {self.type_id: str(self.data)}
-
-
-class StaticVariant2:
-    def __init__(self, d):
-        self.data = d
-        self.type_id = 0
-        self.length = Varint32(2)
-
-    def __bytes__(self):
-        return varint(self.type_id) + bytes(self.data)
-
-    def __len__(self):
-        return self.length
-
-    def __str__(self):
-        # todo: potential issue?
-        return [self.type_id, self.data.json()]
+        return json.dumps([self.type_id, self.data.json()])
 
 
 class Map:
