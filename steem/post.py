@@ -215,7 +215,7 @@ class Post(dict):
         # Convert Amount class objects into pure dictionaries
         def decompose_amounts(item):
             if type(item) == Amount:
-                return item.__dict__
+                return dict(item)
             return item
 
         return walk_values(decompose_amounts, safe_dict)
