@@ -9,7 +9,7 @@ from .operationids import operations
 from .types import (
     Int16, Uint16, Uint32, Uint64,
     String, Bytes, Array, PointInTime, Bool,
-    Optional, Map, Id, JsonObj, Set)
+    Optional, Map, Id, JsonObj, Set, StaticVariant)
 
 default_prefix = "STM"
 
@@ -117,10 +117,7 @@ class GrapheneObject(object):
             if isinstance(value, String):
                 d.update({name: str(value)})
             else:
-                try:
-                    d.update({name: JsonObj(value)})
-                except:
-                    d.update({name: value.__str__()})
+                d.update({name: JsonObj(value)})
         return d
 
     def __str__(self):
@@ -288,6 +285,51 @@ class WitnessProps(GrapheneObject):
             ]))
 
 
+class Beneficiary(GrapheneObject):
+    def __init__(self, *args, **kwargs):
+        if isArgsThisClass(self, args):
+            self.data = args[0].data
+        else:
+            if len(args) == 1 and len(kwargs) == 0:
+                kwargs = args[0]
+            super().__init__(OrderedDict([
+                ('account', String(kwargs["account"])),
+                ('weight', Int16(kwargs["weight"])),
+            ]))
+
+
+class Beneficiaries(GrapheneObject):
+    def __init__(self, kwargs):
+        super().__init__(OrderedDict([
+            ('beneficiaries',
+                Array([Beneficiary(o) for o in kwargs["beneficiaries"]])),
+        ]))
+
+
+class CommentOptionExtensions(StaticVariant):
+    """ Serialize Comment Payout Beneficiaries.
+
+    Args:
+        beneficiaries (list): A static_variant containing beneficiaries.
+
+    Example:
+
+        ::
+
+            [0,
+                {'beneficiaries': [
+                    {'account': 'furion', 'weight': 10000}
+                ]}
+            ]
+    """
+    def __init__(self, o):
+        type_id, data = o
+        if type_id == 0:
+            data = Beneficiaries(data)
+        else:
+            raise Exception("Unknown CommentOptionExtension")
+        super().__init__(data, type_id)
+
 ########################################################
 # Actual Operations
 ########################################################
@@ -349,7 +391,7 @@ class AccountCreateWithDelegation(GrapheneObject):
                 ('posting', Permission(kwargs["posting"], prefix=prefix)),
                 ('memo_key', PublicKey(kwargs["memo_key"], prefix=prefix)),
                 ('json_metadata', String(meta)),
-                ('extensions', Set([])),
+                ('extensions', Array([])),
             ]))
 
 
@@ -645,6 +687,15 @@ class CommentOptions(GrapheneObject):
         else:
             if len(args) == 1 and len(kwargs) == 0:
                 kwargs = args[0]
+
+            # handle beneficiaries
+            extensions = Array([])
+            beneficiaries = kwargs.get('beneficiaries')
+            if beneficiaries and type(beneficiaries) == list:
+                ext_obj = [0, {'beneficiaries': beneficiaries}]
+                ext = CommentOptionExtensions(ext_obj)
+                extensions = Array([ext])
+
             super().__init__(OrderedDict([
                 ('author', String(kwargs["author"])),
                 ('permlink', String(kwargs["permlink"])),
@@ -652,7 +703,7 @@ class CommentOptions(GrapheneObject):
                 ('percent_steem_dollars', Uint16(int(kwargs["percent_steem_dollars"]))),
                 ('allow_votes', Bool(bool(kwargs["allow_votes"]))),
                 ('allow_curation_rewards', Bool(bool(kwargs["allow_curation_rewards"]))),
-                ('extensions', Array([])),
+                ('extensions', extensions),
             ]))
 
 

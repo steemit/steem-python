@@ -63,7 +63,14 @@ def variable_buffer(s):
 def JsonObj(data):
     """ Returns json object from data
     """
-    return json.loads(str(data).replace("'", '"'))
+    try:
+        return json.loads(str(data).replace("'", '"'))
+    except:
+        try:
+            return data.__str__()
+        except:
+            raise ValueError('JsonObj could not parse %s:\n%s' %
+                             (type(data).__name__, data.__class__))
 
 
 class Uint8:
@@ -303,7 +310,7 @@ class StaticVariant:
         return varint(self.type_id) + bytes(self.data)
 
     def __str__(self):
-        return {self.type_id: str(self.data)}
+        return json.dumps([self.type_id, self.data.json()])
 
 
 class Map:
