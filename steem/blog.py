@@ -1,9 +1,6 @@
-from contextlib import suppress
-
-from funcy.seqs import take, first
-from funcy.funcs import complement
 from funcy.flow import silent
-from steembase.exceptions import PostDoesNotExist
+from funcy.funcs import complement
+from funcy.seqs import take, first
 
 from .account import Account
 from .instance import shared_steemd_instance
@@ -11,7 +8,7 @@ from .post import Post
 from .utils import is_comment
 
 
-class Blog():
+class Blog:
     """ Obtain a list of blog posts for an account
 
         Args:
@@ -98,4 +95,3 @@ class Blog():
             raise StopIteration
 
         return next_item
-

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import os
 import re
 import time
 from datetime import datetime
@@ -289,6 +290,11 @@ def fmt_time_from_now(secs=0):
 
     """
     return datetime.utcfromtimestamp(time.time() + int(secs)).strftime('%Y-%m-%dT%H:%M:%S')
+
+
+def env_unlocked():
+    """ Check if wallet password is provided as ENV variable. """
+    return os.getenv('UNLOCK', False)
 
 
 # todo remove these

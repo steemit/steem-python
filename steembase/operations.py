@@ -9,7 +9,7 @@ from .operationids import operations
 from .types import (
     Int16, Uint16, Uint32, Uint64,
     String, Bytes, Array, PointInTime, Bool,
-    Optional, Map, Id, JsonObj, Set, StaticVariant)
+    Optional, Map, Id, JsonObj, StaticVariant)
 
 default_prefix = "STM"
 
@@ -302,7 +302,7 @@ class Beneficiaries(GrapheneObject):
     def __init__(self, kwargs):
         super().__init__(OrderedDict([
             ('beneficiaries',
-                Array([Beneficiary(o) for o in kwargs["beneficiaries"]])),
+             Array([Beneficiary(o) for o in kwargs["beneficiaries"]])),
         ]))
 
 
@@ -322,6 +322,7 @@ class CommentOptionExtensions(StaticVariant):
                 ]}
             ]
     """
+
     def __init__(self, o):
         type_id, data = o
         if type_id == 0:
@@ -329,6 +330,7 @@ class CommentOptionExtensions(StaticVariant):
         else:
             raise Exception("Unknown CommentOptionExtension")
         super().__init__(data, type_id)
+
 
 ########################################################
 # Actual Operations
