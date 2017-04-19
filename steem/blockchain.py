@@ -84,17 +84,11 @@ class Blockchain(object):
             start = head_block + 1
             time.sleep(block_interval)
 
-    def stream(self, filter_by=list(), *args, **kwargs):
+    def stream(self, filter_by: Union[str, list] = list(), *args, **kwargs):
         """ Yield a stream of blocks
 
-            :param list filter_by: List of operations to filter for, e.g.
-                vote, comment, transfer, transfer_to_vesting,
-                withdraw_vesting, limit_order_create, limit_order_cancel,
-                feed_publish, convert, account_create, account_update,
-                witness_update, account_witness_vote, account_witness_proxy,
-                pow, custom, report_over_production, fill_convert_request,
-                comment_reward, curate_reward, liquidity_reward, interest,
-                fill_vesting_withdraw, fill_order,
+            Args:
+                filter_by (str, list): List of operations to filter for
         """
         if isinstance(filter_by, str):
             filter_by = [filter_by]
@@ -122,7 +116,7 @@ class Blockchain(object):
                             "trx_id": event.get("trx_id"),
                         }
 
-    def history(self, filter_by=list(), start_block=1, end_block=None, raw_output=False, **kwargs):
+    def history(self, filter_by: Union[str, list] = list(), start_block=1, end_block=None, raw_output=False, **kwargs):
         """ Similar to Blockchain.stream, but with explicit arguments for start and end blocks. """
         return self.stream(
             filter_by=filter_by,
