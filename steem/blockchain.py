@@ -1,16 +1,11 @@
 import hashlib
 import json
-import re
 import time
 import warnings
 from typing import Union
 
-from funcy.colls import walk_values
-
-from .amount import Amount
-from .block import Block
 from .instance import shared_steemd_instance
-from .utils import parse_time, keep_in_dict
+from .utils import parse_time
 
 
 class Blockchain(object):
@@ -47,45 +42,52 @@ class Blockchain(object):
     def get_current_block(self):
         """ This call returns the current block
         """
-        return Block(self.get_current_block_num())
+        return self.steem.get_block(self.get_current_block_num())
 
-    def ops(self, start=None, stop=None, full_blocks=False, only_virtual_ops=False, **kwargs):
-        """
-        Yields all operations (including virtual operations) starting from ``start``.
-        This call returns a generator with blocks or operations depending on full_blocks param.
-
-            :param bool full_blocks: If true, will return a list of all operations in block
-             rather than yielding each operation separately.
-            :param int start: Starting block
-            :param int stop: Stop at this block
-            :param bool only_virtual_ops: Only yield virtual operations
+    def stream_from(self, start_block=None, end_block=None, batch_operations=False, full_blocks=False, **kwargs):
+        """ This call yields raw blocks or operations depending on ``full_blocks`` param.
+        
+        By default, this generator will yield operations, one by one.
+        You can choose to yield lists of operations, batched to contain 
+        all operations for each block with ``batch_operations=True``.
+        You can also yield full blocks instead, with ``full_blocks=True``.
+        
+        Args:
+            start_block (int): Block to start with. If not provided, current (head) block is used.
+            end_block (int): Stop iterating at this block. If not provided, this generator will run forever (streaming mode).
+            batch_operations (bool): (Defaults to False) Rather than yielding operations one by one, 
+                yield a list of all operations for each block.
+            full_blocks (bool): (Defaults to False) Rather than yielding operations, return raw, unedited blocks as 
+                provided by steemd. This mode will NOT include virtual operations.
         """
 
         _ = kwargs  # we need this
         # Let's find out how often blocks are generated!
         block_interval = self.config().get("STEEMIT_BLOCK_INTERVAL")
 
-        if not start:
-            start = self.get_current_block_num()
+        if not start_block:
+            start_block = self.get_current_block_num()
 
         while True:
             head_block = self.get_current_block_num()
 
-            for block_num in range(start, head_block + 1):
-                if stop and block_num > stop:
-                    raise StopIteration("Reached stop block at: #%s" % stop)
+            for block_num in range(start_block, head_block + 1):
+                if end_block and block_num > end_block:
+                    raise StopIteration("Reached stop block at: #%s" % end_block)
 
                 if full_blocks:
-                    yield self.steem.get_ops_in_block(block_num, only_virtual_ops)
+                    yield self.steem.get_block(block_num)
+                elif batch_operations:
+                    yield self.steem.get_ops_in_block(block_num, False)
                 else:
-                    yield from self.steem.get_ops_in_block(block_num, only_virtual_ops)
+                    yield from self.steem.get_ops_in_block(block_num, False)
 
             # next round
-            start = head_block + 1
+            start_block = head_block + 1
             time.sleep(block_interval)
 
     def stream(self, filter_by: Union[str, list] = list(), *args, **kwargs):
-        """ Yield a stream of blocks
+        """ Yield a stream of operations, starting with current head block.
 
             Args:
                 filter_by (str, list): List of operations to filter for
@@ -93,18 +95,21 @@ class Blockchain(object):
         if isinstance(filter_by, str):
             filter_by = [filter_by]
 
-        for ops in self.ops(*args, **kwargs):
+        for ops in self.stream_from(*args, **kwargs):
 
-            # deal with full_blocks optionality
+            # deal with different self.stream_from() outputs
             events = ops
             if type(ops) == dict:
+                if 'witness_signature' in ops:
+                    raise ValueError('Blockchain.stream() is for operation level streams. '
+                                     'For block level streaming, use Blockchain.stream_from()')
                 events = [ops]
 
             for event in events:
                 op_type, op = event['op']
                 if not filter_by or op_type in filter_by:
-                    raw_output = kwargs.get('raw_output')
-                    if raw_output:
+                    # return unmodified steemd output
+                    if kwargs.get('raw_output'):
                         yield event
                     else:
                         yield {
@@ -117,14 +122,26 @@ class Blockchain(object):
                         }
 
     def history(self, filter_by: Union[str, list] = list(), start_block=1, end_block=None, raw_output=False, **kwargs):
-        """ Similar to Blockchain.stream, but with explicit arguments for start and end blocks. """
+        """ Yield a stream of historic operations.
+        
+        Similar to ``Blockchain.stream()``, but starts at beginning of chain unless ``start_block`` is set.
+        
+        Args:
+            filter_by (str, list): List of operations to filter for
+            start_block (int): Block to start with. If not provided, start of blockchain is used (block 1).
+            end_block (int): Stop iterating at this block. If not provided, this generator will run forever.
+            raw_output (bool): (Defaults to False). If True, return ops in a unmodified steemd structure.
+        """
         return self.stream(
             filter_by=filter_by,
-            start=start_block,
-            stop=end_block,
+            start_block=start_block,
+            end_block=end_block,
             raw_output=raw_output,
             **kwargs
         )
+
+    def ops(self, *args, **kwargs):
+        raise DeprecationWarning('Blockchain.ops() is deprecated. Please use Blockchain.stream_from() instead.')
 
     def replay(self, **kwargs):
         warnings.warn('Blockchain.replay() is deprecated. Please use Blockchain.history() instead.')
@@ -136,11 +153,6 @@ class Blockchain(object):
         data = json.dumps(event, sort_keys=True)
         return hashlib.sha1(bytes(data, 'utf-8')).hexdigest()
 
-    @staticmethod
-    def block_time(block_num):
-        """ Returns a datetime of the block with the given block number. """
-        return Block(block_num).time()
-
     def get_all_usernames(self, last_user=''):
         usernames = self.steem.lookup_accounts(last_user, 1000)
         batch = []
@@ -149,25 +161,3 @@ class Blockchain(object):
             usernames += batch[1:]
 
         return usernames
-
-
-def typify(value: Union[dict, list, set, str]):
-    """ Enhance block operation with native types.
-
-    Typify takes a blockchain operation or dict/list/value,
-    and then it parses and converts string types into native data types where appropriate.
-    """
-    if type(value) == dict:
-        return walk_values(typify, value)
-
-    if type(value) in [list, set]:
-        return list(map(typify, value))
-
-    if type(value) == str:
-        if re.match('^\d+\.\d+ (STEEM|SBD|VESTS)$', value):
-            return keep_in_dict(dict(Amount(value)), ['amount', 'asset'])
-
-        if re.match('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$', value):
-            return parse_time(value)
-
-    return value
