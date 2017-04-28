@@ -93,13 +93,15 @@ class Post(dict):
         post['json_metadata'] = silent(json.loads)(meta_str) or {}
 
         post["tags"] = []
-        if post["depth"] == 0:
-            post["tags"] = (
-                [post["parent_permlink"]] +
-                post["json_metadata"].get("tags", [])
-            )
+        post['community'] = ''
+        if isinstance(post['json_metadata'], dict):
+            if post["depth"] == 0:
+                post["tags"] = (
+                    post["parent_permlink"],
+                    *get_in(post, ['json_metadata', 'tags'], default=[])
+                )
 
-        post['community'] = get_in(post, ['json_metadata', 'community']) or ''
+            post['community'] = get_in(post, ['json_metadata', 'community'], default='')
 
         # If this post is a comment, retrieve the root comment
         self.root_identifier, self.category = self._get_root_identifier(post)
