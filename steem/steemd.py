@@ -46,7 +46,7 @@ class Steemd(HttpClient):
         if not nodes:
             nodes = [
                 'https://steemd.steemit.com',
-                'https://steemd.steemitdev.com',
+                'https://steemd.steemitstage.com',
             ]
 
         super(Steemd, self).__init__(nodes, log_level, **kwargs)
