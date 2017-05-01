@@ -8,7 +8,7 @@ assert sys.version_info[0] == 3 and sys.version_info[1] >= 5, "steem requires Py
 # yapf: disable
 setup(
     name='steem',
-    version='0.18.3',
+    version='0.18.4',
     description='Official Python STEEM Library',
     long_description=open('README.md').read(),
     packages=find_packages(exclude=['scripts']),
