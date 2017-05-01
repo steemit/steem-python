@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import os
 import re
@@ -7,7 +8,6 @@ from pprint import pprint
 
 import pkg_resources
 import steem as stm
-from datashape import json
 from prettytable import PrettyTable
 from steembase.storage import configStorage
 
