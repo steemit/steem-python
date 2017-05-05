@@ -31,5 +31,7 @@ install: clean
 	pip install -e .
 
 pypi:
+	python -c "import pypandoc;pypandoc.convert(source='README.md', format='markdown_github', to='rst', outputfile='README.rst')"
 	python setup.py bdist_wheel --universal
 	python setup.py sdist bdist_wheel upload
+	rm README.rst
