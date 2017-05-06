@@ -243,7 +243,7 @@ def construct_identifier(author, slug):
 
 def json_expand(json_op, key_name='json'):
     """ Convert a string json object to Python dict in an op. """
-    if type(json_op) == dict and key_name in json_op:
+    if type(json_op) == dict and key_name in json_op and json_op[key_name]:
         return update_in(json_op, [key_name], json.loads)
 
     return json_op
