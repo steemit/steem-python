@@ -1,4 +1,4 @@
-#Official Python STEEM Library
+# Official Python STEEM Library
 `steem-python` is the official STEEM library for Python. It comes with a BIP38 encrypted wallet and a practical CLI utility called `stemepy`.
 
 ## Installation

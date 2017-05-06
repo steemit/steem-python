@@ -1,10 +1,8 @@
 import datetime
-import json
 import math
 import time
-from contextlib import suppress
 
-from funcy.colls import walk_values
+from funcy.colls import walk_values, get_in
 from funcy.seqs import take
 from funcy.simple_funcs import rpartial
 from steembase.exceptions import AccountDoesNotExistsException
@@ -14,7 +12,7 @@ from .amount import Amount
 from .blockchain import Blockchain
 from .converter import Converter
 from .instance import shared_steemd_instance
-from .utils import parse_time
+from .utils import parse_time, json_expand
 
 
 class Account(dict):
@@ -38,6 +36,9 @@ class Account(dict):
         account = self.steemd.get_account(self.name)
         if not account:
             raise AccountDoesNotExistsException
+
+        # load json_metadata
+        account = json_expand(account, 'json_metadata')
         super(Account, self).__init__(account)
 
     def __getitem__(self, key):
@@ -54,9 +55,7 @@ class Account(dict):
 
     @property
     def profile(self):
-        with suppress(Exception):
-            meta_str = self.get("json_metadata", "")
-            return json.loads(meta_str).get('profile', dict())
+        return get_in(self, ['json_metadata', 'profile'], default={})
 
     @property
     def sp(self):

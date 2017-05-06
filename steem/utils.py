@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 import w3lib.url
 from langdetect import DetectorFactory, detect
 from langdetect.lang_detect_exception import LangDetectException
+from toolz import update_in
 
 logger = logging.getLogger(__name__)
 
@@ -238,6 +239,14 @@ def remove_from_dict(obj, remove_keys=list()):
 
 def construct_identifier(author, slug):
     return "@%s/%s" % (author, slug)
+
+
+def json_expand(json_op, key_name='json'):
+    """ Convert a string json object to Python dict in an op. """
+    if type(json_op) == dict and key_name in json_op:
+        return update_in(json_op, [key_name], json.loads)
+
+    return json_op
 
 
 def sanitize_permlink(permlink):
