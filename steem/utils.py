@@ -5,6 +5,7 @@ import os
 import re
 import time
 from datetime import datetime
+from typing import Union, List
 from urllib.parse import urlparse
 
 import w3lib.url
@@ -237,8 +238,26 @@ def remove_from_dict(obj, remove_keys=list()):
     return {k: v for k, v in items if k not in remove_keys}
 
 
-def construct_identifier(author, slug):
-    return "@%s/%s" % (author, slug)
+def construct_identifier(*args, username_prefix='@'):
+    """ Create a post identifier from comment/post object or arguments. 
+    
+    Examples:
+        
+        :: 
+        
+            construct_identifier('username', 'permlink')
+            construct_identifier({'author': 'username', 'permlink': 'permlink'})
+    """
+    if len(args) == 1:
+        op = args[0]
+        author, permlink = op['author'], op['permlink']
+    elif len(args) == 2:
+        author, permlink = args
+    else:
+        raise ValueError('construct_identifier() received unparsable arguments')
+
+    fields = dict(prefix=username_prefix, author=author, permlink=permlink)
+    return "{prefix}{author}/{permlink}".format(**fields)
 
 
 def json_expand(json_op, key_name='json'):
