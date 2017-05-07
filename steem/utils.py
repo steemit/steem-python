@@ -5,7 +5,6 @@ import os
 import re
 import time
 from datetime import datetime
-from typing import Union, List
 from urllib.parse import urlparse
 
 import w3lib.url
@@ -132,23 +131,6 @@ def extract_keys_from_meta(meta, keys):
             else:
                 logger.warning('unusual item in meta: %s', item)
     return extracted
-
-
-def block_info(block):
-    from sbds.storages.db.tables.core import prepare_raw_block
-    block_dict = prepare_raw_block(block)
-    info = dict(
-        block_num=block_dict['block_num'],
-        transaction_count=len(block_dict['transactions']),
-        operation_count=sum(
-            len(trans['operations']) for trans in block_dict['transactions']),
-        transactions=[], )
-    info['brief'] = \
-        'block: {block_num} transaction_types: {transactions} total_operations: {operation_count}'
-
-    for trans in block_dict['transactions']:
-        info['transactions'].append(trans['operations'][0][0])
-    return info
 
 
 def build_comment_url(parent_permlink=None, author=None, permlink=None):
