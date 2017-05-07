@@ -341,3 +341,7 @@ def strfdelta(tdelta, fmt):
     d["hours"], rem = divmod(tdelta.seconds, 3600)
     d["minutes"], d["seconds"] = divmod(rem, 60)
     return fmt.format(**d)
+
+
+def is_valid_account_name(name):
+    return re.match('^[a-z][a-z0-9\-.]{2,15}$', name)
