@@ -55,8 +55,10 @@ class Account(dict):
 
     @property
     def profile(self):
-        return get_in(self, ['json_metadata', 'profile'], default={})
-
+        if self.get('json_metadata'):
+            return get_in(self, ['json_metadata', 'profile'], default={})
+        return {}
+    
     @property
     def sp(self):
         vests = Amount(self['vesting_shares']).amount
