@@ -64,7 +64,7 @@ def JsonObj(data):
     """ Returns json object from data
     """
     try:
-        return json.loads(str(data).replace("'", '"'))
+        return json.loads(str(data))
     except:
         try:
             return data.__str__()
