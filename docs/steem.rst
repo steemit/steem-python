@@ -1,8 +1,6 @@
 Steem - Your Starting Point
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Steem library has been designed to allow developers to easily access its routines and make use of the network without dealing with all the releated blockchain technology and cryptography. This library can be used to do anything that is allowed according to the Steem blockchain protocol.
-
 Quick Start
 -----------
 You can start using the library with just a few lines of code, as seen in this quick example:
@@ -34,7 +32,7 @@ You can start using the library with just a few lines of code, as seen in this q
    '981.211 SBD'
 
 Importing your Steem Account
-----------------------------
+============================
 `steem-python` comes with a BIP38 encrypted wallet, which holds your private keys.
 
 
@@ -51,8 +49,8 @@ Using the encrypted wallet is however a recommended way.
 Please check :doc:`cli` to learn how to set up the wallet.
 
 Interfacing with steemd
------------------------
-``Steem()`` inherits API methods from :doc:`steemd`, which can be called like so:
+=======================
+``Steem()`` inherits API methods from ``Steemd``, which can be called like so:
 
 .. code-block:: python
 
@@ -64,7 +62,7 @@ Interfacing with steemd
    s.broadcast_transaction(...)
    # and many more
 
-You can see the list of available methods by calling ``help(Steem)`` or in :doc:`steemd`.
+You can see the list of available methods by calling ``help(Steem)``.
 If a method is not available trough the Python API, we can call it manually using ``s.exec()``:
 
 .. code-block:: python
@@ -80,7 +78,7 @@ If a method is not available trough the Python API, we can call it manually usin
            api='follow_api')
 
 Commit and Wallet
------------------
+=================
 ``Steem()`` comes equipped with ``Commit`` and ``Wallet``, accessible via dot-notation.
 
 .. code-block:: python
@@ -93,7 +91,30 @@ Commit and Wallet
    # accessing Wallet methods
    s.wallet.get_active_key_for_account(...)
 
-Please check :doc:`commit` and :doc:`wallet` documentation to learn about usage.
+Please check :doc:`core` documentation to learn more.
+
+
+Steem
+-----
+
+As displayed in the `Quick Start` above, ``Steem`` is the main class of this library. It acts as a gateway to other components, such as
+``Steemd``, ``Commit``, ``Wallet`` and ``HttpClient``.
+
+Any arguments passed to ``Steem`` as ``kwargs`` will naturally flow to sub-components. For example, if we initialize
+Steem with ``steem = Steem(no_broadcast=True)``, the ``Commit`` instance is configured to not broadcast any transactions.
+This is very useful for testing.
 
 .. autoclass:: steem.steem.Steem
+   :members:
+
+
+Steemd API
+----------
+
+Steemd contains API generating utilities. ``Steemd``'s methods will be automatically available to ``Steem()`` classes.
+See :doc:`steem`.
+
+.. _steemd-reference:
+
+.. automodule:: steem.steemd
    :members:

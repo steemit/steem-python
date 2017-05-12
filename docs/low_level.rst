@@ -1,5 +1,25 @@
-steembase
+Low Level
 ~~~~~~~~~
+
+HttpClient
+----------
+
+A fast ``urllib3`` based HTTP client that features:
+
+* Connection Pooling
+* Concurrent Processing
+* Automatic Node Failover
+
+The functionality of ``HttpClient`` is encapsulated by ``Steem`` class. You shouldn't be using ``HttpClient`` directly,
+unless you know exactly what you're doing.
+
+.. autoclass:: steembase.http_client.HttpClient
+   :members:
+
+-------------
+
+steembase
+---------
 
 SteemBase contains various primitives for building higher level abstractions.
 This module should only be used by library developers or people with deep domain knowledge.

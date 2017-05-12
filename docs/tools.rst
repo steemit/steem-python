@@ -1,17 +1,9 @@
-Convenience Utilities
-~~~~~~~~~~~~~~~~~~~~~
+Tools
+~~~~~
 
+``steem-python`` comes with batteries included.
 
-Convenience utils provide abstraction layers for dealing with STEEM blockchain and underlying types.
-
-Example:
-
-.. code-block:: python
-
-   from steem.post import Post
-   p = Post('@user/permlink')
-
-
+This page lists a collection of convenient tools at your disposal.
 
 
 Account
@@ -70,14 +62,6 @@ Post
 
 --------
 
-
-TransactionBuilder
-==================
-
-.. autoclass:: steem.transactionbuilder.TransactionBuilder
-   :members:
-
---------
 
 
 steem.utils
