@@ -176,3 +176,39 @@ This script will also teach us how to create and sign transactions ourselves.
         # since we specified no_broadcast=True earlier
         # this method won't actually do anything
         tx = tb.broadcast()
+
+Simple Voting Bot
+=================
+
+Here is a simple bot that will reciprocate by upvoting all new posts that mention us.
+Make sure to set ``whoami`` to your Steem username before running.
+
+    ::
+
+        from contextlib import suppress
+
+        from steem.blockchain import Blockchain
+        from steem.post import Post
+
+
+        def run():
+            # upvote posts with 30% weight
+            upvote_pct = 30
+            whoami = 'my-steem-username'
+
+            # stream comments as they are published on the blockchain
+            # turn them into convenient Post objects while we're at it
+            b = Blockchain()
+            stream = map(Post, b.stream(filter_by=['comment']))
+
+            for post in stream:
+                if post.json_metadata:
+                    mentions = post.json_metadata.get('users', [])
+
+                    # if post mentions more than 10 people its likely spam
+                    if mentions and len(mentions) < 10:
+                        post.upvote(weight=upvote_pct, voter=whoami)
+
+        if __name__ == '__main__':
+            with suppress(KeyboardInterrupt):
+                run()
