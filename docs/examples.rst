@@ -1,0 +1,117 @@
+Examples
+~~~~~~~~
+
+Syncing Blockchain to a Flat File
+=================================
+
+Here is a relatively simple script built on top of ``steem-python`` that will let you sync
+STEEM blockchain into a simple file.
+You can run this script as many times as you like, and it will continue from the last block it synced.
+
+    ::
+
+        import json
+        import os
+        from contextlib import suppress
+        from steem.blockchain import Blockchain
+
+
+        def get_last_line(filename):
+            if os.path.isfile(filename):
+                with open(filename, 'rb') as f:
+                    f.seek(-2, 2)
+                    while f.read(1) != b"\n":
+                        f.seek(-2, 1)
+                    return f.readline()
+
+
+        def get_previous_block_num(block):
+            if not block:
+                return -1
+
+            if type(block) == bytes:
+                block = block.decode('utf-8')
+
+            if type(block) == str:
+                block = json.loads(block)
+
+            return int(block['previous'][:8], base=16)
+
+
+        def run(filename):
+            b = Blockchain()
+            # automatically resume from where we left off
+            start_block = get_previous_block_num(get_last_line(filename)) + 2  # previous + last + 1
+            with open(filename, 'a+') as file:
+                for block in b.stream_from(start_block=start_block, full_blocks=True):
+                    file.write(json.dumps(block, sort_keys=True) + '\n')
+
+
+        if __name__ == '__main__':
+            output_file = '/home/user/Downloads/steem.blockchain.json'
+            with suppress(KeyboardInterrupt):
+                run(output_file)
+
+
+To see how many blocks we currently have, we can simply perform a line count.
+
+    ::
+
+
+        wc -l steem.blockchain.json
+
+
+We can also inspect an arbitrary block, and pretty-print it.
+*Replace 10000 with desired block_number + 1.*
+
+    ::
+
+        sed '10000q;d' steem.blockchain.json | python -m json.tool
+
+
+
+Witness Killswitch
+==================
+
+Occasionally things go wrong: software crashes, servers go down...
+One of the main roles for STEEM witnesses is to reliably mint blocks.
+This script acts as a kill-switch to protect the network from missed blocks and
+prevents embarrassment when things go totally wrong.
+
+    ::
+
+        import time
+        from steem import Steem
+
+        steem = Steem()
+
+        # variables
+        disable_after = 10  # disable witness after 10 blocks are missed
+        witness_name = 'furion'
+        witness_url = "https://steemit.com/steemit/@furion/power-down-no-more"
+        witness_props = {
+            "account_creation_fee": "0.500 STEEM",
+            "maximum_block_size": 65536,
+            "sbd_interest_rate": 15,
+        }
+
+
+        def total_missed():
+            return steem.get_witness_by_account(witness_name)['total_missed']
+
+
+        if __name__ == '__main__':
+            treshold = total_missed() + disable_after
+            while True:
+                if total_missed() > treshold:
+                    tx = steem.commit.witness_update(
+                        signing_key=None,
+                        url=witness_url,
+                        props=witness_props,
+                        account=witness_name)
+
+                    print("Witness %s Disabled!" % witness_name)
+                    quit(0)
+
+                time.sleep(60)
+
