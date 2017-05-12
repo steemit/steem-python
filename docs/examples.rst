@@ -41,7 +41,8 @@ You can run this script as many times as you like, and it will continue from the
         def run(filename):
             b = Blockchain()
             # automatically resume from where we left off
-            start_block = get_previous_block_num(get_last_line(filename)) + 2  # previous + last + 1
+            # previous + last + 1
+            start_block = get_previous_block_num(get_last_line(filename)) + 2
             with open(filename, 'a+') as file:
                 for block in b.stream_from(start_block=start_block, full_blocks=True):
                     file.write(json.dumps(block, sort_keys=True) + '\n')
@@ -115,3 +116,63 @@ prevents embarrassment when things go totally wrong.
 
                 time.sleep(60)
 
+Batching Operations
+===================
+
+Most of the time each transaction contains only one operation (for example, an upvote, a transfer or a new post).
+We can however cram multiple operations in a single transaction, to achieve better efficiency and size reduction.
+
+This script will also teach us how to create and sign transactions ourselves.
+
+    ::
+
+        from steem.transactionbuilder import TransactionBuilder
+        from steembase import operations
+
+        # lets create 3 transfers, to 3 different people
+        transfers = [
+            {
+                'from': 'richguy',
+                'to': 'recipient1',
+                'amount': '0.001 STEEM',
+                'memo': 'Test Transfer 1'
+            },
+            {
+                'from': 'richguy',
+                'to': 'recipient2',
+                'amount': '0.002 STEEM',
+                'memo': 'Test Transfer 2'
+            },
+            {
+                'from': 'richguy',
+                'to': 'recipient3',
+                'amount': '0.003 STEEM',
+                'memo': 'Test Transfer 3'
+            }
+
+        ]
+
+        # now we can construct the transaction
+        # we will set no_broadcast to True because
+        # we don't want to really send funds, just testing.
+        tb = TransactionBuilder(no_broadcast=True)
+
+        # lets serialize our transfers into a format Steem can understand
+        operations = [operations.Transfer(**x) for x in transfers]
+
+        # tell TransactionBuilder to use our serialized transfers
+        tb.appendOps(operations)
+
+        # we need to tell TransactionBuilder about
+        # everyone who needs to sign the transaction.
+        # since all payments are made from `richguy`,
+        # we just need to do this once
+        tb.appendSigner('richguy', 'active')
+
+        # sign the transaction
+        tb.sign()
+
+        # broadcast the transaction (publish to steem)
+        # since we specified no_broadcast=True earlier
+        # this method won't actually do anything
+        tx = tb.broadcast()
