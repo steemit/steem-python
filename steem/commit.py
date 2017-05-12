@@ -52,6 +52,8 @@ STEEMIT_1_PERCENT = (STEEMIT_100_PERCENT / 100)
 # custom [active]
 # delete_comment [posting]
 
+# enable_content_editing_operation [active]
+
 class Commit(object):
     """ Commit things to the Steem network.
 

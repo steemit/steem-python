@@ -154,6 +154,7 @@ class Blockchain(object):
         return hashlib.sha1(bytes(data, 'utf-8')).hexdigest()
 
     def get_all_usernames(self, last_user=''):
+        """ Fetch the full list of STEEM usernames. """
         usernames = self.steem.lookup_accounts(last_user, 1000)
         batch = []
         while len(batch) != 1:
