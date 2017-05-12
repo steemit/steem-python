@@ -153,12 +153,8 @@ class Blockchain(object):
         data = json.dumps(event, sort_keys=True)
         return hashlib.sha1(bytes(data, 'utf-8')).hexdigest()
 
-    def get_all_usernames(self, last_user=''):
+    def get_all_usernames(self, *args, **kwargs):
         """ Fetch the full list of STEEM usernames. """
-        usernames = self.steem.lookup_accounts(last_user, 1000)
-        batch = []
-        while len(batch) != 1:
-            batch = self.steem.lookup_accounts(usernames[-1], 1000)
-            usernames += batch[1:]
-
-        return usernames
+        _ = args, kwargs
+        warnings.warn('Blockchain.get_all_usernames() is now at Steemd.get_all_usernames().')
+        return self.steem.get_all_usernames()

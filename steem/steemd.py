@@ -176,6 +176,16 @@ class Steemd(HttpClient):
         """
         return first(self.exec('get_accounts', [account]))
 
+    def get_all_usernames(self, last_user=''):
+        """ Fetch the full list of STEEM usernames. """
+        usernames = self.lookup_accounts(last_user, 1000)
+        batch = []
+        while len(batch) != 1:
+            batch = self.lookup_accounts(usernames[-1], 1000)
+            usernames += batch[1:]
+
+        return usernames
+
     ################################
     # steemd api generated methods #
     ################################
