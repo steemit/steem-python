@@ -24,6 +24,7 @@ from .witness import Witness
 availableConfigurationKeys = [
     "default_account",
     "default_vote_weight",
+    "nodes",
 ]
 
 
@@ -924,9 +925,7 @@ def legacy():
     steem = stm.Steem(no_broadcast=args.no_broadcast, **options)
 
     if args.command == "set":
-        if (args.key in ["default_account",
-                         "default_account",
-                         "default_account"] and
+        if (args.key in ["default_account"] and
                     args.value[0] == "@"):
             args.value = args.value[1:]
         configStorage[args.key] = args.value

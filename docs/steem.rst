@@ -118,3 +118,83 @@ See :doc:`steem`.
 
 .. automodule:: steem.steemd
    :members:
+
+
+Setting Custom Nodes
+--------------------
+
+There are 3 ways in which you can set custom ``steemd`` nodes to use with ``steem-python``.
+
+**1. Global, permanent override:**
+You can use ``steempy set nodes`` command to set one or more node URLs. The nodes need to be separated with comma (,)
+and shall contain no whitespaces.
+
+    ::
+
+        ~ % steempy config
+        +---------------------+--------+
+        | Key                 | Value  |
+        +---------------------+--------+
+        | default_vote_weight | 100    |
+        | default_account     | furion |
+        +---------------------+--------+
+        ~ % steempy set nodes https://gtg.steem.house:8090/
+        ~ % steempy config
+        +---------------------+-------------------------------+
+        | Key                 | Value                         |
+        +---------------------+-------------------------------+
+        | default_account     | furion                        |
+        | default_vote_weight | 100                           |
+        | nodes               | https://gtg.steem.house:8090/ |
+        +---------------------+-------------------------------+
+        ~ % steempy set nodes https://gtg.steem.house:8090/,https://steemd.steemit.com
+        ~ % steempy config
+        +---------------------+----------------------------------------------------------+
+        | Key                 | Value                                                    |
+        +---------------------+----------------------------------------------------------+
+        | nodes               | https://gtg.steem.house:8090/,https://steemd.steemit.com |
+        | default_vote_weight | 100                                                      |
+        | default_account     | furion                                                   |
+        +---------------------+----------------------------------------------------------+
+        ~ %
+
+
+**2. For Current Python Process:**
+You can override default `Steemd` instance for current Python process, by overriding the `instance` singleton.
+You should execute the following code when your program starts, and from there on out, all classes (Blockchain, Account,
+Post, etc) will use this as their default instance.
+
+    ::
+
+        from steem.steemd import Steemd
+        from steem.instance import set_shared_steemd_instance
+
+        steemd_nodes = [
+            'https://gtg.steem.house:8090',
+            'https://steemd.steemit.com',
+        ]
+        set_shared_steemd_instance(Steemd(nodes=steemd_nodes))
+
+
+**3. For Specific Class Instance:**
+Every class that depends on steemd comes with a ``steemd_instance`` argument.
+You can override said steemd instance, for any class you're initializing (and its children).
+
+This is useful when you want to contain a modified ``steemd`` instance to an explicit piece of code (ie. for testing).
+
+    ::
+
+        from steem.steemd import Steemd
+        from steem.account import Account
+        from steem.Blockchain import Blockchain
+
+        steemd_nodes = [
+            'https://gtg.steem.house:8090',
+            'https://steemd.steemit.com',
+        ]
+        custom_instance = Steemd(nodes=steemd_nodes)
+
+        account = Account('furion', steemd_instance=custom_instance)
+        blockchain = Blockchain('head', steemd_instance=custom_instance)
+
+

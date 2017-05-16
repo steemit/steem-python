@@ -13,7 +13,7 @@ import certifi
 import urllib3
 from steembase.exceptions import RPCError
 from urllib3.connection import HTTPConnection
-from urllib3.exceptions import MaxRetryError, ReadTimeoutError
+from urllib3.exceptions import MaxRetryError, ReadTimeoutError, ProtocolError
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,8 @@ class HttpClient(object):
         except (MaxRetryError,
                 ConnectionResetError,
                 ReadTimeoutError,
-                RemoteDisconnected) as e:
+                RemoteDisconnected,
+                ProtocolError) as e:
             # if we broadcasted a transaction, always raise
             # this is to prevent potential for double spend scenario
             if api == 'network_broadcast_api':
