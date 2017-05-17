@@ -159,6 +159,8 @@ and shall contain no whitespaces.
         ~ %
 
 
+To reset this config run ``steempy set nodes ''``.
+
 **2. For Current Python Process:**
 You can override default `Steemd` instance for current Python process, by overriding the `instance` singleton.
 You should execute the following code when your program starts, and from there on out, all classes (Blockchain, Account,
