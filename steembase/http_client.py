@@ -213,25 +213,11 @@ class HttpClient(object):
         else:
             return result
 
-    def exec_multi(self, name, params):
-        body_gen = ({
-            "method": name,
-            "params": [i],
-            "jsonrpc": "2.0",
-            "id": 0
-        } for i in params)
-        for body in body_gen:
-            json_body = json.dumps(body, ensure_ascii=False).encode('utf8')
-            yield self._return(
-                response=self.request(body=json_body),
-                args=body['params'],
-                return_with_args=True)
-
-    def exec_multi_with_futures(self, name, params, max_workers=None):
+    def exec_multi_with_futures(self, name, params, api=None, max_workers=None):
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=max_workers) as executor:
             # Start the load operations and mark each future with its URL
-            futures = (executor.submit(self.exec, name, param)
+            futures = (executor.submit(self.exec, name, param, api=api)
                        for param in params)
             for future in concurrent.futures.as_completed(futures):
                 yield future.result()
