@@ -714,36 +714,6 @@ class Testcases(unittest.TestCase):
                 "percent_steem_dollars": 10000,
                 "allow_votes": True,
                 "allow_curation_rewards": True,
-                "extensions": []
-            }
-        )
-        ops = [operations.Operation(op)]
-        tx = SignedTransaction(
-            ref_block_num=ref_block_num,
-            ref_block_prefix=ref_block_prefix,
-            expiration=expiration,
-            operations=ops
-        )
-        tx = tx.sign([wif], chain=self.steem.chain_params)
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
-        compare = (
-            "f68585abf4dce7c804570113057865726f6306706973746f6e"
-            "00ca9a3b000000000353424400000000102701010000011f20"
-            "feacc3f917dfa2d6082afb5ab5aab82d7df1428130c7b7eec4"
-            "56d259e59fc54ee582a5a86073508f69ffebea4283f13d1a89"
-            "6243754a4a82fa18077f832225"
-        )
-        self.assertEqual(compare[:-130], tx_wire[:-130])
-
-    def test_comment_options(self):
-        op = operations.CommentOptions(
-            **{
-                "author": "xeroc",
-                "permlink": "piston",
-                "max_accepted_payout": "1000000.000 SBD",
-                "percent_steem_dollars": 10000,
-                "allow_votes": True,
-                "allow_curation_rewards": True,
                 "beneficiaries": [
                     {
                         "weight": 2000,
