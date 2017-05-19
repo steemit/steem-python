@@ -209,16 +209,16 @@ class Steemd(HttpClient):
         results = self.exec_multi_with_futures('get_block', blocks, max_workers=10)
         return ({**x, 'block_num': int(x['block_id'][:8], base=16)} for x in results if x)
 
-    def get_blocks(self, blocks: List[int]):
+    def get_blocks(self, block_nums: List[int]):
         """ Fetch multiple blocks from steemd at once, given a range.
 
         Args:
-            blocks (list): A list of all block numbers we would like to tech.
+            block_nums (list): A list of all block numbers we would like to tech.
 
         Returns:
             dict: An ensured and ordered list of all `get_block` results.
         """
-        required = set(blocks)
+        required = set(block_nums)
         available = set()
         missing = required - available
         blocks = {}
@@ -230,7 +230,7 @@ class Steemd(HttpClient):
             available = set(blocks.keys())
             missing = required - available
 
-        return [blocks[x] for x in required]
+        return [blocks[x] for x in block_nums]
 
     def get_blocks_range(self, start: int, end: int):
         """ Fetch multiple blocks from steemd at once, given a range.
