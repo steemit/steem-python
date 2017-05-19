@@ -215,7 +215,7 @@ class Steemd(HttpClient):
         """
         return self.get_blocks(list(range(start, end)))
 
-    def get_block_range_ensured(self, start: int, end: int):
+    def get_blocks_range_ensured(self, start: int, end: int):
         """ Fetch multiple blocks from steemd at once, given a range.
 
         Args:
