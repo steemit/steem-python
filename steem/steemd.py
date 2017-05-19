@@ -10,8 +10,8 @@ from steembase.types import PointInTime
 
 from .block import Block
 from .blockchain import Blockchain
-from .utils import resolve_identifier
 from .post import Post
+from .utils import resolve_identifier
 
 logger = logging.getLogger(__name__)
 
@@ -186,11 +186,12 @@ class Steemd(HttpClient):
 
         return usernames
 
-    def get_blocks(self, blocks: Union[List[int], Set[int]]):
+    def _get_blocks(self, blocks: Union[List[int], Set[int]]):
         """ Fetch multiple blocks from steemd at once.
 
         Warning:
             This method does not ensure that all blocks are returned, or that the results are ordered.
+            You will probably want to use `steemd.get_blocks()` instead. 
 
         Args:
             blocks (list): A list, or a set of block numbers.
@@ -202,20 +203,30 @@ class Steemd(HttpClient):
         results = self.exec_multi_with_futures('get_block', blocks, max_workers=10)
         return ({**x, 'block_num': int(x['block_id'][:8], base=16)} for x in results if x)
 
-    def get_blocks_range(self, start: int, end: int):
-        """ Same as ``get_blocks``, but with different interface.
+    def get_blocks(self, blocks: List[int]):
+        """ Fetch multiple blocks from steemd at once, given a range.
 
-        Warning:
-            This method does not ensure that all blocks are returned, or that the results are ordered.
-            You will probably want to use `get_block_range_ensured()` instead. 
+        Args:
+            blocks (list): A list of all block numbers we would like to tech.
 
         Returns:
-            A generator with results.
-
+            dict: An ensured and ordered list of all `get_block` results.
         """
-        return self.get_blocks(list(range(start, end)))
+        required = set(blocks)
+        available = set()
+        missing = required - available
+        blocks = {}
 
-    def get_blocks_range_ensured(self, start: int, end: int):
+        while missing:
+            for block in self._get_blocks(missing):
+                blocks[block['block_num']] = block
+
+            available = set(blocks.keys())
+            missing = required - available
+
+        return [blocks[x] for x in required]
+
+    def get_blocks_range(self, start: int, end: int):
         """ Fetch multiple blocks from steemd at once, given a range.
 
         Args:
@@ -224,20 +235,9 @@ class Steemd(HttpClient):
 
         Returns:
             dict: An ensured and ordered list of all `get_block` results.
+
         """
-        required = set(range(start, end))
-        available = set()
-        missing = required - available
-        blocks = {}
-
-        while missing:
-            for block in self.get_blocks(missing):
-                blocks[block['block_num']] = block
-
-            available = set(blocks.keys())
-            missing = required - available
-
-        return [blocks[x] for x in required]
+        return self.get_blocks(list(range(start, end)))
 
     ################################
     # steemd api generated methods #
