@@ -25,7 +25,6 @@ class HttpClient(object):
 
     Args:
       nodes (list): A list of Steem HTTP RPC nodes to connect to.
-      urllib3: HTTPConnectionPool url: instance of urllib3.HTTPConnectionPool
 
     .. code-block:: python
 
@@ -47,7 +46,7 @@ class HttpClient(object):
 
     """
 
-    def __init__(self, nodes, log_level=logging.INFO, **kwargs):
+    def __init__(self, nodes, **kwargs):
         self.return_with_args = kwargs.get('return_with_args', False)
         self.re_raise = kwargs.get('re_raise', True)
         self.max_workers = kwargs.get('max_workers', None)
@@ -87,6 +86,7 @@ class HttpClient(object):
         self.request = None
         self.next_node()
 
+        log_level = kwargs.get('log_level', logging.INFO)
         logger.setLevel(log_level)
 
     def next_node(self):

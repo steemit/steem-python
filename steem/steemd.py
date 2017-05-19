@@ -5,6 +5,7 @@ from typing import List, Any, Union, Set
 from funcy.seqs import first
 from steembase.chains import known_chains
 from steembase.http_client import HttpClient
+from steembase.storage import configStorage
 from steembase.transactions import SignedTransaction
 from steembase.types import PointInTime
 
@@ -16,12 +17,17 @@ from .utils import resolve_identifier
 logger = logging.getLogger(__name__)
 
 
+def get_config_node_list():
+    nodes = configStorage.get('nodes', None)
+    if nodes:
+        return nodes.split(',')
+
+
 class Steemd(HttpClient):
     """ Connect to the Steem network.
 
         Args:
             nodes (list): A list of Steem HTTP RPC nodes to connect to. If not provided, official Steemit nodes will be used.
-            log_level (int): Set the level for logging output. Defaults to `logging.INFO`.
 
         Returns:
             Steemd class instance. It can be used to execute commands against steem node.
@@ -42,14 +48,14 @@ class Steemd(HttpClient):
 
        """
 
-    def __init__(self, nodes=None, log_level=logging.INFO, **kwargs):
+    def __init__(self, nodes=None, **kwargs):
         if not nodes:
-            nodes = [
+            nodes = get_config_node_list() or [
                 'https://steemd.steemit.com',
                 'https://steemd.steemitstage.com',
             ]
 
-        super(Steemd, self).__init__(nodes, log_level, **kwargs)
+        super(Steemd, self).__init__(nodes, **kwargs)
 
     @property
     def chain_params(self):

@@ -5,7 +5,7 @@ _shared_steemd_instance = None
 
 def get_config_node_list():
     from steembase.storage import configStorage
-    nodes = configStorage.get('nodes')
+    nodes = configStorage.get('nodes', None)
     if nodes:
         return nodes.split(',')
 

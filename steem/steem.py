@@ -1,16 +1,8 @@
-import logging
-
-from steem.instance import shared_steemd_instance
-
 from .commit import Commit
 from .steemd import Steemd
 
-# TODO:
-# Steem() already supports node overloading, however, not trough defaults.
-# ideally, we should be able to over-load this with:
-# `steempy set nodes https://node1, https://node2`
 
-class Steem(Steemd):
+class Steem:
     """ Connect to the Steem network.
 
         Args:
@@ -48,34 +40,25 @@ class Steem(Steemd):
 
        """
 
-    def __init__(self, nodes=None, debug=False, no_broadcast=False, **kwargs):
-        _steemd = Steemd(nodes=nodes) if nodes else shared_steemd_instance()
-        _log_level = logging.DEBUG if debug else logging.INFO
-
+    def __init__(self, nodes=None, no_broadcast=False, **kwargs):
+        self.steemd = Steemd(
+            nodes=nodes,
+            **kwargs
+        )
         self.commit = Commit(
-            steemd_instance=_steemd,
+            steemd_instance=self.steemd,
             no_broadcast=no_broadcast,
             **kwargs
         )
 
-        # self._apply_commit_methods()
-
-        super(Steem, self).__init__(nodes=nodes, log_level=_log_level, **kwargs)
-
     def __getattr__(self, item):
-        """ Bind .commit methods here as a convenience. """
+        """ Bind .commit, .steemd methods here as a convenience. """
+        if hasattr(self.steemd, item):
+            return getattr(self.steemd, item)
         if hasattr(self.commit, item):
             return getattr(self.commit, item)
-        raise AttributeError('Steem has no attribute "%s"' % item)
 
-    def _apply_commit_methods(self):
-        """ Binds self.commit methods to this class for auto-complete purposes. """
-        methods = [x for x in dir(self.commit)
-                   if type(getattr(self.commit, x)).__name__ == 'method'
-                   and not x.startswith('_')]
-        for method_name in methods:
-            to_call = getattr(self.commit, method_name)
-            setattr(self, method_name, to_call)
+        raise AttributeError('Steem has no attribute "%s"' % item)
 
 
 if __name__ == '__main__':
