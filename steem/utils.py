@@ -5,12 +5,13 @@ import os
 import re
 import time
 from datetime import datetime
+from json import JSONDecodeError
 from urllib.parse import urlparse
 
 import w3lib.url
 from langdetect import DetectorFactory, detect
 from langdetect.lang_detect_exception import LangDetectException
-from toolz import update_in
+from toolz import update_in, assoc
 
 logger = logging.getLogger(__name__)
 
@@ -245,7 +246,10 @@ def construct_identifier(*args, username_prefix='@'):
 def json_expand(json_op, key_name='json'):
     """ Convert a string json object to Python dict in an op. """
     if type(json_op) == dict and key_name in json_op and json_op[key_name]:
-        return update_in(json_op, [key_name], json.loads)
+        try:
+            return update_in(json_op, [key_name], json.loads)
+        except JSONDecodeError:
+            return assoc(json_op, key_name, {})
 
     return json_op
 
