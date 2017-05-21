@@ -124,29 +124,6 @@ class Steemd(HttpClient):
             r.append(Post(p, steemd_instance=self))
         return r
 
-    def get_categories(self, sort="trending", begin=None, limit=10):
-        """ List categories
-
-            :param str sort: Sort categories by "trending", "best",
-                             "active", or "recent"
-            :param str begin: Show categories after this
-                              identifier of the form ``@author/permlink``
-            :param int limit: Limit categories by ``x``
-        """
-        if sort == "trending":
-            func = self.get_trending_categories
-        elif sort == "best":
-            func = self.get_best_categories
-        elif sort == "active":
-            func = self.get_active_categories
-        elif sort == "recent":
-            func = self.get_recent_categories
-        else:
-            logger.error("Invalid choice of '--sort' (%s)!" % sort)
-            return
-
-        return func(begin, limit)
-
     def stream_comments(self, *args, **kwargs):
         """ Generator that yields posts when they come in
 
@@ -426,22 +403,6 @@ class Steemd(HttpClient):
     def get_state(self, path: str):
         """ get_state """
         return self.exec('get_state', path, api='database_api')
-
-    def get_trending_categories(self, after: str, limit: int):
-        """ get_trending_categories """
-        return self.exec('get_trending_categories', after, limit, api='database_api')
-
-    def get_best_categories(self, after: str, limit: int):
-        """ get_best_categories """
-        return self.exec('get_best_categories', after, limit, api='database_api')
-
-    def get_active_categories(self, after: str, limit: int):
-        """ get_active_categories """
-        return self.exec('get_active_categories', after, limit, api='database_api')
-
-    def get_recent_categories(self, after: str, limit: int):
-        """ get_recent_categories """
-        return self.exec('get_recent_categories', after, limit, api='database_api')
 
     def get_config(self):
         """ Get internal chain configuration. """
@@ -940,6 +901,12 @@ class Steemd(HttpClient):
     def get_market_history_buckets(self):
         """ Returns the bucket seconds being tracked by the plugin. """
         return self.exec('get_market_history_buckets', api='market_history_api')
+
+    def get_key_references(self, public_keys: List[str]):
+        """ get_key_references """
+        if type(public_keys) == str:
+            public_keys = [public_keys]
+        return self.exec('get_key_references', public_keys, api='account_by_key_api')
 
 
 if __name__ == '__main__':

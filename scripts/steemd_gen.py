@@ -143,26 +143,6 @@ api_methods = [
     },
     {
         'api': 'database_api',
-        'method': 'get_trending_categories',
-        'params': [('after', 'str'), ('limit', 'int')],
-    },
-    {
-        'api': 'database_api',
-        'method': 'get_best_categories',
-        'params': [('after', 'str'), ('limit', 'int')],
-    },
-    {
-        'api': 'database_api',
-        'method': 'get_active_categories',
-        'params': [('after', 'str'), ('limit', 'int')],
-    },
-    {
-        'api': 'database_api',
-        'method': 'get_recent_categories',
-        'params': [('after', 'str'), ('limit', 'int')],
-    },
-    {
-        'api': 'database_api',
         'method': 'get_config',
         'params': [],
     },
@@ -512,6 +492,11 @@ api_methods = [
         'api': 'market_history_api',
         'method': 'get_market_history_buckets',
         'params': [],
+    },
+    {
+        'api': 'account_by_key_api',
+        'method': 'get_key_references',
+        'params': [('public_keys', 'List[str]')],
     },
 ]
 
