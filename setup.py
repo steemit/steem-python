@@ -15,7 +15,7 @@ def readme_file():
 # yapf: disable
 setup(
     name='steem',
-    version='0.18.7',
+    version='0.18.8',
     description='Official Python STEEM Library',
     long_description=open(readme_file()).read(),
     packages=find_packages(exclude=['scripts']),
