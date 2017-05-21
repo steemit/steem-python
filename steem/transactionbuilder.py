@@ -42,16 +42,30 @@ class TransactionBuilder(dict):
         self.constructTx()
 
     def appendSigner(self, account, permission):
+        assert permission in ["active", "owner", "poster"], "Invalid permission"
         account = Account(account, steemd_instance=self.steemd)
-        if permission == "active":
-            wif = self.wallet.getActiveKeyForAccount(account["name"])
-        elif permission == "posting":
-            wif = self.wallet.getPostingKeyForAccount(account["name"])
-        elif permission == "owner":
-            wif = self.wallet.getOwnerKeyForAccount(account["name"])
-        else:
-            raise ValueError("Invalid permission")
-        self.wifs.append(wif)
+
+        required_treshold = account[permission]["weight_threshold"]
+
+        def fetchkeys(account, level=0):
+            if level > 2:
+                return []
+            r = []
+            for authority in account[permission]["key_auths"]:
+                wif = self.wallet.getPrivateKeyForPublicKey(authority[0])
+                if wif:
+                    r.append([wif, authority[1]])
+
+            if sum([x[1] for x in r]) < required_treshold:
+                # go one level deeper
+                for authority in account[permission]["account_auths"]:
+                    auth_account = Account(authority[0], steemd_instance=self.steemd)
+                    r.extend(fetchkeys(auth_account, level + 1))
+
+            return r
+
+        keys = fetchkeys(account)
+        self.wifs.extend([x[0] for x in keys])
 
     def appendWif(self, wif):
         if wif:
@@ -140,7 +154,7 @@ class TransactionBuilder(dict):
         # Try to resolve required signatures for offline signing
         self["missing_signatures"] = [
             x[0] for x in authority["key_auths"]
-            ]
+        ]
         # Add one recursion of keys from account_auths:
         for account_auth in authority["account_auths"]:
             account_auth_account = Account(account_auth[0], steemd_instance=self.steemd)
