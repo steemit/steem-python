@@ -53,8 +53,8 @@ class HttpClient(object):
 
         num_pools = kwargs.get('num_pools', 10)
         maxsize = kwargs.get('maxsize', 10)
-        timeout = kwargs.get('timeout', 30)
-        retries = kwargs.get('retries', 10)
+        timeout = kwargs.get('timeout', 60)
+        retries = kwargs.get('retries', 20)
         pool_block = kwargs.get('pool_block', False)
         tcp_keepalive = kwargs.get('tcp_keepalive', True)
 
@@ -217,7 +217,10 @@ class HttpClient(object):
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=max_workers) as executor:
             # Start the load operations and mark each future with its URL
-            futures = (executor.submit(self.exec, name, param, api=api)
+            def ensure_list(parameter):
+                return parameter if type(parameter) in (list, tuple, set) else [parameter]
+
+            futures = (executor.submit(self.exec, name, *ensure_list(param), api=api)
                        for param in params)
             for future in concurrent.futures.as_completed(futures):
                 yield future.result()
