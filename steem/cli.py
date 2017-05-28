@@ -480,6 +480,13 @@ def legacy():
         default=configStorage["default_account"],
         help='Account that pays the fee'
     )
+    parser_newaccount.add_argument(
+        '--fee',
+        type=str,
+        required=False,
+        default='0 STEEM',
+        help='Base Fee to pay. Delegate the rest.'
+    )
 
     """
         Command "importaccount"
@@ -1272,6 +1279,7 @@ def legacy():
             args.accountname,
             creator=args.account,
             password=pw,
+            delegation_fee_steem=args.fee,
         ))
 
     elif args.command == "importaccount":
