@@ -42,7 +42,7 @@ class TransactionBuilder(dict):
         self.constructTx()
 
     def appendSigner(self, account, permission):
-        assert permission in ["active", "owner", "poster"], "Invalid permission"
+        assert permission in ["active", "owner", "posting"], "Invalid permission"
         account = Account(account, steemd_instance=self.steemd)
 
         required_treshold = account[permission]["weight_threshold"]
