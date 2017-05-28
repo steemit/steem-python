@@ -1,7 +1,6 @@
 import json
 import logging
 import re
-import warnings
 from datetime import datetime
 
 from funcy.colls import walk_values, get_in
@@ -9,7 +8,7 @@ from funcy.flow import silent
 from funcy.seqs import flatten
 from steembase.exceptions import (
     PostDoesNotExist,
-    VotingInvalidOnArchivedPost
+    VotingInvalidOnArchivedPost,
 )
 from steembase.operations import CommentOptions
 
@@ -178,11 +177,6 @@ class Post(dict):
         return Amount(self.get("total_payout_value", "0 SBD")) + \
                Amount(self.get("pending_payout_value", "0 SBD"))
 
-    @property
-    def meta(self):
-        warnings.warn("Post.meta is deprecated. Please change it to Post.json_metadata")
-        return self.json_metadata
-
     def time_elapsed(self):
         """Return a timedelta on how old the post is.
         """
@@ -319,18 +313,19 @@ class Post(dict):
 
     def set_comment_options(self, options):
         op = CommentOptions(
-            **{"author": self["author"],
-               "permlink": self["permlink"],
-               "max_accepted_payout":
-                   options.get("max_accepted_payout", str(self["max_accepted_payout"])),
-               "percent_steem_dollars": int(
-                   options.get("percent_steem_dollars",
-                               self["percent_steem_dollars"] / 100
-                               ) * 100),
-               "allow_votes":
-                   options.get("allow_votes", self["allow_votes"]),
-               "allow_curation_rewards":
-                   options.get("allow_curation_rewards", self["allow_curation_rewards"]),
-               }
+            **{
+                "author": self["author"],
+                "permlink": self["permlink"],
+                "max_accepted_payout":
+                    options.get("max_accepted_payout", str(self["max_accepted_payout"])),
+                "percent_steem_dollars": int(
+                    options.get("percent_steem_dollars",
+                                self["percent_steem_dollars"] / 100
+                                ) * 100),
+                "allow_votes":
+                    options.get("allow_votes", self["allow_votes"]),
+                "allow_curation_rewards":
+                    options.get("allow_curation_rewards", self["allow_curation_rewards"]),
+            }
         )
         return self.commit.finalizeOp(op, self["author"], "posting")
