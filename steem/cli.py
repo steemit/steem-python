@@ -4,7 +4,6 @@ import logging
 import os
 import re
 import sys
-from pprint import pprint
 
 import pkg_resources
 import steem as stm
@@ -1124,10 +1123,10 @@ def legacy():
         if not args.account:
             print("Not voter provided!")
             return
-        pprint(post.vote(weight, voter=args.account))
+        print_json(post.vote(weight, voter=args.account))
 
     elif args.command == "transfer":
-        pprint(steem.commit.transfer(
+        print_json(steem.commit.transfer(
             args.to,
             args.amount,
             args.asset,
@@ -1136,26 +1135,26 @@ def legacy():
         ))
 
     elif args.command == "powerup":
-        pprint(steem.commit.transfer_to_vesting(
+        print_json(steem.commit.transfer_to_vesting(
             args.amount,
             account=args.account,
             to=args.to
         ))
 
     elif args.command == "powerdown":
-        pprint(steem.commit.withdraw_vesting(
+        print_json(steem.commit.withdraw_vesting(
             args.amount,
             account=args.account,
         ))
 
     elif args.command == "convert":
-        pprint(steem.commit.convert(
+        print_json(steem.commit.convert(
             args.amount,
             account=args.account,
         ))
 
     elif args.command == "powerdownroute":
-        pprint(steem.commit.set_withdraw_vesting_route(
+        print_json(steem.commit.set_withdraw_vesting_route(
             args.to,
             percentage=args.percentage,
             account=args.account,
@@ -1228,7 +1227,7 @@ def legacy():
             from steembase.account import PasswordKey
             pwd = get_terminal(text="Password for Key Derivation: ", confirm=True)
             args.foreign_account = format(PasswordKey(args.account, pwd, args.permission).get_public(), "STM")
-        pprint(steem.commit.allow(
+        print_json(steem.commit.allow(
             args.foreign_account,
             weight=args.weight,
             account=args.account,
@@ -1237,7 +1236,7 @@ def legacy():
         ))
 
     elif args.command == "disallow":
-        pprint(steem.commit.disallow(
+        print_json(steem.commit.disallow(
             args.foreign_account,
             account=args.account,
             permission=args.permission,
@@ -1255,7 +1254,7 @@ def legacy():
             # Add the key to the wallet
             if not args.no_broadcast:
                 steem.commit.wallet.addPrivateKey(memo_privkey)
-        pprint(steem.commit.update_memo_key(
+        print_json(steem.commit.update_memo_key(
             args.key,
             account=args.account
         ))
@@ -1275,7 +1274,7 @@ def legacy():
                     break
                 else:
                     print("Given Passphrases do not match!")
-        pprint(steem.commit.create_account(
+        print_json(steem.commit.create_account(
             args.accountname,
             creator=args.account,
             password=pw,
@@ -1337,7 +1336,7 @@ def legacy():
         else:
             tx = sys.stdin.read()
         tx = eval(tx)
-        pprint(steem.commit.sign(tx))
+        print_json(steem.commit.sign(tx))
 
     elif args.command == "broadcast":
         if args.file and args.file != "-":
@@ -1356,7 +1355,7 @@ def legacy():
         else:
             price = args.price
         dex = Dex(steem)
-        pprint(dex.buy(
+        print_json(dex.buy(
             args.amount,
             args.asset,
             price,
@@ -1369,7 +1368,7 @@ def legacy():
         else:
             price = args.price
         dex = Dex(steem)
-        pprint(dex.sell(
+        print_json(dex.sell(
             args.amount,
             args.asset,
             price,
@@ -1378,37 +1377,37 @@ def legacy():
 
     elif args.command == "cancel":
         dex = Dex(steem)
-        pprint(
+        print_json(
             dex.cancel(args.orderid)
         )
 
     elif args.command == "approvewitness":
-        pprint(steem.commit.approve_witness(
+        print_json(steem.commit.approve_witness(
             args.witness,
             account=args.account
         ))
 
     elif args.command == "disapprovewitness":
-        pprint(steem.commit.disapprove_witness(
+        print_json(steem.commit.disapprove_witness(
             args.witness,
             account=args.account
         ))
 
     elif args.command == "resteem":
-        pprint(steem.commit.resteem(
+        print_json(steem.commit.resteem(
             args.identifier,
             account=args.account
         ))
 
     elif args.command == "follow":
-        pprint(steem.commit.follow(
+        print_json(steem.commit.follow(
             args.follow,
             what=args.what,
             account=args.account
         ))
 
     elif args.command == "unfollow":
-        pprint(steem.commit.unfollow(
+        print_json(steem.commit.unfollow(
             args.unfollow,
             what=args.what,
             account=args.account
@@ -1437,7 +1436,7 @@ def legacy():
         )
         account["json_metadata"].update(profile)
 
-        pprint(steem.commit.update_account_profile(
+        print_json(steem.commit.update_account_profile(
             account["json_metadata"],
             account=args.account
         ))
@@ -1450,7 +1449,7 @@ def legacy():
         for var in args.variable:
             account["json_metadata"].remove(var)
 
-        pprint(steem.commit.update_account_profile(
+        print_json(steem.commit.update_account_profile(
             account["json_metadata"],
             account=args.account
         ))
@@ -1466,7 +1465,7 @@ def legacy():
         if args.sbd_interest_rate:
             props["sbd_interest_rate"] = int(args.sbd_interest_rate * 100)
 
-        pprint(steem.commit.witness_update(
+        print_json(steem.commit.witness_update(
             args.signing_key or witness["signing_key"],
             args.url or witness["url"],
             props,
@@ -1479,7 +1478,7 @@ def legacy():
             "maximum_block_size": args.maximum_block_size,
             "sbd_interest_rate": int(args.sbd_interest_rate * 100)
         }
-        pprint(steem.commit.witness_update(
+        print_json(steem.commit.witness_update(
             args.signing_key,
             args.url,
             props,
@@ -1499,8 +1498,10 @@ def confirm(question, default="yes"):
         :rtype: bool
 
     """
-    valid = {"yes": True, "y": True, "ye": True,
-             "no": False, "n": False}
+    valid = {
+        "yes": True, "y": True, "ye": True,
+        "no": False, "n": False
+    }
     if default is None:
         prompt = " [y/n] "
     elif default == "yes":
@@ -1589,6 +1590,14 @@ def print_permissions(account):
             "\n".join(auths),
         ])
     print(t)
+
+
+def print_json(tx):
+    if sys.stdout.isatty():
+        print(json.dumps(tx, indent=4))
+    else:
+        # You're being piped or redirected
+        print(tx)
 
 
 if __name__ == '__main__':
