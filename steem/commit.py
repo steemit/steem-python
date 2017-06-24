@@ -1182,7 +1182,7 @@ class Commit(object):
         elif len(required_posting_auths):
             account = required_posting_auths[0]
         else:
-            raise Exception("At least on account needs to be specified")
+            raise Exception("At least one account needs to be specified")
         op = operations.CustomJson(
             **{"json": json,
                "required_auths": required_auths,
