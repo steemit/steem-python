@@ -5,9 +5,8 @@ ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
 # Stuff for building steem-python
-ENV BUILD_ROOT /buildroot             # Where we put our code and stuff
-ENV BUILD_USER steemitbuilder         # What user it all runs under
-ENV BUILD_OUTPUT ${BUILD_ROOT}/build  # Where build output goes
+ARG BUILD_ROOT=/buildroot
+ARG BUILD_OUTPUT=${BUILD_ROOT}/build
 
 # Now we install the essentials
 RUN \
@@ -26,9 +25,6 @@ RUN \
         runit \
 	wget
 
-# Configure build user
-RUN useradd -ms /bin/bash -d ${BUILD_ROOT}
-
 # This updates the distro-provided pip and gives us pip3.5 binary
 RUN python3.5 -m pip install --upgrade pip
 
@@ -36,17 +32,14 @@ RUN python3.5 -m pip install --upgrade pip
 RUN pip3 install pipenv
 RUN pip3.5 install pipenv
 
-# Setup build user and switch to it
-USER ${BUILD_USER}
 WORKDIR ${BUILD_ROOT}
-ENV HOME ${BUILD_ROOT}
 
 # Copy just enough to build python dependencies in pipenv
 COPY ./Pipfile ${BUILD_ROOT}/Pipfile
 
 # Install python dependencies - we do this here to avoid invalidating docker cache when rest of codebase changes
 RUN cd ${BUILD_ROOT} && \
-    python 3.5 -m pipenv --three --python 3.5 install
+    python3.5 -m pipenv install --three --dev
 
 # Copy rest of the code into place
 COPY ./Makefile  ${BUILD_ROOT}/Makefile
@@ -57,7 +50,7 @@ COPY ./scripts   ${BUILD_ROOT}/scripts
 COPY ./docs      ${BUILD_ROOT}/docs
 
 # Run the test suite
-RUN python3.5 -m pipenv run pytest
+RUN PYTHONPATH=${BUILD_ROOT} python3.5 -m pipenv run py.test tests
 
 # Build wheel and place it in the right place
 COPY ./README.md ./README.md

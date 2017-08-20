@@ -28,7 +28,7 @@ voluptuous = "*"
 pep8 = "*"
 pytest = "*"
 pytest-pylint = "*"
-pytest-pylint = "*"
+pypandoc = "*"
 recommonmark = "*"
 sphinxcontrib-programoutput = "*"
 sphinxcontrib-restbuilder = "*"
@@ -37,8 +37,5 @@ autopep8 = "*"
 sphinx = "*"
 setuptools = "*"
 wheel = "*"
-
-[requires]
-python_version = "3.5"
 
 
