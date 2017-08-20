@@ -23,6 +23,7 @@ langdetect = "*"
 diff-match-patch = "*"
 voluptuous = "*"
 PrettyTable = "*"
+pipfile = "*"
 
 [dev-packages]
 pep8 = "*"

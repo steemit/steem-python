@@ -14,16 +14,15 @@ dockerised-build:
 	docker build -t $(PROJECT_DOCKER_TAG) .
 
 Pipfile.lock: Pipfile
-	pipenv lock --three --dev --hashes
+	pipenv lock --three --hashes
 
 requirements.txt: Pipfile.lock
-	pipenv run pip3.5 freeze >requirements.txt
+	pipenv run pip3.5 freeze --local --all >requirements.txt
 
 build-without-docker: requirements.txt Pipfile.lock
 	mkdir -p build/wheel
 	pipenv install --three --dev
 	pipenv run python3.5 scripts/doc_rst_convert.py
-	pipenv run pip3.5 wheel -r requirements.txt -w build/
 
 test: test-without-build
 
@@ -46,7 +45,7 @@ clean-pyc:
 	find . -name '*~' -exec rm -f {} +
 
 install: clean
-	pip install -e .
+	pipenv run pip3.5 install -e .
 
 pypi:
 	python -c "import pypandoc;pypandoc.convert(source='README.md', format='markdown_github', to='rst', outputfile='README.rst')"
