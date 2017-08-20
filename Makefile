@@ -26,17 +26,18 @@ build-without-docker: requirements.txt Pipfile.lock
 	pipenv run python3.5 setup.py build
 	rm README.rst
 
-test: test-without-build
+test: build-without-docker test-without-build
 
 test-without-build: test-without-lint test-pylint
 
 test-without-lint:
-	py.test tests
+	pipenv run pytest -v
 
 test-pylint:
-	py.test --pylint -m pylint sbds
+	pipenv run pytest -v --pylint
 
 clean: clean-build clean-pyc
+	rm -rf requirements.txt
 
 clean-build:
 	rm -fr build/ dist/ *.egg-info .eggs/ .tox/ __pycache__/ .cache/ .coverage htmlcov src
