@@ -9,6 +9,7 @@ import pkg_resources
 import steem as stm
 from prettytable import PrettyTable
 from steembase.storage import configStorage
+from steembase.account import PrivateKey
 
 from .account import Account
 from .amount import Amount
@@ -137,6 +138,15 @@ def legacy():
         help='private key to import into the wallet (unsafe, unless you delete your bash history)'
     )
     addkey.set_defaults(command="addkey")
+
+    parsewif = subparsers.add_parser('parsewif', help='Parse a WIF private key without importing')
+    parsewif.add_argument(
+       '--unsafe-import-key',
+       nargs='*',
+       type=str,
+       help='WIF key to parse (unsafe, delete your bash history)'
+    )
+    parsewif.set_defaults(command='parsewif')
 
     """
         Command "delkey"
@@ -1093,6 +1103,24 @@ def legacy():
             for pub in args.pub:
                 steem.commit.wallet.removePrivateKeyFromPublicKey(pub)
 
+    elif args.command == "parsewif":
+        if args.unsafe_import_key:
+           for key in args.unsafe_import_key:
+               try:
+                  print(PrivateKey(key).pubkey)
+               except Exception as e:
+                  print(str(e))
+        else:
+           import getpass
+           while True:
+               wifkey = getpass.getpass('Private Key (wif) [Enter to quit:')
+               if not wifkey:
+                   break
+               try:
+                   print(PrivateKey(wifkey).pubkey)
+               except Exception as e:
+                   print(str(e))
+                   continue
     elif args.command == "getkey":
         print(steem.commit.wallet.getPrivateKeyForPublicKey(args.pub))
 
