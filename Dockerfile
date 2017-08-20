@@ -46,18 +46,14 @@ RUN cd ${BUILD_ROOT} && \
 # Copy rest of the code into place
 COPY . ${BUILD_ROOT}/src
 
+WORKDIR ${BUILD_ROOT}/src
+
 # Do build+install
 RUN cd ${BUILD_ROOT}/src && \
-    make install-global
+    make build-without-docker && \
+    make install-global && \
+    make install-pipenv
 
-# Cleanup stuff
+WORKDIR ${BUILD_ROOT}/src
 
-RUN rm -rf \
-        /root/.cache \
-        /var/lib/apt/lists/* \
-        /tmp/* \
-        /var/tmp/* \
-        /var/cache/* \
-        /usr/include \
-        /usr/local/include
 

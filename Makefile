@@ -26,6 +26,9 @@ build-without-docker: requirements.txt Pipfile.lock
 	pipenv run python3.5 setup.py build
 	rm README.rst
 
+dockerised-test: docker-image
+	docker run -ti $(PROJECT_DOCKER_TAG) make -C /buildroot/src build-without-docker install-pipenv test-without-build
+
 test: build-without-docker test-without-build
 
 test-without-build: test-without-lint test-pylint
