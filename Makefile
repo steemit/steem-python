@@ -2,10 +2,16 @@ ROOT_DIR := .
 DOCS_DIR := $(ROOT_DIR)/docs
 DOCS_BUILD_DIR := $(DOCS_DIR)/_build
 
+PROJECT_NAME := steem-python
+PROJECT_DOCKER_TAG := steemit/$(PROJECT_NAME)
+
 
 default: install
 
 .PHONY: test-without-lint test-pylint test-without-build
+
+dockerised-build:
+	docker build -t $(PROJECT_DOCKER_TAG) .
 
 test: test-without-build
 
