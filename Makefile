@@ -17,7 +17,7 @@ Pipfile.lock: Pipfile
 	pipenv lock --three --hashes
 
 requirements.txt: Pipfile.lock
-	pipenv run pip3.5 freeze --local --all >requirements.txt
+	pipenv lock -r >requirements.txt
 
 build-without-docker: requirements.txt Pipfile.lock
 	mkdir -p build/wheel
@@ -51,7 +51,6 @@ install-pipenv: clean
 
 install-global: clean
 	python3.5 scripts/doc_rst_convert.py
-	python3.5 setup.py build
 	pip3.5 install -e .
 
 pypi:

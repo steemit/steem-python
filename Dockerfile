@@ -39,19 +39,18 @@ COPY ./Pipfile ${BUILD_ROOT}/Pipfile
 
 # Install the dependencies found in the lockfile here
 RUN cd ${BUILD_ROOT} && \
-    python3.5 -m pipenv install --three --dev && \
     python3.5 -m pipenv lock --three --hashes && \
-    pipenv run pip3.5 freeze --local --all >requirements.txt && \
-    python3.5 -m pip -r requirements.txt
+    python3.5 -m pipenv lock --three -r >requirements.txt && \
+    python3.5 -m pip install -r requirements.txt
 
 # Copy rest of the code into place
-COPY ./*  ${BUILD_ROOT}/
+COPY . ${BUILD_ROOT}/src
 
 # Do build+install
-RUN make clean install-global
+RUN cd ${BUILD_ROOT}/src && \
+    make install-global
 
 # Cleanup stuff
-USER root
 
 RUN rm -rf \
         /root/.cache \
