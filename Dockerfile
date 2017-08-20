@@ -29,39 +29,26 @@ RUN \
 # This updates the distro-provided pip and gives us pip3.5 binary
 RUN python3.5 -m pip install --upgrade pip
 
-# Here we install pipenv for both default python3 and python3.5
-RUN pip3 install pipenv
-RUN pip3.5 install pipenv
+# We use pipenv to setup stuff
+RUN python3.5 -m pip install -U pipenv
 
 WORKDIR ${BUILD_ROOT}
 
 # Copy just enough to build python dependencies in pipenv
 COPY ./Pipfile ${BUILD_ROOT}/Pipfile
 
-# Install python dependencies - we do this here to avoid invalidating docker cache when rest of codebase changes
+# Install the dependencies found in the lockfile here
 RUN cd ${BUILD_ROOT} && \
-    python3.5 -m pipenv install --three --dev
+    python3.5 -m pipenv install --three --dev && \
+    python3.5 -m pipenv lock --three --hashes && \
+    pipenv run pip3.5 freeze --local --all >requirements.txt && \
+    python3.5 -m pip -r requirements.txt
 
 # Copy rest of the code into place
-COPY ./Makefile  ${BUILD_ROOT}/Makefile
-COPY ./steem     ${BUILD_ROOT}/steem
-COPY ./steembase ${BUILD_ROOT}/steembase
-COPY ./tests     ${BUILD_ROOT}/tests
-COPY ./scripts   ${BUILD_ROOT}/scripts
-COPY ./docs      ${BUILD_ROOT}/docs
+COPY ./*  ${BUILD_ROOT}/
 
-# Run the test suite
-RUN PYTHONPATH=${BUILD_ROOT} python3.5 -m pipenv run py.test tests
-
-# Build wheel and place it in the right place
-COPY ./README.md ./README.md
-RUN python3.5 -m pipenv run python3.5 scripts/doc_rst_convert.py
-RUN python3.5 -m pipenv run pip3.5 wheel -w ${BUILD_OUTPUT}  
-
-# Create a tarball we can grab after build
-RUN cd ${BUILD_ROOT} && \
-    tar cvf ${BUILD_ROOT}/dist.tar ${BUILD_OUTPUT}/* && \
-    echo "Build distribution is in container at ${BUILD_ROOT}/dist.tar"
+# Do build+install
+RUN make clean install-global
 
 # Cleanup stuff
 USER root

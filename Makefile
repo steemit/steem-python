@@ -6,11 +6,11 @@ PROJECT_NAME := steem-python
 PROJECT_DOCKER_TAG := steemit/$(PROJECT_NAME)
 
 
-default: install
+default: install-global
 
-.PHONY: dockerised-build build-without-docker test-without-lint test-pylint test-without-build
+.PHONY: docker-image build-without-docker test-without-lint test-pylint test-without-build install-pipenv install-global clean clean-build
 
-dockerised-build:
+docker-image: clean
 	docker build -t $(PROJECT_DOCKER_TAG) .
 
 Pipfile.lock: Pipfile
@@ -23,6 +23,8 @@ build-without-docker: requirements.txt Pipfile.lock
 	mkdir -p build/wheel
 	pipenv install --three --dev
 	pipenv run python3.5 scripts/doc_rst_convert.py
+	pipenv run python3.5 setup.py build
+	rm README.rst
 
 test: test-without-build
 
@@ -44,11 +46,16 @@ clean-pyc:
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 
-install: clean
+install-pipenv: clean
 	pipenv run pip3.5 install -e .
 
+install-global: clean
+	python3.5 scripts/doc_rst_convert.py
+	python3.5 setup.py build
+	pip3.5 install -e .
+
 pypi:
-	python -c "import pypandoc;pypandoc.convert(source='README.md', format='markdown_github', to='rst', outputfile='README.rst')"
-	python setup.py bdist_wheel --universal
-	python setup.py sdist bdist_wheel upload
+	python3.5 scripts/doc_rst_convert.py
+	python3.5 setup.py bdist_wheel --universal
+	python3.5 setup.py sdist bdist_wheel upload
 	rm README.rst
