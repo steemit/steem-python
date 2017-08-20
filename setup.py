@@ -10,10 +10,6 @@ import package_meta # this is a simple tool for loading metadata from Pipfile an
 assert sys.version_info[0] == package_meta.required_python_major and sys.version_info[1] >= package_meta.required_python_minor, "%s requires Python %s or newer" % (package_meta.package_name, package_meta.required_python_ver)
 
 # yapf: disable
-setup(
-    entry_points={
-        'console_scripts': [
-            'steempy=steem.cli:legacy',
-            'piston=steem.cli:legacy',
-        ]
-    })
+setup(setup_requires=package_meta.dev_requirements,
+      install_requires=package_meta.default_requirements,
+      tests_require=package_meta.default_requirements+package_meta.dev_requirements)

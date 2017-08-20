@@ -34,7 +34,7 @@ lockfile_path      = '%s/Pipfile.lock' % source_code_path
 requires_file_path = '%s/requirements.txt' % source_code_path
 setup_cfg_path     = '%s/setup.cfg' % source_code_path
 
-setup_cfg_data = read_configuration(setup_cfg_path)
+setup_cfg_data = read_configuration(setup_cfg_path,ignore_option_errors=True)
 
 pipfile_data = configparser.ConfigParser()
 
@@ -72,8 +72,9 @@ else:
 
 required_python_major,required_python_minor = [int(x) for x in required_python_ver.split('.')[:2]]
 
-package_name = setup_cfg_data['meta']['name']
-package_ver  = setup_cfg_data['meta']['version']
+
+package_name = setup_cfg_data['metadata']['name']
+package_ver  = setup_cfg_data['metadata']['version']
 
 
 if __name__=='__main__':
