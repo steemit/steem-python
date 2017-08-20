@@ -8,10 +8,22 @@ PROJECT_DOCKER_TAG := steemit/$(PROJECT_NAME)
 
 default: install
 
-.PHONY: test-without-lint test-pylint test-without-build
+.PHONY: dockerised-build build-without-docker test-without-lint test-pylint test-without-build
 
 dockerised-build:
 	docker build -t $(PROJECT_DOCKER_TAG) .
+
+Pipfile.lock: Pipfile
+	pipenv lock --three --dev --hashes
+
+requirements.txt: Pipfile.lock
+	pipenv run pip3.5 freeze >requirements.txt
+
+build-without-docker: requirements.txt Pipfile.lock
+	mkdir -p build/wheel
+	pipenv install --three --dev
+	pipenv run python3.5 scripts/doc_rst_convert.py
+	pipenv run pip3.5 wheel -r requirements.txt -w build/
 
 test: test-without-build
 

@@ -23,7 +23,8 @@ RUN \
         libxml2-dev \
         libxslt-dev \
         runit \
-	wget
+	wget \
+        pandoc
 
 # This updates the distro-provided pip and gives us pip3.5 binary
 RUN python3.5 -m pip install --upgrade pip

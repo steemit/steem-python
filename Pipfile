@@ -21,8 +21,8 @@ toolz = "*"
 funcy = "*"
 langdetect = "*"
 diff-match-patch = "*"
-prettytable = "*"
 voluptuous = "*"
+PrettyTable = "*"
 
 [dev-packages]
 pep8 = "*"
@@ -34,8 +34,6 @@ sphinxcontrib-programoutput = "*"
 sphinxcontrib-restbuilder = "*"
 yapf = "*"
 autopep8 = "*"
-sphinx = "*"
 setuptools = "*"
 wheel = "*"
-
-
+Sphinx = "*"
