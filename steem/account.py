@@ -5,7 +5,7 @@ from contextlib import suppress
 
 from funcy.colls import walk_values, get_in
 from funcy.seqs import take
-from funcy.simple_funcs import rpartial
+from funcy import rpartial
 from steembase.exceptions import AccountDoesNotExistsException
 from toolz import dissoc
 
