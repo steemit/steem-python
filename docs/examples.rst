@@ -18,6 +18,9 @@ You can run this script as many times as you like, and it will continue from the
 
         def get_last_line(filename):
             if os.path.isfile(filename):
+                if os.stat(filename).st_size == 0:
+                    fp = open(filename)
+                    return fp.read()
                 with open(filename, 'rb') as f:
                     f.seek(-2, 2)
                     while f.read(1) != b"\n":
