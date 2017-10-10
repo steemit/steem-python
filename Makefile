@@ -22,8 +22,8 @@ requirements.txt: Pipfile.lock
 build-without-docker: requirements.txt Pipfile.lock
 	mkdir -p build/wheel
 	pipenv install --three --dev
-	pipenv run python3.5 scripts/doc_rst_convert.py
-	pipenv run python3.5 setup.py build
+	pipenv run python3.6 scripts/doc_rst_convert.py
+	pipenv run python3.6 setup.py build
 	rm README.rst
 
 dockerised-test: docker-image
@@ -51,14 +51,14 @@ clean-pyc:
 	find . -name '*~' -exec rm -f {} +
 
 install-pipenv: clean
-	pipenv run pip3.5 install -e .
+	pipenv run pip3.6 install -e .
 
 install-global: clean
-	python3.5 scripts/doc_rst_convert.py
-	pip3.5 install -e .
+	python3.6 scripts/doc_rst_convert.py
+	pip3.6 install -e .
 
 pypi:
-	python3.5 scripts/doc_rst_convert.py
-	python3.5 setup.py bdist_wheel --universal
-	python3.5 setup.py sdist bdist_wheel upload
+	python3.6 scripts/doc_rst_convert.py
+	python3.6 setup.py bdist_wheel --universal
+	python3.6 setup.py sdist bdist_wheel upload
 	rm README.rst
