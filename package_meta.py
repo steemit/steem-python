@@ -67,7 +67,7 @@ if os.path.exists(lockfile_path):
    for k,v in lockfile_data['default'].items():
        default_requirements.append('%s%s' % (k,v['version']))
 else:
-   required_python_ver = '3.5'
+   required_python_ver = '3.6'
    default_requirements = [str(ir.req) for ir in parse_requirements(requires_file_path,session=PipSession())]
 
 required_python_major,required_python_minor = [int(x) for x in required_python_ver.split('.')[:2]]
