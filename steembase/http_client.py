@@ -106,7 +106,7 @@ class HttpClient(object):
         return urlparse(self.url).hostname
 
     @staticmethod
-    def json_rpc_body(name, *args, api=None, as_json=True, _id=0):
+    def json_rpc_body(name, *args, api=None, as_json=True, _id=0, kwargs=None):
         """ Build request body for steemd RPC requests.
 
         Args:
@@ -123,7 +123,9 @@ class HttpClient(object):
             Otherwise, a Python dictionary is returned.
         """
         headers = {"jsonrpc": "2.0", "id": _id}
-        if api:
+        if kwargs is not None:
+            body_dict = {**headers, "method": "call", "params": [api, name, kwargs]}
+        elif api:
             body_dict = {**headers, "method": "call", "params": [api, name, args]}
         else:
             body_dict = {**headers, "method": name, "params": args}
@@ -132,7 +134,7 @@ class HttpClient(object):
         else:
             return body_dict
 
-    def exec(self, name, *args, api=None, return_with_args=None, _ret_cnt=0):
+    def exec(self, name, *args, api=None, return_with_args=None, _ret_cnt=0, kwargs=None):
         """ Execute a method against steemd RPC.
 
         Warnings:
@@ -140,7 +142,7 @@ class HttpClient(object):
             node fail-over, unless we are broadcasting a transaction.
             In latter case, the exception is **re-raised**.
         """
-        body = HttpClient.json_rpc_body(name, *args, api=api)
+        body = HttpClient.json_rpc_body(name, *args, api=api, kwargs=kwargs)
         response = None
         try:
             response = self.request(body=body)
