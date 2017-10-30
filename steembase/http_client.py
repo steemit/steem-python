@@ -143,49 +143,49 @@ class HttpClient(object):
             In latter case, the exception is **re-raised**.
         """
         body = HttpClient.json_rpc_body(name, *args, api=api, kwargs=kwargs)
-        response = None
-        try:
-            response = self.request(body=body)
-        except (MaxRetryError,
-                ConnectionResetError,
-                ReadTimeoutError,
-                RemoteDisconnected,
-                ProtocolError) as e:
-            # if we broadcasted a transaction, always raise
-            # this is to prevent potential for double spend scenario
-            if api == 'network_broadcast_api':
-                raise e
+        while True:
+            response = None
+            try:
+                response = self.request(body=body)
+            except (MaxRetryError,
+                    ConnectionResetError,
+                    ReadTimeoutError,
+                    RemoteDisconnected,
+                    ProtocolError) as e:
+                # if we broadcasted a transaction, always raise
+                # this is to prevent potential for double spend scenario
+                if api == 'network_broadcast_api':
+                    raise e
 
-            # try switching nodes before giving up
-            if _ret_cnt > 2:
-                time.sleep(_ret_cnt) # we should wait only a short period before trying the next node, but still slowly increase backoff
-            elif _ret_cnt > 10:
-                raise e
-            self.next_node()
-            logging.debug('Switched node to %s due to exception: %s' %
-                          (self.hostname, e.__class__.__name__))
-            return self.exec(name, *args,
-                             return_with_args=return_with_args,
-                             _ret_cnt=_ret_cnt + 1)
-        except Exception as e:
-            if self.re_raise:
-                raise e
+                # try switching nodes before giving up
+                if _ret_cnt > 2:
+                    time.sleep(_ret_cnt) # we should wait only a short period before trying the next node, but still slowly increase backoff
+                elif _ret_cnt > 10:
+                    raise e
+                self.next_node()
+                logging.debug('Switched node to %s due to exception: %s' %
+                              (self.hostname, e.__class__.__name__))
+                _ret_cnt += 1
+                continue
+            except Exception as e:
+                if self.re_raise:
+                    raise e
+                else:
+                    extra = dict(err=e, request=self.request)
+                    logger.info('Request error', extra=extra)
+                    return self._return(
+                        response=response,
+                        args=args,
+                        return_with_args=return_with_args)
             else:
-                extra = dict(err=e, request=self.request)
-                logger.info('Request error', extra=extra)
+                if response.status not in tuple(
+                        [*response.REDIRECT_STATUSES, 200]):
+                    logger.info('non 200 response:%s', response.status)
+
                 return self._return(
                     response=response,
                     args=args,
                     return_with_args=return_with_args)
-        else:
-            if response.status not in tuple(
-                    [*response.REDIRECT_STATUSES, 200]):
-                logger.info('non 200 response:%s', response.status)
-
-            return self._return(
-                response=response,
-                args=args,
-                return_with_args=return_with_args)
 
     def _return(self, response=None, args=None, return_with_args=None):
         return_with_args = return_with_args or self.return_with_args
