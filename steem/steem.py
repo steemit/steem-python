@@ -1,6 +1,6 @@
 from .commit import Commit
 from .steemd import Steemd
-
+from steembase.exceptions import RPCError
 
 class Steem:
     """ Connect to the Steem network.
@@ -57,9 +57,37 @@ class Steem:
             return getattr(self.steemd, item)
         if hasattr(self.commit, item):
             return getattr(self.commit, item)
+        if item.endswith("_api"):
+            return Steem.Api(api_name=item, exec_method=self.steemd.exec)
 
         raise AttributeError('Steem has no attribute "%s"' % item)
 
+    class Api(object):
+        def __init__(self, api_name="", exec_method=None):
+            self.api_name = api_name
+            self.exec_method = exec_method
+            return
+
+        def __getattr__(self, method_name):
+            return Steem.Method(
+               api_name=self.api_name,
+               method_name=method_name,
+               exec_method=self.exec_method,
+               )
+
+    class Method(object):
+        def __init__(self, api_name="", method_name="", exec_method=None):
+            self.api_name = api_name
+            self.method_name = method_name
+            self.exec_method = exec_method
+            return
+
+        def __call__(self, *args, **kwargs):
+            if len(kwargs) > 0:
+                if len(args) > 0:
+                    raise RPCError("Cannot specify both args and kwargs in RPC")
+                return self.exec_method(self.method_name, kwargs=kwargs, api=self.api_name)
+            return self.exec_method(self.method_name, *args, api=self.api_name)
 
 if __name__ == '__main__':
     s = Steem()
