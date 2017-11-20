@@ -20,7 +20,7 @@ timeformat = "%Y%m%d-%H%M%S"
 
 class DataDir(object):
     """ This class ensures that the user's data is stored in its OS
-        preotected user directory:
+        protected user directory:
 
         **OSX:**
 

@@ -4,10 +4,15 @@ _shared_steemd_instance = None
 
 
 def get_config_node_list():
-    from steembase.storage import configStorage
-    nodes = configStorage.get('nodes', None)
-    if nodes:
-        return nodes.split(',')
+    import logging
+    logger = logging.getLogger(__name__)
+    try:
+        from steembase.storage import configStorage
+        nodes = configStorage.get('nodes', None)
+        if nodes:
+            return nodes.split(',')
+    except OSError:
+        logger.info('Unable to load configuration from disk')
 
 
 def shared_steemd_instance():

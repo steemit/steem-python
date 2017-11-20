@@ -5,7 +5,7 @@ from typing import List, Any, Union, Set
 from funcy.seqs import first
 from steembase.chains import known_chains
 from steembase.http_client import HttpClient
-from steembase.storage import configStorage
+
 from steembase.transactions import SignedTransaction
 from steembase.types import PointInTime
 
@@ -18,10 +18,13 @@ logger = logging.getLogger(__name__)
 
 
 def get_config_node_list():
-    nodes = configStorage.get('nodes', None)
-    if nodes:
-        return nodes.split(',')
-
+    try:
+        from steembase.storage import configStorage
+        nodes = configStorage.get('nodes', None)
+        if nodes:
+            return nodes.split(',')
+    except OSError:
+        logger.info('Unable to load configuration from disk')
 
 class Steemd(HttpClient):
     """ Connect to the Steem network.

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from steem import *
-from steembase import *
+import steem
+import steembase
+
 
 
 # pylint: disable=unused-import,unused-variable
 def test_import():
-    _ = Steem()
-    _ = account.PasswordKey
+    _ = steem.Steem()
+    _ = steembase.account.PasswordKey

@@ -1,6 +1,3 @@
-#!/usr/bin/env python3.6
-
-import steem
 import sys
 import argparse
 import pprint
