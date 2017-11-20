@@ -159,7 +159,7 @@ class HttpClient(object):
             # try switching nodes before giving up
             if _ret_cnt > 2:
                 time.sleep(_ret_cnt) # we should wait only a short period before trying the next node, but still slowly increase backoff
-            elif _ret_cnt > 10:
+            if _ret_cnt > 10:
                 raise e
             self.next_node()
             logging.debug('Switched node to %s due to exception: %s' %
