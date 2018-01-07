@@ -147,12 +147,12 @@ and shall contain no whitespaces.
         | default_vote_weight | 100                           |
         | nodes               | https://gtg.steem.house:8090/ |
         +---------------------+-------------------------------+
-        ~ % steempy set nodes https://gtg.steem.house:8090/,https://steemd.steemit.com
+        ~ % steempy set nodes https://gtg.steem.house:8090/,https://api.steemit.com
         ~ % steempy config
         +---------------------+----------------------------------------------------------+
         | Key                 | Value                                                    |
         +---------------------+----------------------------------------------------------+
-        | nodes               | https://gtg.steem.house:8090/,https://steemd.steemit.com |
+        | nodes               | https://gtg.steem.house:8090/,https://api.steemit.com    |
         | default_vote_weight | 100                                                      |
         | default_account     | furion                                                   |
         +---------------------+----------------------------------------------------------+
@@ -173,7 +173,7 @@ Post, etc) will use this as their default instance.
 
         steemd_nodes = [
             'https://gtg.steem.house:8090',
-            'https://steemd.steemit.com',
+            'https://api.steemit.com',
         ]
         set_shared_steemd_instance(Steemd(nodes=steemd_nodes))
 
@@ -192,11 +192,9 @@ This is useful when you want to contain a modified ``steemd`` instance to an exp
 
         steemd_nodes = [
             'https://gtg.steem.house:8090',
-            'https://steemd.steemit.com',
+            'https://api.steemit.com',
         ]
         custom_instance = Steemd(nodes=steemd_nodes)
 
         account = Account('furion', steemd_instance=custom_instance)
         blockchain = Blockchain('head', steemd_instance=custom_instance)
-
-

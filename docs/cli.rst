@@ -154,7 +154,7 @@ You can see all available commands with ``steempy -h``
     optional arguments:
       -h, --help            show this help message and exit
       --node NODE           URL for public Steem API (default:
-                            "https://steemd.steemit.com")
+                            "https://api.steemit.com")
       --no-broadcast, -d    Do not broadcast anything
       --no-wallet, -p       Do not load the wallet
       --unsigned, -x        Do not try to sign the transaction
