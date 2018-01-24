@@ -1,3 +1,0 @@
-include package_meta.py
-include Pipfile
-include Pipfile.lock
