@@ -47,7 +47,7 @@ class Operation:
             self.opId = operations[self.to_method_name(self.name)]
 
     @staticmethod
-    def get_operation_name_for_id(_id: int):
+    def get_operation_name_for_id(_id):
         """ Convert an operation id into the corresponding string
         """
         for key, value in operations.items():
@@ -55,18 +55,18 @@ class Operation:
                 return key
 
     @staticmethod
-    def to_class_name(method_name: str):
+    def to_class_name(method_name):
         """ Take a name of a method, like feed_publish and turn it into class name like FeedPublish. """
         return ''.join(map(str.title, method_name.split('_')))
 
     @staticmethod
-    def to_method_name(class_name: str):
+    def to_method_name(class_name):
         """ Take a name of a class, like FeedPublish and turn it into method name like feed_publish. """
         words = re.findall('[A-Z][^A-Z]*', class_name)
         return '_'.join(map(str.lower, words))
 
     @staticmethod
-    def get_class(class_name: str):
+    def get_class(class_name):
         """ Given name of a class from `operations`, return real class. """
         module = importlib.import_module('steembase.operations')
         return getattr(module, class_name)

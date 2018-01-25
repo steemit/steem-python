@@ -812,7 +812,7 @@ class Commit(object):
         )
         return self.finalizeOp(op, account, "posting")
 
-    def delegate_vesting_shares(self, to_account: str, vesting_shares: str, account=None):
+    def delegate_vesting_shares(self, to_account, vesting_shares, account=None):
         """ Delegate SP to another account.
 
         Args:

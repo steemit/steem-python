@@ -32,13 +32,13 @@ class HttpClient(object):
        rpc = HttpClient(['https://steemd-node1.com', 'https://steemd-node2.com'])
 
     any call available to that port can be issued using the instance
-    via the syntax ``rpc.exec('command', *parameters)``.
+    via the syntax ``rpc.call('command', *parameters)``.
 
     Example:
 
     .. code-block:: python
 
-       rpc.exec(
+       rpc.call(
            'get_followers',
            'furion', 'abit', 'blog', 10,
            api='follow_api'
@@ -134,7 +134,7 @@ class HttpClient(object):
         else:
             return body_dict
 
-    def exec(self, name, *args, api=None, return_with_args=None, _ret_cnt=0, kwargs=None):
+    def call(self, name, *args, api=None, return_with_args=None, _ret_cnt=0, kwargs=None):
         """ Execute a method against steemd RPC.
 
         Warnings:
@@ -215,7 +215,7 @@ class HttpClient(object):
         else:
             return result
 
-    def exec_multi_with_futures(self, name, params, api=None, max_workers=None):
+    def call_multi_with_futures(self, name, params, api=None, max_workers=None):
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=max_workers) as executor:
             # Start the load operations and mark each future with its URL
