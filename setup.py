@@ -6,6 +6,9 @@ setup(
     # long_description = file: README.rst
     keywords=['steem', 'steemit', 'cryptocurrency', 'blockchain'],
     license='MIT',
+    url='https://github.com/steemit/steem-python',
+    maintainer='steemit_inc',
+    maintainer_email='john@steemit.com',
     classifiers=[
             'Intended Audience :: Developers',
             'License :: OSI Approved :: MIT License',

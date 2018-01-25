@@ -113,3 +113,5 @@ tests/failed_blocks/
 /tests/envdir-to-envfile.sh
 /deploy/
 /test.py
+
+.DS_Store
