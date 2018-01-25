@@ -10,20 +10,19 @@ setup(
     maintainer='steemit_inc',
     maintainer_email='john@steemit.com',
     py_modules=[
-	'steem',
-	'steem.cli',
-	'steem.steem',
+        'steem',
+        'steembase',
     ],
-    entry_points = {
+    entry_points={
         'console_scripts': ['steempy=steem.cli:legacy'],
     },
     classifiers=[
-            'Intended Audience :: Developers',
-            'License :: OSI Approved :: MIT License',
-            'Natural Language :: English',
-            'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.5',
-            'Topic :: Software Development :: Libraries',
-            'Topic :: Software Development :: Libraries :: Python Modules',
-            'Development Status :: 4 - Beta']
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Topic :: Software Development :: Libraries',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Development Status :: 4 - Beta']
 )
