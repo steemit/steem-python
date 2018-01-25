@@ -1,4 +1,5 @@
-from distutils.core import setup
+from setuptools import setup, find_packages
+
 setup(
     name='steem',
     version='0.18.103',
@@ -9,10 +10,7 @@ setup(
     url='https://github.com/steemit/steem-python',
     maintainer='steemit_inc',
     maintainer_email='john@steemit.com',
-    py_modules=[
-        'steem',
-        'steembase',
-    ],
+    packages=find_packages(),
     entry_points={
         'console_scripts': ['steempy=steem.cli:legacy'],
     },
