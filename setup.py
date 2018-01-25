@@ -11,6 +11,13 @@ setup(
     maintainer='steemit_inc',
     maintainer_email='john@steemit.com',
     packages=find_packages(),
+    install_requires = [
+        'appdirs',
+        'ecdsa',
+        'funcy',
+        'voluptuous',
+        'pycrypto',
+    ],
     entry_points={
         'console_scripts': ['steempy=steem.cli:legacy'],
     },
