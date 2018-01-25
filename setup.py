@@ -9,6 +9,14 @@ setup(
     url='https://github.com/steemit/steem-python',
     maintainer='steemit_inc',
     maintainer_email='john@steemit.com',
+    py_modules=[
+	'steem',
+	'steem.cli',
+	'steem.steem',
+    ],
+    entry_points = {
+        'console_scripts': ['steempy=steem.cli:legacy'],
+    },
     classifiers=[
             'Intended Audience :: Developers',
             'License :: OSI Approved :: MIT License',
