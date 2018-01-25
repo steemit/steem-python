@@ -126,11 +126,14 @@ class Account(dict):
 
     def _get_followers(self, direction="follower", last_user=""):
         if direction == "follower":
-            followers = self.steemd.get_followers(self.name, last_user, "blog", 100)
+            followers = self.steemd.get_followers(
+                self.name, last_user, "blog", 100)
         elif direction == "following":
-            followers = self.steemd.get_following(self.name, last_user, "blog", 100)
+            followers = self.steemd.get_following(
+                self.name, last_user, "blog", 100)
         if len(followers) >= 100:
-            followers += self._get_followers(direction=direction, last_user=followers[-1][direction])[1:]
+            followers += self._get_followers(direction=direction,
+                                             last_user=followers[-1][direction])[1:]
         return followers
 
     def has_voted(self, post):
@@ -217,14 +220,18 @@ class Account(dict):
                 "conversion_requests": self.get_conversion_requests(),
             }
 
-        return {
-            **self,
-            **extras,
-            "profile": self.profile,
-            "sp": self.sp,
-            "rep": self.rep,
-            "balances": self.get_balances(),
-        }
+        composedDict = self.copy()
+        composedDict.update(extras)
+        composedDict.update(
+            {
+                "profile": self.profile,
+                "sp": self.sp,
+                "rep": self.rep,
+                "balances": self.get_balances(),
+            }
+        )
+
+        return composedDict
 
     def get_account_history(self, index, limit, start=None, stop=None, order=-1, filter_by=None, raw_output=False):
         """ A generator over steemd.get_account_history.
