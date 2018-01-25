@@ -154,7 +154,7 @@ class Steemd(HttpClient):
             dict: Account information.
 
         """
-        return first(self.exec('get_accounts', [account]))
+        return first(self.call('get_accounts', [account]))
 
     def get_all_usernames(self, last_user=''):
         """ Fetch the full list of STEEM usernames. """
@@ -223,16 +223,16 @@ class Steemd(HttpClient):
     # steemd api generated methods #
     ################################
     # def set_subscribe_callback(self, callback: object, clear_filter: object):
-    #     return self.exec('set_subscribe_callback', callback, clear_filter, api='database_api')
+    #     return self.call('set_subscribe_callback', callback, clear_filter, api='database_api')
     #
     # def set_pending_transaction_callback(self, callback: object):
-    #     return self.exec('set_pending_transaction_callback', callback, api='database_api')
+    #     return self.call('set_pending_transaction_callback', callback, api='database_api')
     #
     # def set_block_applied_callback(self, callback: object):
-    #     return self.exec('set_block_applied_callback', callback, api='database_api')
+    #     return self.call('set_block_applied_callback', callback, api='database_api')
     #
     # def cancel_all_subscriptions(self):
-    #     return self.exec('cancel_all_subscriptions', api='database_api')
+    #     return self.call('cancel_all_subscriptions', api='database_api')
 
     def get_reward_fund(self, fund_name: str = 'post'):
         """ Get details for a reward fund.
@@ -257,75 +257,75 @@ class Steemd(HttpClient):
                  'reward_balance': '555660.895 STEEM'}
 
         """
-        return self.exec('get_reward_fund', fund_name, api='database_api')
+        return self.call('get_reward_fund', fund_name, api='database_api')
 
     def get_expiring_vesting_delegations(self, account: str, start: PointInTime, limit: int):
         """ get_expiring_vesting_delegations """
-        return self.exec('get_expiring_vesting_delegations', account, start, limit, api='database_api')
+        return self.call('get_expiring_vesting_delegations', account, start, limit, api='database_api')
 
     def get_trending_tags(self, after_tag: str, limit: int):
         """ get_trending_tags """
-        return self.exec('get_trending_tags', after_tag, limit, api='database_api')
+        return self.call('get_trending_tags', after_tag, limit, api='database_api')
 
     def get_tags_used_by_author(self, account: str):
         """ get_tags_used_by_author """
-        return self.exec('get_tags_used_by_author', account, api='database_api')
+        return self.call('get_tags_used_by_author', account, api='database_api')
 
     def get_discussions_by_trending(self, discussion_query: dict):
         """ get_discussions_by_trending """
-        return self.exec('get_discussions_by_trending', discussion_query, api='database_api')
+        return self.call('get_discussions_by_trending', discussion_query, api='database_api')
 
     def get_comment_discussions_by_payout(self, discussion_query: dict):
         """ get_comment_discussions_by_payout """
-        return self.exec('get_comment_discussions_by_payout', discussion_query, api='database_api')
+        return self.call('get_comment_discussions_by_payout', discussion_query, api='database_api')
 
     def get_post_discussions_by_payout(self, discussion_query: dict):
         """ get_post_discussions_by_payout """
-        return self.exec('get_post_discussions_by_payout', discussion_query, api='database_api')
+        return self.call('get_post_discussions_by_payout', discussion_query, api='database_api')
 
     def get_discussions_by_created(self, discussion_query: dict):
         """ get_discussions_by_created """
-        return self.exec('get_discussions_by_created', discussion_query, api='database_api')
+        return self.call('get_discussions_by_created', discussion_query, api='database_api')
 
     def get_discussions_by_active(self, discussion_query: dict):
         """ get_discussions_by_active """
-        return self.exec('get_discussions_by_active', discussion_query, api='database_api')
+        return self.call('get_discussions_by_active', discussion_query, api='database_api')
 
     def get_discussions_by_cashout(self, discussion_query: dict):
         """ get_discussions_by_cashout """
-        return self.exec('get_discussions_by_cashout', discussion_query, api='database_api')
+        return self.call('get_discussions_by_cashout', discussion_query, api='database_api')
 
     def get_discussions_by_payout(self, discussion_query: dict):
         """ get_discussions_by_payout """
-        return self.exec('get_discussions_by_payout', discussion_query, api='database_api')
+        return self.call('get_discussions_by_payout', discussion_query, api='database_api')
 
     def get_discussions_by_votes(self, discussion_query: dict):
         """ get_discussions_by_votes """
-        return self.exec('get_discussions_by_votes', discussion_query, api='database_api')
+        return self.call('get_discussions_by_votes', discussion_query, api='database_api')
 
     def get_discussions_by_children(self, discussion_query: dict):
         """ get_discussions_by_children """
-        return self.exec('get_discussions_by_children', discussion_query, api='database_api')
+        return self.call('get_discussions_by_children', discussion_query, api='database_api')
 
     def get_discussions_by_hot(self, discussion_query: dict):
         """ get_discussions_by_hot """
-        return self.exec('get_discussions_by_hot', discussion_query, api='database_api')
+        return self.call('get_discussions_by_hot', discussion_query, api='database_api')
 
     def get_discussions_by_feed(self, discussion_query: dict):
         """ get_discussions_by_feed """
-        return self.exec('get_discussions_by_feed', discussion_query, api='database_api')
+        return self.call('get_discussions_by_feed', discussion_query, api='database_api')
 
     def get_discussions_by_blog(self, discussion_query: dict):
         """ get_discussions_by_blog """
-        return self.exec('get_discussions_by_blog', discussion_query, api='database_api')
+        return self.call('get_discussions_by_blog', discussion_query, api='database_api')
 
     def get_discussions_by_comments(self, discussion_query: dict):
         """ get_discussions_by_comments """
-        return self.exec('get_discussions_by_comments', discussion_query, api='database_api')
+        return self.call('get_discussions_by_comments', discussion_query, api='database_api')
 
     def get_discussions_by_promoted(self, discussion_query: dict):
         """ get_discussions_by_promoted """
-        return self.exec('get_discussions_by_promoted', discussion_query, api='database_api')
+        return self.call('get_discussions_by_promoted', discussion_query, api='database_api')
 
     def get_block_header(self, block_num: int):
         """ Get block headers, given a block number.
@@ -350,7 +350,7 @@ class Steemd(HttpClient):
                  'transaction_merkle_root': '4ddc419e531cccee6da660057d606d11aab9f3a5',
                  'witness': 'chainsquad.com'}
         """
-        return self.exec('get_block_header', block_num, api='database_api')
+        return self.call('get_block_header', block_num, api='database_api')
 
     def get_block(self, block_num: int):
         """ Get the full block, transactions and all, given a block number.
@@ -391,23 +391,23 @@ class Steemd(HttpClient):
 
 
         """
-        return self.exec('get_block', block_num, api='database_api')
+        return self.call('get_block', block_num, api='database_api')
 
     def get_ops_in_block(self, block_num: int, virtual_only: bool):
         """ get_ops_in_block """
-        return self.exec('get_ops_in_block', block_num, virtual_only, api='database_api')
+        return self.call('get_ops_in_block', block_num, virtual_only, api='database_api')
 
     def get_state(self, path: str):
         """ get_state """
-        return self.exec('get_state', path, api='database_api')
+        return self.call('get_state', path, api='database_api')
 
     def get_config(self):
         """ Get internal chain configuration. """
-        return self.exec('get_config', api='database_api')
+        return self.call('get_config', api='database_api')
 
     def get_dynamic_global_properties(self):
         """ get_dynamic_global_properties """
-        return self.exec('get_dynamic_global_properties', api='database_api')
+        return self.call('get_dynamic_global_properties', api='database_api')
 
     def get_chain_properties(self):
         """ Get witness elected chain properties.
@@ -419,7 +419,7 @@ class Steemd(HttpClient):
              'sbd_interest_rate': 250}
 
         """
-        return self.exec('get_chain_properties', api='database_api')
+        return self.call('get_chain_properties', api='database_api')
 
     def get_feed_history(self):
         """ Get the hourly averages of witness reported STEEM/SBD prices.
@@ -435,7 +435,7 @@ class Steemd(HttpClient):
               {'base': '0.093 SBD', 'quote': '1.010 STEEM'},
 
         """
-        return self.exec('get_feed_history', api='database_api')
+        return self.call('get_feed_history', api='database_api')
 
     def get_current_median_history_price(self):
         """ Get the average STEEM/SBD price.
@@ -447,11 +447,11 @@ class Steemd(HttpClient):
             {'base': '0.093 SBD', 'quote': '1.010 STEEM'}
 
         """
-        return self.exec('get_current_median_history_price', api='database_api')
+        return self.call('get_current_median_history_price', api='database_api')
 
     def get_witness_schedule(self):
         """ get_witness_schedule """
-        return self.exec('get_witness_schedule', api='database_api')
+        return self.call('get_witness_schedule', api='database_api')
 
     def get_hardfork_version(self):
         """ Get the current version of the chain.
@@ -460,26 +460,26 @@ class Steemd(HttpClient):
             This is not the same as latest minor version.
 
         """
-        return self.exec('get_hardfork_version', api='database_api')
+        return self.call('get_hardfork_version', api='database_api')
 
     def get_next_scheduled_hardfork(self):
         """ get_next_scheduled_hardfork """
-        return self.exec('get_next_scheduled_hardfork', api='database_api')
+        return self.call('get_next_scheduled_hardfork', api='database_api')
 
     def get_accounts(self, account_names: list):
         """ Lookup account information such as user profile, public keys, balances, etc.
 
         This method is same as ``get_account``, but supports querying for multiple accounts at the time.
         """
-        return self.exec('get_accounts', account_names, api='database_api')
+        return self.call('get_accounts', account_names, api='database_api')
 
     def get_account_references(self, account_id: int):
         """ get_account_references """
-        return self.exec('get_account_references', account_id, api='database_api')
+        return self.call('get_account_references', account_id, api='database_api')
 
     def lookup_account_names(self, account_names: list):
         """ lookup_account_names """
-        return self.exec('lookup_account_names', account_names, api='database_api')
+        return self.call('lookup_account_names', account_names, api='database_api')
 
     def lookup_accounts(self, after: Union[str, int], limit: int) -> List[str]:
         """Get a list of usernames from all registered accounts.
@@ -492,15 +492,15 @@ class Steemd(HttpClient):
             list: List of usernames in requested chunk.
 
         """
-        return self.exec('lookup_accounts', after, limit, api='database_api')
+        return self.call('lookup_accounts', after, limit, api='database_api')
 
     def get_account_count(self):
         """ How many accounts are currently registered on STEEM? """
-        return self.exec('get_account_count', api='database_api')
+        return self.call('get_account_count', api='database_api')
 
     def get_conversion_requests(self, account: str):
         """ get_conversion_requests """
-        return self.exec('get_conversion_requests', account, api='database_api')
+        return self.call('get_conversion_requests', account, api='database_api')
 
     def get_account_history(self, account: str, index_from: int, limit: int):
         """ History of all operations for a given account.
@@ -579,35 +579,35 @@ class Steemd(HttpClient):
 
 
         """
-        return self.exec('get_account_history', account, index_from, limit, api='database_api')
+        return self.call('get_account_history', account, index_from, limit, api='database_api')
 
     def get_owner_history(self, account: str):
         """ get_owner_history """
-        return self.exec('get_owner_history', account, api='database_api')
+        return self.call('get_owner_history', account, api='database_api')
 
     def get_recovery_request(self, account: str):
         """ get_recovery_request """
-        return self.exec('get_recovery_request', account, api='database_api')
+        return self.call('get_recovery_request', account, api='database_api')
 
     def get_escrow(self, from_account: str, escrow_id: int):
         """ get_escrow """
-        return self.exec('get_escrow', from_account, escrow_id, api='database_api')
+        return self.call('get_escrow', from_account, escrow_id, api='database_api')
 
     def get_withdraw_routes(self, account: str, withdraw_route_type: str):
         """ get_withdraw_routes """
-        return self.exec('get_withdraw_routes', account, withdraw_route_type, api='database_api')
+        return self.call('get_withdraw_routes', account, withdraw_route_type, api='database_api')
 
     def get_account_bandwidth(self, account: str, bandwidth_type: object):
         """ get_account_bandwidth """
-        return self.exec('get_account_bandwidth', account, bandwidth_type, api='database_api')
+        return self.call('get_account_bandwidth', account, bandwidth_type, api='database_api')
 
     def get_savings_withdraw_from(self, account: str):
         """ get_savings_withdraw_from """
-        return self.exec('get_savings_withdraw_from', account, api='database_api')
+        return self.call('get_savings_withdraw_from', account, api='database_api')
 
     def get_savings_withdraw_to(self, account: str):
         """ get_savings_withdraw_to """
-        return self.exec('get_savings_withdraw_to', account, api='database_api')
+        return self.call('get_savings_withdraw_to', account, api='database_api')
 
     def get_order_book(self, limit: int):
         """ Get the internal market order book.
@@ -653,11 +653,11 @@ class Steemd(HttpClient):
 
 
         """
-        return self.exec('get_order_book', limit, api='database_api')
+        return self.call('get_order_book', limit, api='database_api')
 
     def get_open_orders(self, account: str):
         """ get_open_orders """
-        return self.exec('get_open_orders', account, api='database_api')
+        return self.call('get_open_orders', account, api='database_api')
 
     def get_liquidity_queue(self, start_account: str, limit: int):
         """ Get the liquidity queue.
@@ -666,31 +666,31 @@ class Steemd(HttpClient):
             This feature is currently not in use, and might be deprecated in the future.
 
         """
-        return self.exec('get_liquidity_queue', start_account, limit, api='database_api')
+        return self.call('get_liquidity_queue', start_account, limit, api='database_api')
 
     def get_transaction_hex(self, signed_transaction: SignedTransaction):
         """ get_transaction_hex """
-        return self.exec('get_transaction_hex', signed_transaction, api='database_api')
+        return self.call('get_transaction_hex', signed_transaction, api='database_api')
 
     def get_transaction(self, transaction_id: str):
         """ get_transaction """
-        return self.exec('get_transaction', transaction_id, api='database_api')
+        return self.call('get_transaction', transaction_id, api='database_api')
 
     def get_required_signatures(self, signed_transaction: SignedTransaction, available_keys: list):
         """ get_required_signatures """
-        return self.exec('get_required_signatures', signed_transaction, available_keys, api='database_api')
+        return self.call('get_required_signatures', signed_transaction, available_keys, api='database_api')
 
     def get_potential_signatures(self, signed_transaction: SignedTransaction):
         """ get_potential_signatures """
-        return self.exec('get_potential_signatures', signed_transaction, api='database_api')
+        return self.call('get_potential_signatures', signed_transaction, api='database_api')
 
     def verify_authority(self, signed_transaction: SignedTransaction):
         """ verify_authority """
-        return self.exec('verify_authority', signed_transaction, api='database_api')
+        return self.call('verify_authority', signed_transaction, api='database_api')
 
     def verify_account_authority(self, account: str, keys: list):
         """ verify_account_authority """
-        return self.exec('verify_account_authority', account, keys, api='database_api')
+        return self.call('verify_account_authority', account, keys, api='database_api')
 
     def get_active_votes(self, author: str, permlink: str):
         """ Get all votes for the given post.
@@ -725,7 +725,7 @@ class Steemd(HttpClient):
                  'voter': 'flourish',
                  'weight': '2334690471157'}]
         """
-        return self.exec('get_active_votes', author, permlink, api='database_api')
+        return self.call('get_active_votes', author, permlink, api='database_api')
 
     def get_account_votes(self, account: str):
         """ All votes the given account ever made.
@@ -748,15 +748,15 @@ class Steemd(HttpClient):
 
 
         """
-        return self.exec('get_account_votes', account, api='database_api')
+        return self.call('get_account_votes', account, api='database_api')
 
     def get_content(self, author: str, permlink: str):
         """ get_content """
-        return self.exec('get_content', author, permlink, api='database_api')
+        return self.call('get_content', author, permlink, api='database_api')
 
     def get_content_replies(self, author: str, permlink: str):
         """ get_content_replies """
-        return self.exec('get_content_replies', author, permlink, api='database_api')
+        return self.call('get_content_replies', author, permlink, api='database_api')
 
     def get_discussions_by_author_before_date(self,
                                               author: str,
@@ -764,146 +764,146 @@ class Steemd(HttpClient):
                                               before_date: PointInTime,
                                               limit: int):
         """ get_discussions_by_author_before_date """
-        return self.exec('get_discussions_by_author_before_date',
+        return self.call('get_discussions_by_author_before_date',
                          author, start_permlink, before_date, limit,
                          api='database_api')
 
     def get_replies_by_last_update(self, account: str, start_permlink: str, limit: int):
         """ get_replies_by_last_update """
-        return self.exec('get_replies_by_last_update', account, start_permlink, limit, api='database_api')
+        return self.call('get_replies_by_last_update', account, start_permlink, limit, api='database_api')
 
     def get_witnesses(self, witness_ids: list):
         """ get_witnesses """
-        return self.exec('get_witnesses', witness_ids, api='database_api')
+        return self.call('get_witnesses', witness_ids, api='database_api')
 
     def get_witness_by_account(self, account: str):
         """ get_witness_by_account """
-        return self.exec('get_witness_by_account', account, api='database_api')
+        return self.call('get_witness_by_account', account, api='database_api')
 
     def get_witnesses_by_vote(self, from_account: str, limit: int):
         """ get_witnesses_by_vote """
-        return self.exec('get_witnesses_by_vote', from_account, limit, api='database_api')
+        return self.call('get_witnesses_by_vote', from_account, limit, api='database_api')
 
     def lookup_witness_accounts(self, from_account: str, limit: int):
         """ lookup_witness_accounts """
-        return self.exec('lookup_witness_accounts', from_account, limit, api='database_api')
+        return self.call('lookup_witness_accounts', from_account, limit, api='database_api')
 
     def get_witness_count(self):
         """ get_witness_count """
-        return self.exec('get_witness_count', api='database_api')
+        return self.call('get_witness_count', api='database_api')
 
     def get_active_witnesses(self):
         """ Get a list of currently active witnesses. """
-        return self.exec('get_active_witnesses', api='database_api')
+        return self.call('get_active_witnesses', api='database_api')
 
     def get_vesting_delegations(self, account: str, from_account: str, limit: int):
         """ get_vesting_delegations """
-        return self.exec('get_vesting_delegations', account, from_account, limit, api='database_api')
+        return self.call('get_vesting_delegations', account, from_account, limit, api='database_api')
 
     def login(self, username: str, password: str):
         """ login """
-        return self.exec('login', username, password, api='login_api')
+        return self.call('login', username, password, api='login_api')
 
     def get_api_by_name(self, api_name: str):
         """ get_api_by_name """
-        return self.exec('get_api_by_name', api_name, api='login_api')
+        return self.call('get_api_by_name', api_name, api='login_api')
 
     def get_version(self):
         """ Get steemd version of the node currently connected to. """
-        return self.exec('get_version', api='login_api')
+        return self.call('get_version', api='login_api')
 
     def get_followers(self, account: str, start_follower: str, follow_type: str, limit: int):
         """ get_followers """
-        return self.exec('get_followers', account, start_follower, follow_type, limit, api='follow_api')
+        return self.call('get_followers', account, start_follower, follow_type, limit, api='follow_api')
 
     def get_following(self, account: str, start_follower: str, follow_type: str, limit: int):
         """ get_following """
-        return self.exec('get_following', account, start_follower, follow_type, limit, api='follow_api')
+        return self.call('get_following', account, start_follower, follow_type, limit, api='follow_api')
 
     def get_follow_count(self, account: str):
         """ get_follow_count """
-        return self.exec('get_follow_count', account, api='follow_api')
+        return self.call('get_follow_count', account, api='follow_api')
 
     def get_feed_entries(self, account: str, entry_id: int, limit: int):
         """ get_feed_entries """
-        return self.exec('get_feed_entries', account, entry_id, limit, api='follow_api')
+        return self.call('get_feed_entries', account, entry_id, limit, api='follow_api')
 
     def get_feed(self, account: str, entry_id: int, limit: int):
         """ get_feed """
-        return self.exec('get_feed', account, entry_id, limit, api='follow_api')
+        return self.call('get_feed', account, entry_id, limit, api='follow_api')
 
     def get_blog_entries(self, account: str, entry_id: int, limit: int):
         """ get_blog_entries """
-        return self.exec('get_blog_entries', account, entry_id, limit, api='follow_api')
+        return self.call('get_blog_entries', account, entry_id, limit, api='follow_api')
 
     def get_blog(self, account: str, entry_id: int, limit: int):
         """ get_blog """
-        return self.exec('get_blog', account, entry_id, limit, api='follow_api')
+        return self.call('get_blog', account, entry_id, limit, api='follow_api')
 
     def get_account_reputations(self, account: str, limit: int):
         """ get_account_reputations """
-        return self.exec('get_account_reputations', account, limit, api='follow_api')
+        return self.call('get_account_reputations', account, limit, api='follow_api')
 
     def get_reblogged_by(self, author: str, permlink: str):
         """ get_reblogged_by """
-        return self.exec('get_reblogged_by', author, permlink, api='follow_api')
+        return self.call('get_reblogged_by', author, permlink, api='follow_api')
 
     def get_blog_authors(self, blog_account: str):
         """ get_blog_authors """
-        return self.exec('get_blog_authors', blog_account, api='follow_api')
+        return self.call('get_blog_authors', blog_account, api='follow_api')
 
     def broadcast_transaction(self, signed_transaction: SignedTransaction):
         """ broadcast_transaction """
-        return self.exec('broadcast_transaction', signed_transaction, api='network_broadcast_api')
+        return self.call('broadcast_transaction', signed_transaction, api='network_broadcast_api')
 
     # def broadcast_transaction_with_callback(self, callback: object, signed_transaction: SignedTransaction):
-    #     return self.exec('broadcast_transaction_with_callback', callback, signed_transaction,
+    #     return self.call('broadcast_transaction_with_callback', callback, signed_transaction,
     #                      api='network_broadcast_api')
 
     def broadcast_transaction_synchronous(self, signed_transaction: SignedTransaction):
         """ broadcast_transaction_synchronous """
-        return self.exec('broadcast_transaction_synchronous', signed_transaction, api='network_broadcast_api')
+        return self.call('broadcast_transaction_synchronous', signed_transaction, api='network_broadcast_api')
 
     def broadcast_block(self, block: Block):
         """ broadcast_block """
-        return self.exec('broadcast_block', block, api='network_broadcast_api')
+        return self.call('broadcast_block', block, api='network_broadcast_api')
 
     def set_max_block_age(self, max_block_age: int):
         """ set_max_block_age """
-        return self.exec('set_max_block_age', max_block_age, api='network_broadcast_api')
+        return self.call('set_max_block_age', max_block_age, api='network_broadcast_api')
 
     def get_ticker(self):
         """ Returns the market ticker for the internal SBD:STEEM market. """
-        return self.exec('get_ticker', api='market_history_api')
+        return self.call('get_ticker', api='market_history_api')
 
     def get_volume(self):
         """ Returns the market volume for the past 24 hours. """
-        return self.exec('get_volume', api='market_history_api')
+        return self.call('get_volume', api='market_history_api')
 
     # def get_order_book(self, limit: int):
-    #     return self.exec('get_order_book', limit, api='market_history_api')
+    #     return self.call('get_order_book', limit, api='market_history_api')
 
     def get_trade_history(self, start: PointInTime, end: PointInTime, limit: int):
         """ Returns the trade history for the internal SBD:STEEM market. """
-        return self.exec('get_trade_history', start, end, limit, api='market_history_api')
+        return self.call('get_trade_history', start, end, limit, api='market_history_api')
 
     def get_recent_trades(self, limit: int) -> List[Any]:
         """ Returns the N most recent trades for the internal SBD:STEEM market. """
-        return self.exec('get_recent_trades', limit, api='market_history_api')
+        return self.call('get_recent_trades', limit, api='market_history_api')
 
     def get_market_history(self, bucket_seconds: int, start: PointInTime, end: PointInTime):
         """ Returns the market history for the internal SBD:STEEM market. """
-        return self.exec('get_market_history', bucket_seconds, start, end, api='market_history_api')
+        return self.call('get_market_history', bucket_seconds, start, end, api='market_history_api')
 
     def get_market_history_buckets(self):
         """ Returns the bucket seconds being tracked by the plugin. """
-        return self.exec('get_market_history_buckets', api='market_history_api')
+        return self.call('get_market_history_buckets', api='market_history_api')
 
     def get_key_references(self, public_keys: List[str]):
         """ get_key_references """
         if type(public_keys) == str:
             public_keys = [public_keys]
-        return self.exec('get_key_references', public_keys, api='account_by_key_api')
+        return self.call('get_key_references', public_keys, api='account_by_key_api')
 
 
 if __name__ == '__main__':

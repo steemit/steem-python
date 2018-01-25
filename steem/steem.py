@@ -58,7 +58,7 @@ class Steem:
         if hasattr(self.commit, item):
             return getattr(self.commit, item)
         if item.endswith("_api"):
-            return Steem.Api(api_name=item, exec_method=self.steemd.exec)
+            return Steem.Api(api_name=item, exec_method=self.steemd.call)
 
         raise AttributeError('Steem has no attribute "%s"' % item)
 

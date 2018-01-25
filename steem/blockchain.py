@@ -114,8 +114,8 @@ class Blockchain(object):
             # this will ALWAYS eventually return, at all costs
             retval = None
             while retval is None:
-               try:               
-                  retval = _client.exec(_method,*_args,api=_api)
+               try:
+                  retval = _client.call(_method,*_args,api=_api)
                except Exception as e:
                   logger.info('Failed to get response', extra=dict(exc=e,response=retval,api_name=_api,api_method=_method,api_args=_args))
                   retval = None
