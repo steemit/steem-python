@@ -268,18 +268,17 @@ class Account(dict):
 
                 # index can change during reindexing in
                 # future hard-forks. Thus we cannot take it for granted.
-                immutable = {
-                    **op,
-                    **block_props,
+                immutable = op.copy()
+                immutable.update(block_props)
+                immutable.update({
                     'account': account_name,
                     'type': op_type,
-                }
+                })
                 _id = Blockchain.hash_op(immutable)
-                return {
-                    **immutable,
+                return immutable.update({
                     '_id': _id,
                     'index': index,
-                }
+                })
 
             if filter_by is None:
                 yield construct_op(self.name)
@@ -302,7 +301,7 @@ class Account(dict):
         start_index = start + batch_size
         i = start_index
         while i < max_index + batch_size:
-            yield from self.get_account_history(
+            for account_history in self.get_account_history(
                 index=i,
                 limit=batch_size,
                 start=i - batch_size,
@@ -310,7 +309,8 @@ class Account(dict):
                 order=1,
                 filter_by=filter_by,
                 raw_output=raw_output,
-            )
+            ):
+                yield account_history
             i += (batch_size + 1)
 
     def history_reverse(self, filter_by=None, batch_size=1000, raw_output=False):
@@ -324,11 +324,12 @@ class Account(dict):
         while i > 0:
             if i - batch_size < 0:
                 batch_size = i
-            yield from self.get_account_history(
+            for account_history in self.get_account_history(
                 index=i,
                 limit=batch_size,
                 order=-1,
                 filter_by=filter_by,
                 raw_output=raw_output,
-            )
+            ):
+                yield account_history
             i -= (batch_size + 1)
