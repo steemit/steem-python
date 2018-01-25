@@ -82,7 +82,8 @@ class Blog:
         while True:
             chunk = self.take(10)
             if chunk:
-                yield from iter(chunk)
+                for little_chunk in iter(chunk):
+                    yield little_chunk
             else:
                 break
 

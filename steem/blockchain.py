@@ -82,7 +82,8 @@ class Blockchain(object):
                 elif batch_operations:
                     yield self.steem.get_ops_in_block(block_num, False)
                 else:
-                    yield from self.steem.get_ops_in_block(block_num, False)
+                    for ops in self.steem.get_ops_in_block(block_num, False):
+                        yield ops
 
             # next round
             start_block = head_block + 1
@@ -158,7 +159,8 @@ class Blockchain(object):
                elif batch_operations:
                   yield get_reliable_ops_in_block(_reliable_client,head_block)
                else:
-                  yield from get_reliable_ops_in_block(_reliable_client,head_block)
+                  for reliable_ops in get_reliable_ops_in_block(_reliable_client,head_block):
+                    yield reliable_ops
                sleep_interval = sleep_interval/2
 
            time.sleep(sleep_interval)
