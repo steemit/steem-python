@@ -1,7 +1,6 @@
 import datetime
 import math
 import time
-from contextlib import suppress
 
 from funcy.colls import walk_values, get_in
 from funcy.seqs import take
@@ -56,8 +55,11 @@ class Account(dict):
 
     @property
     def profile(self):
-        with suppress(TypeError):
+        try:
             return get_in(self, ['json_metadata', 'profile'], default={})
+        except TypeError:
+            pass
+
         return {}
 
     @property
