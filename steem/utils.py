@@ -26,7 +26,7 @@ DetectorFactory.seed = 0
 MIN_TEXT_LENGTH_FOR_DETECTION = 20
 
 
-def block_num_from_hash(block_hash: str) -> int:
+def block_num_from_hash(block_hash):
     """
     return the first 4 bytes (8 hex digits) of the block ID (the block_num)
     Args:
@@ -38,7 +38,7 @@ def block_num_from_hash(block_hash: str) -> int:
     return int(str(block_hash)[:8], base=16)
 
 
-def block_num_from_previous(previous_block_hash: str) -> int:
+def block_num_from_previous(previous_block_hash):
     """
 
     Args:

@@ -2,7 +2,6 @@ import hashlib
 import json
 import time
 import warnings
-from typing import Union
 
 from .instance import shared_steemd_instance,stm
 from .utils import parse_time
@@ -167,7 +166,7 @@ class Blockchain(object):
            start_block = head_block + 1
 
 
-    def stream(self, filter_by: Union[str, list] = list(), *args, **kwargs):
+    def stream(self, filter_by = list(), *args, **kwargs):
         """ Yield a stream of operations, starting with current head block.
 
             Args:
@@ -193,16 +192,15 @@ class Blockchain(object):
                     if kwargs.get('raw_output'):
                         yield event
                     else:
-                        yield {
-                            **op,
+                        yield op.update({
                             "_id": self.hash_op(event),
                             "type": op_type,
                             "timestamp": parse_time(event.get("timestamp")),
                             "block_num": event.get("block"),
                             "trx_id": event.get("trx_id"),
-                        }
+                        })
 
-    def history(self, filter_by: Union[str, list] = list(), start_block=1, end_block=None, raw_output=False, **kwargs):
+    def history(self, filter_by = list(), start_block=1, end_block=None, raw_output=False, **kwargs):
         """ Yield a stream of historic operations.
         
         Similar to ``Blockchain.stream()``, but starts at beginning of chain unless ``start_block`` is set.
@@ -229,7 +227,7 @@ class Blockchain(object):
         return self.history(**kwargs)
 
     @staticmethod
-    def hash_op(event: dict):
+    def hash_op(event):
         """ This method generates a hash of blockchain operation. """
         data = json.dumps(event, sort_keys=True)
         return hashlib.sha1(bytes(data, 'utf-8')).hexdigest()
