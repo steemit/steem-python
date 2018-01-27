@@ -7,15 +7,13 @@ Currently only python3 is supported.  Python2 support is planned.
 
 # Installation
 
-## Easy installation with pip3
+## Installation with pipenv (recommended)
 
-```
-pip3 install --user steem
-```
+Install pipenv first if you don't have it:
 
-You can also use pipenv:
+`pip3 install --upgrade --user pipenv`
 
-## Or you can use Pipenv, the new hotness
+Then, install steem-python using it:
 
 ```
 git clone https://github.com/steemit/steem-python.git
@@ -24,12 +22,20 @@ pipenv install --three --dev
 pipenv install .
 ```
 
-# CLI tools
+## Installation with pip3
+
+```
+git clone https://github.com/steemit/steem-python.git
+cd steem-python
+pip3 install --user .
+```
+
+# CLI tools bundled
 
 The library comes with a few console scripts.
 
 * `steempy`:
-    * rudimentary blockchain CLI (needs some TLC)
+    * rudimentary blockchain CLI (needs some TLC and more TLAs)
 * `steemtail`:
     * useful for e.g. `steemtail -f -j | jq --unbuffered --sort-keys .`
 
