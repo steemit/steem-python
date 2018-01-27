@@ -1,40 +1,32 @@
 import unittest
 import re
+from parameterized import parameterized
 from steembase.base58 import (Base58, base58decode, base58encode,
                               base58CheckEncode, base58CheckDecode,
                               gphBase58CheckEncode, gphBase58CheckDecode)
 
+b58_codec_vecs = [(
+    '5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ',
+    '800c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e19d72aa1d507a5b8d',
+), (
+    '5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ',
+    '800c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e19d72aa1d507a5b8d',
+), (
+    '5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss',
+    '80e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8555c5bbb26',
+), ('5KfazyjBBtR2YeHjNqX5D6MXvqTUd2iZmWusrdDSUqoykTyWQZB',
+    '80f3a375e00cc5147f30bee97bb5d54b31a12eee148a1ac31ac9edc4ecd13bc1f80cc8148e'
+    )]
+
 
 class Testcases(unittest.TestCase):
-    def test_base58decode(self):
-        self.assertEqual([
-            base58decode(
-                '5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ'),
-            base58decode(
-                '5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss'),
-            base58decode('5KfazyjBBtR2YeHjNqX5D6MXvqTUd2iZmWusrdDSUqoykTyWQZB')
-        ], [
-            '800c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e'
-            '19d72aa1d507a5b8d',
-            '80e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991'
-            'b7852b8555c5bbb26',
-            '80f3a375e00cc5147f30bee97bb5d54b31a12eee148a1ac31ac9edc4e'
-            'cd13bc1f80cc8148e'
-        ])
+    @parameterized.expand(b58_codec_vecs)
+    def test_base58decode(self, encoded, bytes):
+        self.assertEqual(base58decode(encoded), bytes)
 
-    def test_base58encode(self):
-        self.assertEqual([
-            '5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ',
-            '5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss',
-            '5KfazyjBBtR2YeHjNqX5D6MXvqTUd2iZmWusrdDSUqoykTyWQZB'
-        ], [
-            base58encode('800c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe47'
-                         '1be89827e19d72aa1d507a5b8d'),
-            base58encode('80e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b93'
-                         '4ca495991b7852b8555c5bbb26'),
-            base58encode('80f3a375e00cc5147f30bee97bb5d54b31a12eee148a1ac3'
-                         '1ac9edc4ecd13bc1f80cc8148e')
-        ])
+    @parameterized.expand(b58_codec_vecs)
+    def test_base58encode(self, encoded, bytes):
+        self.assertEqual(base58encode(bytes), encoded)
 
     def test_gphBase58CheckEncode(self):
         self.assertEqual([
