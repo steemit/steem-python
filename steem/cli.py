@@ -2,11 +2,12 @@ import argparse
 import json
 import logging
 import os
+import pkg_resources
+import pprint
 import re
+import steem as stm
 import sys
 
-import pkg_resources
-import steem as stm
 from prettytable import PrettyTable
 from steembase.storage import configStorage
 from steembase.account import PrivateKey
