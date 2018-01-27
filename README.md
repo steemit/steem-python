@@ -65,3 +65,16 @@ or
 # Notice
 
 This library is *under development*.  Beware.
+
+# Development Note
+
+During CLI development, if you run the following commands, you can
+immediately test the impact of changes to the module in your
+`console_scripts`:
+
+* `pipenv shell`, then, inside the pipenv:
+* `python setup.py develop`
+
+This updates the paths so that the module is being read live out of the
+directory.  You can make edits to the library and instantly re-execute the
+CLI app.
