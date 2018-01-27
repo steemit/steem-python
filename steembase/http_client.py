@@ -135,7 +135,7 @@ class HttpClient(object):
             return body_dict
 
     def call(self, name, *args, api=None, return_with_args=None, _ret_cnt=0, kwargs=None):
-        """ Execute a method against steemd RPC.
+        """ Call a remote procedure in steemd.
 
         Warnings:
             This command will auto-retry in case of node failure, as well as handle
@@ -164,7 +164,7 @@ class HttpClient(object):
             self.next_node()
             logging.debug('Switched node to %s due to exception: %s' %
                           (self.hostname, e.__class__.__name__))
-            return self.exec(name, *args,
+            return self.call(name, *args,
                              return_with_args=return_with_args,
                              _ret_cnt=_ret_cnt + 1)
         except Exception as e:
@@ -222,7 +222,7 @@ class HttpClient(object):
             def ensure_list(parameter):
                 return parameter if type(parameter) in (list, tuple, set) else [parameter]
 
-            futures = (executor.submit(self.exec, name, *ensure_list(param), api=api)
+            futures = (executor.submit(self.call, name, *ensure_list(param), api=api)
                        for param in params)
             for future in concurrent.futures.as_completed(futures):
                 yield future.result()
