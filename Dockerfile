@@ -15,9 +15,20 @@ RUN \
 # This updates the distro-provided pip
 RUN pip3 install --upgrade pip
 
-COPY . ${BUILD_ROOT}
+RUN mkdir ${BUILD_ROOT}
+
+COPY Makefile ${BUILD_ROOT}/
+COPY Pipfile ${BUILD_ROOT}/
+COPY Pipfile.lock ${BUILD_ROOT}/
 
 WORKDIR ${BUILD_ROOT}
 
+RUN pip3 install --upgrade pip && \
+	pip3 install --upgrade pipenv && \
+	pipenv install --three --dev && \
+	pipenv install .
+
+COPY . ${BUILD_ROOT}
+
 # run tests
-RUN make test
+RUN pipenv run py.test
