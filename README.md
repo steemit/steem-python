@@ -37,12 +37,23 @@ The library comes with a few console scripts.
 
 Documentation is available at **http://steem.readthedocs.io**
 
+# Tests
+
+Some tests are included.  They can be run via either docker or vagrant,
+for reproducibility, e.g.:
+
+* `docker build .`
+
+or
+
+* `vagrant up`
+
 # TODO
 
 * fix parts that were copied from python-graphenelib that only support
   python3 to support python2 as well
-* more unit-tests
-* 100% documentation coverage
+* more unit tests
+* 100% documentation coverage, consistent documentation
 * migrate to click CLI library
 
 # Notice
