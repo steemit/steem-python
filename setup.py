@@ -19,6 +19,12 @@ setup(
     maintainer='steemit_inc',
     maintainer_email='john@steemit.com',
     packages=find_packages(),
+    setup_requires=[
+        'pytest-runner',
+    ],
+    tests_require=[
+        'pytest',
+    ],
     install_requires = [
         'appdirs',
         'certifi',
