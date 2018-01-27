@@ -3,5 +3,5 @@
 import steem
 import steem.cli
 
-if __name__=='__main__':
-   steem.cli.legacy()
+if __name__ == '__main__':
+    steem.cli.legacy()

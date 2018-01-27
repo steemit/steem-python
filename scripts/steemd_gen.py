@@ -39,7 +39,8 @@ api_methods = [
     {
         'api': 'database_api',
         'method': 'get_expiring_vesting_delegations',
-        'params': [('account', 'str'), ('start', 'PointInTime'), ('limit', 'int')],
+        'params': [('account', 'str'), ('start', 'PointInTime'), ('limit',
+                                                                  'int')],
     },
     {
         'api': 'database_api',
@@ -214,7 +215,8 @@ api_methods = [
     {
         'api': 'database_api',
         'method': 'get_account_history',
-        'params': [('account', 'str'), ('index_from', 'int'), ('limit', 'int')],
+        'params': [('account', 'str'), ('index_from', 'int'), ('limit',
+                                                               'int')],
     },
     {
         'api': 'database_api',
@@ -279,7 +281,8 @@ api_methods = [
     {
         'api': 'database_api',
         'method': 'get_required_signatures',
-        'params': [('signed_transaction', 'object'), ('available_keys', 'list')],
+        'params': [('signed_transaction', 'object'), ('available_keys',
+                                                      'list')],
     },
     {
         'api': 'database_api',
@@ -317,15 +320,20 @@ api_methods = [
         'params': [('author', 'str'), ('permlink', 'str')],
     },
     {
-        'api': 'database_api',
-        'method': 'get_discussions_by_author_before_date',
-        'params': [('author', 'str'), ('start_permlink', 'str'), ('before_date', 'object'), ('limit', 'int')],
-
+        'api':
+        'database_api',
+        'method':
+        'get_discussions_by_author_before_date',
+        'params': [('author', 'str'), ('start_permlink', 'str'),
+                   ('before_date', 'object'), ('limit', 'int')],
     },
     {
-        'api': 'database_api',
-        'method': 'get_replies_by_last_update',
-        'params': [('account', 'str'), ('start_permlink', 'str'), ('limit', 'int')],
+        'api':
+        'database_api',
+        'method':
+        'get_replies_by_last_update',
+        'params': [('account', 'str'), ('start_permlink', 'str'), ('limit',
+                                                                   'int')],
     },
     {
         'api': 'database_api',
@@ -365,7 +373,8 @@ api_methods = [
     {
         'api': 'database_api',
         'method': 'get_vesting_delegations',
-        'params': [('account', 'str'), ('from_account', 'str'), ('limit', 'int')],
+        'params': [('account', 'str'), ('from_account', 'str'), ('limit',
+                                                                 'int')],
     },
     {
         'api': 'login_api',
@@ -383,14 +392,20 @@ api_methods = [
         'params': [],
     },
     {
-        'api': 'follow_api',
-        'method': 'get_followers',
-        'params': [('account', 'str'), ('start_follower', 'str'), ('follow_type', 'str'), ('limit', 'int')],
+        'api':
+        'follow_api',
+        'method':
+        'get_followers',
+        'params': [('account', 'str'), ('start_follower', 'str'),
+                   ('follow_type', 'str'), ('limit', 'int')],
     },
     {
-        'api': 'follow_api',
-        'method': 'get_following',
-        'params': [('account', 'str'), ('start_follower', 'str'), ('follow_type', 'str'), ('limit', 'int')],
+        'api':
+        'follow_api',
+        'method':
+        'get_following',
+        'params': [('account', 'str'), ('start_follower', 'str'),
+                   ('follow_type', 'str'), ('limit', 'int')],
     },
     {
         'api': 'follow_api',
@@ -473,9 +488,12 @@ api_methods = [
         'params': [('limit', 'int')],
     },
     {
-        'api': 'market_history_api',
-        'method': 'get_trade_history',
-        'params': [('start', 'PointInTime'), ('end', 'PointInTime'), ('limit', 'int')],
+        'api':
+        'market_history_api',
+        'method':
+        'get_trade_history',
+        'params': [('start', 'PointInTime'), ('end', 'PointInTime'), ('limit',
+                                                                      'int')],
     },
     {
         'api': 'market_history_api',
@@ -484,9 +502,12 @@ api_methods = [
         'returns': 'List[Any]',
     },
     {
-        'api': 'market_history_api',
-        'method': 'get_market_history',
-        'params': [('bucket_seconds', 'int'), ('start', 'PointInTime'), ('end', 'PointInTime')],
+        'api':
+        'market_history_api',
+        'method':
+        'get_market_history',
+        'params': [('bucket_seconds', 'int'), ('start', 'PointInTime'),
+                   ('end', 'PointInTime')],
     },
     {
         'api': 'market_history_api',
@@ -527,8 +548,7 @@ def steemd_codegen():
             method_arguments=''.join(method_arg_mapper(endpoint['params'])),
             call_arguments=''.join(call_arg_mapper(endpoint['params'])),
             return_hints=return_hints,
-            api=endpoint['api']
-        )
+            api=endpoint['api'])
         sys.stdout.write(fn)
 
 
@@ -548,7 +568,10 @@ def inspect_steemd_implementation():
     s = Steem(re_raise=False)
     for api in _apis:
         err = s.exec('nonexistentmethodcall', api=api)
-        [avail_methods.append(x) for x in err['data']['stack'][0]['data']['api'].keys()]
+        [
+            avail_methods.append(x)
+            for x in err['data']['stack'][0]['data']['api'].keys()
+        ]
 
     avail_methods = set(avail_methods)
 

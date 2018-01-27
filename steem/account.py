@@ -20,7 +20,8 @@ class Account(dict):
     """ This class allows to easily access Account data
 
         :param str account_name: Name of the account
-        :param Steemd steemd_instance: Steemd() instance to use when accessing a RPC
+        :param Steemd steemd_instance: Steemd() instance to use when
+            accessing a RPC
 
     """
 
@@ -92,9 +93,12 @@ class Account(dict):
         }
 
         totals = {
-            'STEEM': sum([available['STEEM'], savings['STEEM'], rewards['STEEM']]),
-            'SBD': sum([available['SBD'], savings['SBD'], rewards['SBD']]),
-            'VESTS': sum([available['VESTS'], rewards['VESTS']]),
+            'STEEM':
+            sum([available['STEEM'], savings['STEEM'], rewards['STEEM']]),
+            'SBD':
+            sum([available['SBD'], savings['SBD'], rewards['SBD']]),
+            'VESTS':
+            sum([available['VESTS'], rewards['VESTS']]),
         }
 
         total = walk_values(rpartial(round, 3), totals)
@@ -119,18 +123,25 @@ class Account(dict):
         return self['voting_power'] / 100
 
     def get_followers(self):
-        return [x['follower'] for x in self._get_followers(direction="follower")]
+        return [
+            x['follower'] for x in self._get_followers(direction="follower")
+        ]
 
     def get_following(self):
-        return [x['following'] for x in self._get_followers(direction="following")]
+        return [
+            x['following'] for x in self._get_followers(direction="following")
+        ]
 
     def _get_followers(self, direction="follower", last_user=""):
         if direction == "follower":
-            followers = self.steemd.get_followers(self.name, last_user, "blog", 100)
+            followers = self.steemd.get_followers(self.name, last_user, "blog",
+                                                  100)
         elif direction == "following":
-            followers = self.steemd.get_following(self.name, last_user, "blog", 100)
+            followers = self.steemd.get_following(self.name, last_user, "blog",
+                                                  100)
         if len(followers) >= 100:
-            followers += self._get_followers(direction=direction, last_user=followers[-1][direction])[1:]
+            followers += self._get_followers(
+                direction=direction, last_user=followers[-1][direction])[1:]
         return followers
 
     def has_voted(self, post):
@@ -138,13 +149,16 @@ class Account(dict):
         return self.name in active_votes
 
     def curation_stats(self):
-        trailing_24hr_t = time.time() - datetime.timedelta(hours=24).total_seconds()
-        trailing_7d_t = time.time() - datetime.timedelta(days=7).total_seconds()
+        trailing_24hr_t = time.time() - datetime.timedelta(
+            hours=24).total_seconds()
+        trailing_7d_t = time.time() - datetime.timedelta(
+            days=7).total_seconds()
 
         reward_24h = 0.0
         reward_7d = 0.0
 
-        for reward in take(5000, self.history_reverse(filter_by="curation_reward")):
+        for reward in take(
+                5000, self.history_reverse(filter_by="curation_reward")):
 
             timestamp = parse_time(reward['timestamp']).timestamp()
             if timestamp > trailing_7d_t:
@@ -199,9 +213,11 @@ class Account(dict):
         return filtered_items
 
     def export(self, load_extras=True):
-        """ This method returns a dictionary that is type-safe to store as JSON or in a database.
+        """ This method returns a dictionary that is type-safe to store as
+                JSON or in a database.
 
-            :param bool load_extras: Fetch extra information related to the account (this might take a while).
+            :param bool load_extras: Fetch extra information related to the
+                account (this might take a while).
         """
         extras = dict()
         if load_extras:
@@ -226,7 +242,14 @@ class Account(dict):
             "balances": self.get_balances(),
         }
 
-    def get_account_history(self, index, limit, start=None, stop=None, order=-1, filter_by=None, raw_output=False):
+    def get_account_history(self,
+                            index,
+                            limit,
+                            start=None,
+                            stop=None,
+                            order=-1,
+                            filter_by=None,
+                            raw_output=False):
         """ A generator over steemd.get_account_history.
 
         It offers serialization, filtering and fine grained iteration control.
@@ -238,7 +261,8 @@ class Account(dict):
             stop (int): (Optional) stop iteration early at this index
             order: (1, -1): 1 for chronological, -1 for reverse order
             filter_by (str, list): filter out all but these operations
-            raw_output (bool): (Defaults to False). If True, return history in steemd format (unchanged).
+            raw_output (bool): (Defaults to False). If True, return history in
+                steemd format (unchanged).
         """
         history = self.steemd.get_account_history(self.name, index, limit)
         for item in history[::order]:
@@ -285,7 +309,11 @@ class Account(dict):
                     if op_type == filter_by:
                         yield construct_op(self.name)
 
-    def history(self, filter_by=None, start=0, batch_size=1000, raw_output=False):
+    def history(self,
+                filter_by=None,
+                start=0,
+                batch_size=1000,
+                raw_output=False):
         """ Stream account history in chronological order.
         """
         max_index = self.virtual_op_count()
@@ -306,7 +334,10 @@ class Account(dict):
             )
             i += (batch_size + 1)
 
-    def history_reverse(self, filter_by=None, batch_size=1000, raw_output=False):
+    def history_reverse(self,
+                        filter_by=None,
+                        batch_size=1000,
+                        raw_output=False):
         """ Stream account history in reverse chronological order.
         """
         start_index = self.virtual_op_count()

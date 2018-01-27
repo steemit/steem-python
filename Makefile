@@ -1,4 +1,5 @@
 PROJECT := $(shell basename $(shell pwd))
+MODULES := steem steembase tests
 
 default: docker_test
 
@@ -19,8 +20,9 @@ test: clean
 	pipenv run py.test
 
 fmt:
-	pipenv run yapf --recursive --in-place --style pep8 $(PROJECT)
-	pipenv run autopep8 --recursive --in-place $(PROJECT)
+	pipenv run yapf --recursive --in-place --style pep8 $(MODULES)
+	#pipenv run autopep8 --recursive --in-place $(MODULES)
+	pipenv run pycodestyle $(MODULES)
 
 init:
 	pip3 install --upgrade pip

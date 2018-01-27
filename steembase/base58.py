@@ -4,11 +4,9 @@ import sys
 import string
 import logging
 log = logging.getLogger(__name__)
-
 """ This class and the methods require python3 """
 # FIXME this library needs to support both 2 and 3
 assert sys.version_info[0] == 3, "graphenelib requires python3"
-
 """ Default Prefix """
 PREFIX = "STM"
 
@@ -22,26 +20,37 @@ class Base58(object):
     """Base58 base class
 
     This class serves as an abstraction layer to deal with base58 encoded
-    strings and their corresponding hex and binary representation throughout the
-    library.
+    strings and their corresponding hex and binary representation
+    throughout the library.
 
-    :param data: Data to initialize object, e.g. pubkey data, address data, ...
+    :param data: Data to initialize object, e.g. pubkey data, address data,
+    ...
+
     :type data: hex, wif, bip38 encrypted wif, base58 string
-    :param str prefix: Prefix to use for Address/PubKey strings (defaults to ``GPH``)
+
+    :param str prefix: Prefix to use for Address/PubKey strings (defaults
+    to ``GPH``)
+
     :return: Base58 object initialized with ``data``
+
     :rtype: Base58
+
     :raises ValueError: if data cannot be decoded
 
     * ``bytes(Base58)``: Returns the raw data
     * ``str(Base58)``:   Returns the readable ``Base58CheckEncoded`` data.
     * ``repr(Base58)``:  Gives the hex representation of the data.
-    *  ``format(Base58,_format)`` Formats the instance according to ``_format``:
+
+    *  ``format(Base58,_format)`` Formats the instance according to
+    ``_format``:
+
         * ``"btc"``: prefixed with ``0x80``. Yields a valid btc address
         * ``"wif"``: prefixed with ``0x00``. Yields a valid wif key
         * ``"bts"``: prefixed with ``BTS``
         * etc.
 
     """
+
     def __init__(self, data, prefix=PREFIX):
         self._prefix = prefix
         if all(c in string.hexdigits for c in data):
@@ -170,7 +179,7 @@ def base58CheckDecode(s):
     s = unhexlify(base58decode(s))
     dec = hexlify(s[:-4]).decode('ascii')
     checksum = doublesha256(dec)[:4]
-    assert(s[-4:] == checksum)
+    assert (s[-4:] == checksum)
     return dec[2:]
 
 
@@ -184,5 +193,5 @@ def gphBase58CheckDecode(s):
     s = unhexlify(base58decode(s))
     dec = hexlify(s[:-4]).decode('ascii')
     checksum = ripemd160(dec)[:4]
-    assert(s[-4:] == checksum)
+    assert (s[-4:] == checksum)
     return dec
