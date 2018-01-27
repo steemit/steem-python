@@ -21,7 +21,7 @@ test: clean
 
 fmt:
 	pipenv run yapf --recursive --in-place --style pep8 $(PYTHON_FILES)
-	pipenv run pycodestyle $(PYTHON_FILES)
+	#pipenv run flake8 $(PYTHON_FILES)
 
 init:
 	pip3 install --upgrade pip

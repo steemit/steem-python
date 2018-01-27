@@ -1,16 +1,19 @@
 import unittest
 from binascii import hexlify
 from pprint import pprint
+from collections import OrderedDict
+
 from steembase.account import PrivateKey
 from steembase.transactions import SignedTransaction
 from steembase import operations
-from collections import OrderedDict
 import steem as stm
 
 wif = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
 ref_block_num = 34294
 ref_block_prefix = 3707022213
 expiration = "2016-04-06T08:29:27"
+
+# pylint: disable=no-member
 
 
 class Testcases(unittest.TestCase):

@@ -2,13 +2,13 @@ from steem.account import Account
 
 
 def test_history():
-    a = Account('barbara2')
-    h1 = [x['index'] for x in list(a.history())]
-    h2 = [x['index'] for x in list(a.history_reverse())]
+    ah = Account('barbara2')
+    hist1 = [x['index'] for x in list(ah.history())]
+    hist2 = [x['index'] for x in list(ah.history_reverse())]
 
     # pprint(list(zip(h1, h2[::-1])))
 
     # various tests of equality should pass
-    assert len(h1) == len(h2)
-    assert set(h1) == set(h2) == set(range(a.virtual_op_count() + 1))
-    assert h1 == h2[::-1] == list(range(a.virtual_op_count() + 1))
+    assert len(hist1) == len(hist2)
+    assert set(hist1) == set(hist2) == set(range(ah.virtual_op_count() + 1))
+    assert hist1 == hist2[::-1] == list(range(ah.virtual_op_count() + 1))
