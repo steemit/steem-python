@@ -21,7 +21,6 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -145,10 +144,8 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'steem-python', 'steem-python Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, 'steem-python', 'steem-python Documentation',
+              [author], 1)]
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -156,7 +153,6 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'steem-python', 'steem-python Documentation',
-     author, 'steem-python', 'One line description of project.',
-     'Miscellaneous'),
+    (master_doc, 'steem-python', 'steem-python Documentation', author,
+     'steem-python', 'One line description of project.', 'Miscellaneous'),
 ]

@@ -2,4 +2,3 @@
 from .steem import Steem
 
 __version__ = '0.18.103'
-

@@ -13,7 +13,8 @@ class Blog:
 
         Args:
             account_name (str): Name of the account
-            comments_only (bool): (Default False). Toggle between posts and comments.
+            comments_only (bool): (Default False). Toggle between posts
+                and comments.
             steemd_instance (Steemd): Steemd instance overload
 
         Returns:
@@ -39,7 +40,10 @@ class Blog:
 
     """
 
-    def __init__(self, account_name: str, comments_only=False, steemd_instance=None):
+    def __init__(self,
+                 account_name: str,
+                 comments_only=False,
+                 steemd_instance=None):
         self.steem = steemd_instance or shared_steemd_instance()
         self.comments_only = comments_only
         self.account = Account(account_name)
@@ -56,11 +60,14 @@ class Blog:
             List of posts/comments in a batch of size up to `limit`.
         """
         # get main posts only
-        comment_filter = is_comment if self.comments_only else complement(is_comment)
+        comment_filter = is_comment if self.comments_only else complement(
+            is_comment)
         hist = filter(comment_filter, self.history)
 
         # filter out reblogs
-        match_author = lambda x: x['author'] == self.account.name
+        def match_author(x):
+            return x['author'] == self.account.name
+
         hist2 = filter(match_author, hist)
 
         # post edits will re-appear in history

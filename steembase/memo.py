@@ -144,7 +144,7 @@ def decode_memo(priv, message):
     message = aes.decrypt(unhexlify(bytes(message, 'ascii')))
     try:
         return _unpad(message.decode('utf8'), 16)
-    except:
+    except:  # noqa FIXME(sneak)
         raise ValueError(message)
 
 

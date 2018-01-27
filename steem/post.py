@@ -26,8 +26,12 @@ class Post(dict):
         abstraction layer for Comments in Steem
 
         Args:
-            post (str or dict): ``@author/permlink`` or raw ``comment`` as dictionary.
+
+            post (str or dict): ``@author/permlink`` or raw ``comment`` as
+            dictionary.
+
             steemd_instance (Steemd): Steemd node to connect to
+
     """
 
     def __init__(self, post, steemd_instance=None):
@@ -41,9 +45,11 @@ class Post(dict):
 
         if isinstance(post, str):  # From identifier
             self.identifier = self.parse_identifier(post)
-        elif isinstance(post, dict) and "author" in post and "permlink" in post:
+        elif isinstance(post,
+                        dict) and "author" in post and "permlink" in post:
             post["author"] = post["author"].replace('@', '')
-            self.identifier = construct_identifier(post["author"], post["permlink"])
+            self.identifier = construct_identifier(post["author"],
+                                                   post["permlink"])
         else:
             raise ValueError("Post expects an identifier or a dict "
                              "with author and permlink!")
@@ -66,12 +72,10 @@ class Post(dict):
             self.patched = True
 
         # Parse Times
-        parse_times = ["active",
-                       "cashout_time",
-                       "created",
-                       "last_payout",
-                       "last_update",
-                       "max_cashout_time"]
+        parse_times = [
+            "active", "cashout_time", "created", "last_payout", "last_update",
+            "max_cashout_time"
+        ]
         for p in parse_times:
             post[p] = parse_time(post.get(p, "1970-01-01T00:00:00"))
 
@@ -95,12 +99,11 @@ class Post(dict):
         post['community'] = ''
         if isinstance(post['json_metadata'], dict):
             if post["depth"] == 0:
-                post["tags"] = (
-                    post["parent_permlink"],
-                    *get_in(post, ['json_metadata', 'tags'], default=[])
-                )
+                post["tags"] = (post["parent_permlink"], *get_in(
+                    post, ['json_metadata', 'tags'], default=[]))
 
-            post['community'] = get_in(post, ['json_metadata', 'community'], default='')
+            post['community'] = get_in(
+                post, ['json_metadata', 'community'], default='')
 
         # If this post is a comment, retrieve the root comment
         self.root_identifier, self.category = self._get_root_identifier(post)
@@ -133,17 +136,14 @@ class Post(dict):
     def _get_root_identifier(self, post=None):
         if not post:
             post = self
-        m = re.match("/([^/]*)/@([^/]*)/([^#]*).*",
-                     post.get("url", ""))
+        m = re.match("/([^/]*)/@([^/]*)/([^#]*).*", post.get("url", ""))
         if not m:
             return "", ""
         else:
             category = m.group(1)
             author = m.group(2)
             permlink = m.group(3)
-            return construct_identifier(
-                author, permlink
-            ), category
+            return construct_identifier(author, permlink), category
 
     def get_replies(self):
         """ Return **first-level** comments of the post.
@@ -168,14 +168,15 @@ class Post(dict):
         children = list(flatten([list(x.get_replies()) for x in comments]))
         if not children:
             return all_comments or comments
-        return Post.get_all_replies(comments=children, all_comments=comments + children)
+        return Post.get_all_replies(
+            comments=children, all_comments=comments + children)
 
     @property
     def reward(self):
         """Return a float value of estimated total SBD reward.
         """
         return Amount(self.get("total_payout_value", "0 SBD")) + \
-               Amount(self.get("pending_payout_value", "0 SBD"))
+            Amount(self.get("pending_payout_value", "0 SBD"))
 
     def time_elapsed(self):
         """Return a timedelta on how old the post is.
@@ -193,16 +194,16 @@ class Post(dict):
         return self['depth'] > 0
 
     def curation_reward_pct(self):
-        """ If post is less than 30 minutes old, it will incur a curation reward penalty.
-        """
+        """ If post is less than 30 minutes old, it will incur a curation
+        reward penalty.  """
         reward = (self.time_elapsed().seconds / 1800) * 100
         if reward > 100:
             reward = 100
         return reward
 
     def export(self):
-        """ This method returns a dictionary that is type-safe to store as JSON or in a database.
-        """
+        """ This method returns a dictionary that is type-safe to store as
+        JSON or in a database.  """
         self.refresh()
 
         # Remove Steem instance object
@@ -222,7 +223,8 @@ class Post(dict):
     def upvote(self, weight=+100, voter=None):
         """ Upvote the post
 
-            :param float weight: (optional) Weight for posting (-100.0 - +100.0) defaults to +100.0
+            :param float weight: (optional) Weight for posting (-100.0 -
+            +100.0) defaults to +100.0
             :param str voter: (optional) Voting account
         """
         return self.vote(weight, voter=voter)
@@ -230,7 +232,8 @@ class Post(dict):
     def downvote(self, weight=-100, voter=None):
         """ Downvote the post
 
-            :param float weight: (optional) Weight for posting (-100.0 - +100.0) defaults to -100.0
+            :param float weight: (optional) Weight for posting (-100.0 -
+            +100.0) defaults to -100.0
             :param str voter: (optional) Voting account
         """
         return self.vote(weight, voter=voter)
@@ -273,9 +276,7 @@ class Post(dict):
                 return
 
         reply_identifier = construct_identifier(
-            original_post["parent_author"],
-            original_post["parent_permlink"]
-        )
+            original_post["parent_author"], original_post["parent_permlink"])
 
         new_meta = {}
         if meta:
@@ -305,27 +306,31 @@ class Post(dict):
             :param json meta: JSON meta object that can be attached to the
                               post. (optional)
         """
-        return self.commit.post(title,
-                                body,
-                                json_metadata=meta,
-                                author=author,
-                                reply_identifier=self.identifier)
+        return self.commit.post(
+            title,
+            body,
+            json_metadata=meta,
+            author=author,
+            reply_identifier=self.identifier)
 
     def set_comment_options(self, options):
         op = CommentOptions(
             **{
-                "author": self["author"],
-                "permlink": self["permlink"],
+                "author":
+                self["author"],
+                "permlink":
+                self["permlink"],
                 "max_accepted_payout":
-                    options.get("max_accepted_payout", str(self["max_accepted_payout"])),
-                "percent_steem_dollars": int(
+                options.get("max_accepted_payout",
+                            str(self["max_accepted_payout"])),
+                "percent_steem_dollars":
+                int(
                     options.get("percent_steem_dollars",
-                                self["percent_steem_dollars"] / 100
-                                ) * 100),
+                                self["percent_steem_dollars"] / 100) * 100),
                 "allow_votes":
-                    options.get("allow_votes", self["allow_votes"]),
+                options.get("allow_votes", self["allow_votes"]),
                 "allow_curation_rewards":
-                    options.get("allow_curation_rewards", self["allow_curation_rewards"]),
-            }
-        )
+                options.get("allow_curation_rewards", self[
+                    "allow_curation_rewards"]),
+            })
         return self.commit.finalizeOp(op, self["author"], "posting")

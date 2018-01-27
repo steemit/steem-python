@@ -176,13 +176,15 @@ def detect_language(text):
 
 def is_comment(item):
     """Quick check whether an item is a comment (reply) to another post.
-    The item can be a Post object or just a raw comment object from the blockchain.
+    The item can be a Post object or just a raw comment object from the
+    blockchain.
     """
     return item['permlink'][:3] == "re-" and item['parent_author']
 
 
 def time_elapsed(posting_time):
-    """Takes a string time from a post or blockchain event, and returns a time delta from now.
+    """Takes a string time from a post or blockchain event, and returns a
+    time delta from now.
     """
     if type(posting_time) == str:
         posting_time = parse_time(posting_time)
@@ -190,7 +192,8 @@ def time_elapsed(posting_time):
 
 
 def parse_time(block_time):
-    """Take a string representation of time from the blockchain, and parse it into datetime object.
+    """Take a string representation of time from the blockchain, and parse
+    it into datetime object.
     """
     return datetime.strptime(block_time, '%Y-%m-%dT%H:%M:%S')
 
@@ -222,14 +225,14 @@ def remove_from_dict(obj, remove_keys=list()):
 
 
 def construct_identifier(*args, username_prefix='@'):
-    """ Create a post identifier from comment/post object or arguments. 
-    
+    """ Create a post identifier from comment/post object or arguments.
+
     Examples:
-        
-        :: 
-        
+
+        ::
             construct_identifier('username', 'permlink')
-            construct_identifier({'author': 'username', 'permlink': 'permlink'})
+            construct_identifier({'author': 'username',
+                'permlink': 'permlink'})
     """
     if len(args) == 1:
         op = args[0]
@@ -237,7 +240,8 @@ def construct_identifier(*args, username_prefix='@'):
     elif len(args) == 2:
         author, permlink = args
     else:
-        raise ValueError('construct_identifier() received unparsable arguments')
+        raise ValueError(
+            'construct_identifier() received unparsable arguments')
 
     fields = dict(prefix=username_prefix, author=author, permlink=permlink)
     return "{prefix}{author}/{permlink}".format(**fields)
@@ -303,7 +307,8 @@ def fmt_time_from_now(secs=0):
         :rtype: str
 
     """
-    return datetime.utcfromtimestamp(time.time() + int(secs)).strftime('%Y-%m-%dT%H:%M:%S')
+    return datetime.utcfromtimestamp(time.time() + int(secs)).strftime(
+        '%Y-%m-%dT%H:%M:%S')
 
 
 def env_unlocked():

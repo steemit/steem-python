@@ -6,9 +6,13 @@ import base64
 
 class AESCipher(object):
     """
-    A classical AES Cipher. Can use any size of data and any size of password thanks to padding.
-    Also ensure the coherence and the type of the data with a unicode to byte converter.
+
+    A classical AES Cipher. Can use any size of data and any size of
+    password thanks to padding.  Also ensure the coherence and the type of
+    the data with a unicode to byte converter.
+
     """
+
     def __init__(self, key):
         self.bs = 32
         self.key = hashlib.sha256(AESCipher.str_to_bytes(key)).digest()
@@ -21,7 +25,8 @@ class AESCipher(object):
         return data
 
     def _pad(self, s):
-        return s + (self.bs - len(s) % self.bs) * AESCipher.str_to_bytes(chr(self.bs - len(s) % self.bs))
+        return s + (self.bs - len(s) % self.bs) * AESCipher.str_to_bytes(
+            chr(self.bs - len(s) % self.bs))
 
     @staticmethod
     def _unpad(s):
@@ -37,4 +42,5 @@ class AESCipher(object):
         enc = base64.b64decode(enc)
         iv = enc[:AES.block_size]
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return self._unpad(cipher.decrypt(enc[AES.block_size:])).decode('utf-8')
+        return self._unpad(cipher.decrypt(
+            enc[AES.block_size:])).decode('utf-8')

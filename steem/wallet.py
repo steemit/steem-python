@@ -4,10 +4,7 @@ import os
 from steem.instance import shared_steemd_instance
 from steembase import bip38
 from steembase.account import PrivateKey
-from steembase.exceptions import (
-    InvalidWifError,
-    WalletExists
-)
+from steembase.exceptions import (InvalidWifError, WalletExists)
 
 from .account import Account
 
@@ -20,7 +17,9 @@ class Wallet:
         or uses a SQLite database managed by storage.py.
 
         :param Steem rpc: RPC connection to a Steem node
-        :param array,dict,string keys: Predefine the wif keys to shortcut the wallet database
+
+        :param array,dict,string keys: Predefine the wif keys to shortcut
+        the wallet database
 
         Three wallet operation modes are possible:
 
@@ -64,8 +63,7 @@ class Wallet:
             """ If no keys are provided manually we load the SQLite
                 keyStorage
             """
-            from steembase.storage import (keyStorage,
-                                           MasterPassword)
+            from steembase.storage import (keyStorage, MasterPassword)
             self.MasterPassword = MasterPassword
             self.keyStorage = keyStorage
 
@@ -73,7 +71,8 @@ class Wallet:
         """ This method is strictly only for in memory keys that are
             passed to Wallet/Steem with the ``keys`` argument
         """
-        log.debug("Force setting of private keys. Not using the wallet database!")
+        log.debug(
+            "Force setting of private keys. Not using the wallet database!")
         if isinstance(loadkeys, dict):
             Wallet.keyMap = loadkeys
             loadkeys = list(loadkeys.values())
@@ -83,7 +82,7 @@ class Wallet:
         for wif in loadkeys:
             try:
                 key = PrivateKey(wif)
-            except:
+            except:  # noqa FIXME(sneak)
                 raise InvalidWifError
             Wallet.keys[format(key.pubkey, self.prefix)] = str(key)
 
@@ -93,8 +92,8 @@ class Wallet:
         if not self.created():
             self.newWallet()
 
-        if (self.masterpassword is None and
-                self.configStorage[self.MasterPassword.config_key]):
+        if (self.masterpassword is None
+                and self.configStorage[self.MasterPassword.config_key]):
             if pwd is None:
                 pwd = self.getPassword()
             masterpwd = self.MasterPassword(pwd)
@@ -149,7 +148,8 @@ class Wallet:
         """ Encrypt a wif key
         """
         self.unlock()
-        return format(bip38.encrypt(PrivateKey(wif), self.masterpassword), "encwif")
+        return format(
+            bip38.encrypt(PrivateKey(wif), self.masterpassword), "encwif")
 
     def decrypt_wif(self, encwif):
         """ decrypt a wif key
@@ -158,7 +158,7 @@ class Wallet:
             # Try to decode as wif
             PrivateKey(encwif)
             return encwif
-        except:
+        except:  # noqa FIXME(sneak)
             pass
         self.unlock()
         return format(bip38.decrypt(encwif, self.masterpassword), "wif")
@@ -175,17 +175,13 @@ class Wallet:
             while True:
                 pw = self.getPassword(confirm=False)
                 if not pw:
-                    print(
-                        "You cannot chosen an empty password! " +
-                        "If you want to automate the use of the libs, " +
-                        "please use the `UNLOCK` environmental variable!"
-                    )
+                    print("You cannot chosen an empty password! " +
+                          "If you want to automate the use of the libs, " +
+                          "please use the `UNLOCK` environmental variable!")
                     continue
                 else:
                     pwck = self.getPassword(
-                        confirm=False,
-                        text="Confirm Passphrase: "
-                    )
+                        confirm=False, text="Confirm Passphrase: ")
                     if pw == pwck:
                         return pw
                     else:
@@ -197,13 +193,17 @@ class Wallet:
     def addPrivateKey(self, wif):
         """ Add a private key to the wallet database
         """
-        # it could be either graphenebase or pistonbase so we can't check the type directly
+
+        # it could be either graphenebase or pistonbase so we can't check
+        # the type directly
+
         if isinstance(wif, PrivateKey) or isinstance(wif, PrivateKey):
             wif = str(wif)
         try:
             pub = format(PrivateKey(wif).pubkey, self.prefix)
-        except:
-            raise InvalidWifError("Invalid Private Key Format. Please use WIF!")
+        except:  # noqa FIXME(sneak)
+            raise InvalidWifError(
+                "Invalid Private Key Format. Please use WIF!")
 
         if self.keyStorage:
             # Test if wallet exists
@@ -229,7 +229,8 @@ class Wallet:
             if not self.created():
                 self.newWallet()
 
-            return self.decrypt_wif(self.keyStorage.getPrivateKeyForPublicKey(pub))
+            return self.decrypt_wif(
+                self.keyStorage.getPrivateKeyForPublicKey(pub))
 
     def removePrivateKeyFromPublicKey(self, pub):
         """ Remove a key from the wallet database
@@ -319,7 +320,8 @@ class Wallet:
         # FIXME, this only returns the first associated key.
         # If the key is used by multiple accounts, this
         # will surely lead to undesired behavior
-        names = self.steemd.call('get_key_references', [pub], api="account_by_key_api")[0]
+        names = self.steemd.call(
+            'get_key_references', [pub], api="account_by_key_api")[0]
         if not names:
             return None
         else:
@@ -330,21 +332,19 @@ class Wallet:
         """
         name = self.getAccountFromPublicKey(pub)
         if not name:
-            return {"name": None,
-                    "type": None,
-                    "pubkey": pub
-                    }
+            return {"name": None, "type": None, "pubkey": pub}
         else:
             try:
                 account = Account(name)
-            except:
+            except:  # noqa FIXME(sneak)
                 return
             keyType = self.getKeyType(account, pub)
-            return {"name": name,
-                    "account": account,
-                    "type": keyType,
-                    "pubkey": pub
-                    }
+            return {
+                "name": name,
+                "account": account,
+                "type": keyType,
+                "pubkey": pub
+            }
 
     def getKeyType(self, account, pub):
         """ Get key type
@@ -380,10 +380,12 @@ class Wallet:
                 continue
             type = account["type"]
             if name not in r:
-                r[name] = {"posting": False,
-                           "owner": False,
-                           "active": False,
-                           "memo": False}
+                r[name] = {
+                    "posting": False,
+                    "owner": False,
+                    "active": False,
+                    "memo": False
+                }
             r[name][type] = True
         return r
 
