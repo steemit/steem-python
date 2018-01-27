@@ -28,7 +28,7 @@ availableConfigurationKeys = [
 ]
 
 
-def legacy():
+def legacyentry():
     """
     Piston like cli application.
     This will be re-written as a @click app in the future.
@@ -1415,5 +1415,43 @@ def print_json(tx):
         print(tx)
 
 
-if __name__ == '__main__':
-    pass
+# this is another console script entrypoint
+# also this function sucks and should be taken out back and shot
+def steemtailentry():
+    parser = argparse.ArgumentParser(
+        description="UNIX tail(1)-like tool for the steem blockchain")
+    parser.add_argument(
+        '-f',
+        '--follow',
+        help='Constantly stream output to stdout',
+        action='store_true')
+    parser.add_argument(
+        '-n', '--lines', type=int, default=10, help='How many ops to show')
+    parser.add_argument(
+        '-j',
+        '--json',
+        help='Output as JSON instead of human-readable pretty-printed format',
+        action='store_true')
+    args = parser.parse_args(sys.argv[1:])
+
+    b = Blockchain()
+    stream = b.reliable_stream()
+
+    op_count = 0
+    if args.json:
+        if not args.follow:
+            sys.stdout.write('[')
+    for op in stream:
+        if args.json:
+            sys.stdout.write('%s' % json.dumps(op))
+        else:
+            pprint.pprint(op)
+        op_count += 1
+        if not args.follow:
+            if op_count > args.lines:
+                if args.json:
+                    sys.stdout.write(']')
+                return
+            else:
+                if args.json:
+                    sys.stdout.write(',')

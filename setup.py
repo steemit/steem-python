@@ -29,7 +29,11 @@ setup(
     tests_require=test_requirements,
     install_requires=requirements,
     entry_points={
-        'console_scripts': ['steempy=steem.cli:legacy'],
+        'console_scripts': [
+            'piston=steem.cli:legacyentry',
+            'steempy=steem.cli:legacyentry',
+            'steemtail=steem.cli:steemtailentry',
+        ],
     },
     classifiers=[
         'Intended Audience :: Developers',
