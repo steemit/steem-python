@@ -74,6 +74,7 @@ disable=
     fixme,
     invalid-name,
     too-many-public-methods,
+    too-few-public-methods,
     # disabled by default,
     import-star-module-level,
     old-octal-literal,
