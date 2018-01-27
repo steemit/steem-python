@@ -1435,16 +1435,19 @@ def steemtailentry():
         action='store_true')
     args = parser.parse_args(sys.argv[1:])
 
-    b = Blockchain()
-    stream = b.reliable_stream()
+    # FIXME(sneak) this always returns
+    # '0000000000000000000000000000000000000000' for trx_id :(
 
     op_count = 0
     if args.json:
         if not args.follow:
             sys.stdout.write('[')
-    for op in stream:
+    for op in Blockchain().reliable_stream():
         if args.json:
             sys.stdout.write('%s' % json.dumps(op))
+            if args.follow:
+                sys.stdout.write("\n") # for human eyeballs
+                sys.stdout.flush() # flush after each op if live mode
         else:
             pprint.pprint(op)
         op_count += 1
