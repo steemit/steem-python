@@ -2,28 +2,27 @@ import json
 import logging
 import random
 import re
-from datetime import datetime, timedelta
-
 import voluptuous as vo
+from datetime import datetime, timedelta
 from funcy.colls import none
 from funcy.flow import silent
 from funcy.seqs import first
 from steembase import memo
 from steembase import operations
 from steembase.account import PrivateKey, PublicKey
-from steembase.exceptions import (
-    AccountExistsException,
-    MissingKeyError,
-)
+from steembase.exceptions import AccountExistsException, MissingKeyError
 from steembase.storage import configStorage
-
 from .account import Account
 from .amount import Amount
 from .converter import Converter
 from .instance import shared_steemd_instance
 from .transactionbuilder import TransactionBuilder
-from .utils import derive_permlink, resolve_identifier, \
-    fmt_time_string, keep_in_dict
+from .utils import (
+    derive_permlink,
+    fmt_time_string,
+    keep_in_dict,
+    resolve_identifier,
+)
 from .wallet import Wallet
 
 log = logging.getLogger(__name__)
