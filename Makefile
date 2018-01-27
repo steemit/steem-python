@@ -1,11 +1,30 @@
-default: run_tests_in_vagrant
+PROJECT := $(shell basename $(shell pwd))
 
-.PHONY: run_tests_in_vagrant
+default: docker_test
 
-run_tests_in_vagrant:
-	vagrant destroy -f
-	vagrant up
+.PHONY: fmt init test docker_test
+
+docker_test:
+	docker build .
 
 clean:
 	rm -rf build/ dist/ *.egg-info .eggs/ .tox/ \
-		__pycache__/ .cache/ .coverage htmlcov src
+		.cache/ .coverage htmlcov src
+
+test: clean
+	pip3 install --upgrade pip
+	pip3 install --upgrade pipenv
+	pipenv install --three --dev
+	pipenv install .
+	pipenv run py.test
+
+fmt:
+	pipenv run yapf --recursive --in-place --style pep8 $(PROJECT)
+	pipenv run autopep8 --recursive --in-place $(PROJECT)
+
+init:
+	pip3 install --upgrade pip
+	pip3 install --upgrade pipenv
+	pipenv lock
+	pipenv install --three --dev
+	pipenv install .

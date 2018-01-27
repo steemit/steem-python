@@ -16,9 +16,7 @@ Vagrant.configure("2") do |config|
      apt-get upgrade -y
      apt-get install -y libssl-dev
      apt-get install -y python3-pip
-     pip3 install --upgrade pip
-     cd /vagrant && pip3 install .
-     cd /vagrant && python3 setup.py test
+     cd /vagrant && make test
      steempy info
   SHELL
 end

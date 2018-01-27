@@ -8,6 +8,14 @@ if sys.version_info < (3,0):
             'Please use python3.'
     )
 
+
+from pipenv.project import Project
+from pipenv.utils import convert_deps_to_pip
+
+pfile = Project(chdir=False).parsed_pipfile
+requirements = convert_deps_to_pip(pfile['packages'], r=False)
+test_requirements = convert_deps_to_pip(pfile['dev-packages'], r=False)
+
 setup(
     name='steem',
     version='0.18.103',
@@ -21,24 +29,10 @@ setup(
     packages=find_packages(),
     setup_requires=[
         'pytest-runner',
+        'pipenv',
     ],
-    tests_require=[
-        'pytest',
-    ],
-    install_requires = [
-        'appdirs',
-        'certifi',
-        'ecdsa',
-        'funcy',
-        'langdetect',
-        'prettytable',
-        'pycrypto',
-        'scrypt',
-        'toolz',
-        'urllib3',
-        'voluptuous',
-        'w3lib',
-    ],
+    tests_require= test_requirements,
+    install_requires = requirements,
     entry_points={
         'console_scripts': ['steempy=steem.cli:legacy'],
     },
