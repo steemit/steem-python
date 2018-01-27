@@ -1446,8 +1446,8 @@ def steemtailentry():
         if args.json:
             sys.stdout.write('%s' % json.dumps(op))
             if args.follow:
-                sys.stdout.write("\n") # for human eyeballs
-                sys.stdout.flush() # flush after each op if live mode
+                sys.stdout.write("\n")  # for human eyeballs
+                sys.stdout.flush()  # flush after each op if live mode
         else:
             pprint.pprint(op)
         op_count += 1
