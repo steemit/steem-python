@@ -1,4 +1,12 @@
+#!/usr/bin/env python3
 from setuptools import setup, find_packages
+
+import sys
+if sys.version_info < (3,0):
+    sys.exit(
+        'Sorry, python2 is not yet supported. ' +
+            'Please use python3.'
+    )
 
 setup(
     name='steem',
@@ -13,10 +21,17 @@ setup(
     packages=find_packages(),
     install_requires = [
         'appdirs',
+        'certifi',
         'ecdsa',
         'funcy',
-        'voluptuous',
+        'langdetect',
+        'prettytable',
         'pycrypto',
+        'scrypt',
+        'toolz',
+        'urllib3',
+        'voluptuous',
+        'w3lib',
     ],
     entry_points={
         'console_scripts': ['steempy=steem.cli:legacy'],
