@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import sys
 import logging
 import os
 import re
@@ -7,6 +8,9 @@ import time
 from datetime import datetime
 from json import JSONDecodeError
 from urllib.parse import urlparse
+from pygments import highlight
+from pygments.formatters import TerminalFormatter
+from pygments.lexers import JsonLexer
 
 import w3lib.url
 from langdetect import DetectorFactory, detect
@@ -27,7 +31,16 @@ MIN_TEXT_LENGTH_FOR_DETECTION = 20
 
 
 def prettydumps(input):
-    return json.dumps(input, sort_keys=True, indent=4, separators=(',', ': '))
+    outputjson = json.dumps(input, sort_keys=True, indent=4, separators=(',', ': '))
+
+    if sys.version_info < (3, 0):
+        outputjson = unicode(outputjson, 'UTF-8')
+
+    if sys.stdout.isatty():
+        return highlight(outputjson, JsonLexer(), TerminalFormatter())
+    else:
+        return outputjson
+
 
 def block_num_from_hash(block_hash: str) -> int:
     """

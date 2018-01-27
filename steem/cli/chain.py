@@ -11,4 +11,4 @@ def chain():
 def info():
     blockchain = Blockchain(mode="head")
     info = blockchain.info()
-    print(prettydumps(info))
+    click.echo(prettydumps(info))
