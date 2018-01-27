@@ -26,6 +26,9 @@ DetectorFactory.seed = 0
 MIN_TEXT_LENGTH_FOR_DETECTION = 20
 
 
+def prettydumps(input):
+    return json.dumps(input, sort_keys=True, indent=4, separators=(',', ': '))
+
 def block_num_from_hash(block_hash: str) -> int:
     """
     return the first 4 bytes (8 hex digits) of the block ID (the block_num)

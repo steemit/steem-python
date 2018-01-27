@@ -30,9 +30,10 @@ setup(
     install_requires=requirements,
     entry_points={
         'console_scripts': [
-            'piston=steem.cli:legacyentry',
-            'steempy=steem.cli:legacyentry',
-            'steemtail=steem.cli:steemtailentry',
+            'piston=steem.legacycli:legacyentry',
+            'steempy=steem.legacycli:legacyentry',
+            'steemtail=steem.legacycli:steemtailentry',
+            'steem=steem.cli.entry:cli',
         ],
     },
     classifiers=[
