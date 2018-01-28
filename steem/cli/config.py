@@ -6,34 +6,39 @@ from ..utils import prettydumps
 from .. import __name__ as appname, __author__ as appauthor
 from appdirs import user_config_dir
 
-CONFIG_DIR = user_config_dir(appname, appauthor)
-CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, 'config.json')
-NEW_CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, '.config.json.tmp')
+
+DEFAULT_CONFIG = {
+    'output_format': 'json',
+    'default_username': None,
+}
 
 @click.group()
 def config():
     """Get and set configuration for this cli tool."""
 
 @click.command()
-def get():
-    write_config_file({ "hello": "world", "foo": 42 })
-    click.echo(prettydumps(read_config_file()))
+def get(key):
+    myconfig = get_configdict()
+    click.echo(prettydumps(myconfig))
 
-def read_config_file():
-    with open(CONFIG_FILE_PATH, 'r') as f:
-        current_config = json.load(f)
-    return current_config
+config.add_command(get)
 
 def ensure_dir(file_path):
     directory = os.path.dirname(file_path)
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-def write_config_file(input):
-    ensure_dir(NEW_CONFIG_FILE_PATH)
-    with open(NEW_CONFIG_FILE_PATH, 'w') as f:
-        json.dump(input, f)
-    os.rename(NEW_CONFIG_FILE_PATH, CONFIG_FILE_PATH)
+def get_configdict():
+    CONFIG_DIR = user_config_dir(appname, appauthor)
+    CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, 'config.json')
 
+    ensure_dir(CONFIG_FILE_PATH)
+    creating = True
+    if os.path.exists(CONFIG_FILE_PATH):
+        creating = False
+    configdict = JsonDict(CONFIG_FILE_PATH, autosave=True)
 
-config.add_command(get)
+    # populate default values in on-disk config if not present
+    for key in DEFAULT_CONFIG.keys():
+        if key not in configdict:
+            configdict[key] = DEFAULT_CONFIG[key]

@@ -21,6 +21,7 @@ voluptuous = "*"
 "w3lib" = "*"
 click = "*"
 pygments = "*"
+jsondict = "*"
 
 
 [dev-packages]
