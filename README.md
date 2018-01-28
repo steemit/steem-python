@@ -30,6 +30,16 @@ cd steem-python
 pip3 install --user .
 ```
 
+## Homebrew Build Prereqs
+
+If you're on a mac, you may need to do the following first:
+
+```
+brew install openssl
+export CFLAGS="-I$(brew --prefix openssl)/include $CFLAGS"
+export LDFLAGS="-L$(brew --prefix openssl)/lib $LDFLAGS"
+```
+
 # CLI tools bundled
 
 The library comes with a few console scripts.
