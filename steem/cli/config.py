@@ -24,7 +24,13 @@ def read_config_file():
         current_config = json.load(f)
     return current_config
 
+def ensure_dir(file_path):
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
 def write_config_file(input):
+    ensure_dir(NEW_CONFIG_FILE_PATH)
     with open(NEW_CONFIG_FILE_PATH, 'w') as f:
         json.dump(input, f)
     os.rename(NEW_CONFIG_FILE_PATH, CONFIG_FILE_PATH)
