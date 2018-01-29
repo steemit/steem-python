@@ -215,14 +215,16 @@ class Blockchain(object):
                     yield get_reliable_ops_in_block(_reliable_client,
                                                     head_block)
                 else:
-                    yield from get_reliable_ops_in_block(
-                        _reliable_client, head_block)
+                    for reliable_ops in get_reliable_ops_in_block(
+                            _reliable_client, head_block):
+                        yield reliable_ops
+
                 sleep_interval = sleep_interval / 2
 
             time.sleep(sleep_interval)
             start_block = head_block + 1
 
-    def stream(self, filter_by = list(), *args, **kwargs):
+    def stream(self, filter_by=list(), *args, **kwargs):
         """ Yield a stream of operations, starting with current head block.
 
             Args:
@@ -259,7 +261,7 @@ class Blockchain(object):
                         })
 
     def history(self,
-                filter_by = list(),
+                filter_by=list(),
                 start_block=1,
                 end_block=None,
                 raw_output=False,

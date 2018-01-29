@@ -1,7 +1,7 @@
 import logging
 import os
 
-from steem.instance import shared_steemd_instance
+from .instance import shared_steemd_instance
 from steembase import bip38
 from steembase.account import PrivateKey
 from steembase.exceptions import (InvalidWifError, WalletExists)

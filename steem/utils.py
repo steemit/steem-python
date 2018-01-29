@@ -5,8 +5,6 @@ import os
 import re
 import time
 from datetime import datetime
-from json import JSONDecodeError
-from urllib.parse import urlparse
 
 import w3lib.url
 from langdetect import DetectorFactory, detect
@@ -224,7 +222,7 @@ def remove_from_dict(obj, remove_keys=list()):
     return {k: v for k, v in items if k not in remove_keys}
 
 
-def construct_identifier(*args, username_prefix='@'):
+def construct_identifier(username_prefix='@', *args):
     """ Create a post identifier from comment/post object or arguments.
 
     Examples:

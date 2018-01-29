@@ -1,6 +1,6 @@
 import logging
 
-from steem.wallet import Wallet
+from .wallet import Wallet
 from steembase.account import PrivateKey
 from steembase.exceptions import (InsufficientAuthorityError, MissingKeyError,
                                   InvalidKeyFormat)
