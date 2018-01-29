@@ -1,40 +1,36 @@
 [[source]]
-verify_ssl = true
-url = "https://pypi.python.org/simple"
 
-[requires]
-python_version = "3.6"
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
 
 [packages]
 appdirs = "*"
-ecdsa = "*"
-pylibscrypt = "*"
-scrypt = "*"
-pycrypto = "*"
-requests = "*"
-urllib3 = "*"
 certifi = "*"
-ujson = "*"
-w3lib = "*"
-maya = "*"
-toolz = "*"
+ecdsa = "*"
 funcy = "*"
 langdetect = "*"
-diff-match-patch = "*"
+prettytable = "*"
+pycrypto = "*"
+scrypt = "*"
+toolz = "*"
+urllib3 = "*"
 voluptuous = "*"
-PrettyTable = "*"
-pipfile = "*"
+w3lib = "*"
+
 
 [dev-packages]
+ipython = "*"
 pep8 = "*"
 pytest = "*"
+pytest-pep8 = "*"
+pytest-console-scripts = "*"
 pytest-pylint = "*"
-pypandoc = "*"
 recommonmark = "*"
-sphinxcontrib-programoutput = "*"
-sphinxcontrib-restbuilder = "*"
 yapf = "*"
 autopep8 = "*"
-setuptools = "*"
-wheel = "*"
-Sphinx = "*"
+
+
+#[requires]
+#python_version = "3.6"

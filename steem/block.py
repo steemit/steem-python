@@ -8,7 +8,8 @@ class Block(dict):
     """ Read a single block from the chain
 
         :param int block: block number
-        :param Steemd steemd_instance: Steemd() instance to use when accessing a RPC
+        :param Steemd steemd_instance: Steemd() instance to use when
+            accessing a RPC
 
     """
 

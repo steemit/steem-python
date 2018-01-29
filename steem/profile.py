@@ -3,7 +3,6 @@ import collections
 
 
 class DotDict(dict):
-
     def __init__(self, *args):
         """ This class simplifies the use of "."-separated
             keys when defining a nested dictionary:::

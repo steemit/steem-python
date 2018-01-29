@@ -24,9 +24,7 @@ if not SCRYPT_MODULE:
 
             SCRYPT_MODULE = "pylibscrypt"
         except ImportError:
-            raise ImportError(
-                "Missing dependency: scrypt or pylibscrypt"
-            )
+            raise ImportError("Missing dependency: scrypt or pylibscrypt")
 
 log.debug("Using scrypt module: %s" % SCRYPT_MODULE)
 
@@ -66,8 +64,8 @@ def encrypt(privkey, passphrase):
     encrypted_half1 = _encrypt_xor(privkeyhex[:32], derived_half1[:16], aes)
     encrypted_half2 = _encrypt_xor(privkeyhex[32:], derived_half1[16:], aes)
     " flag byte is forced 0xc0 because Graphene only uses compressed keys "
-    payload = (b'\x01' + b'\x42' + b'\xc0' +
-               salt + encrypted_half1 + encrypted_half2)
+    payload = (
+        b'\x01' + b'\x42' + b'\xc0' + salt + encrypted_half1 + encrypted_half2)
     " Checksum "
     checksum = hashlib.sha256(hashlib.sha256(payload).digest()).digest()[:4]
     privatkey = hexlify(payload + checksum).decode('ascii')
@@ -81,7 +79,8 @@ def decrypt(encrypted_privkey, passphrase):
     :param str passphrase: UTF-8 encoded passphrase for decryption
     :return: BIP0038 non-ec-multiply decrypted key
     :rtype: Base58
-    :raises SaltException: if checksum verification failed (e.g. wrong password)
+    :raises SaltException: if checksum verification failed (e.g. wrong
+    password)
 
     """
 
@@ -106,8 +105,8 @@ def decrypt(encrypted_privkey, passphrase):
     decryptedhalf2 = aes.decrypt(encryptedhalf2)
     decryptedhalf1 = aes.decrypt(encryptedhalf1)
     privraw = decryptedhalf1 + decryptedhalf2
-    privraw = ('%064x' % (int(hexlify(privraw), 16) ^
-                          int(hexlify(derivedhalf1), 16)))
+    privraw = ('%064x' %
+               (int(hexlify(privraw), 16) ^ int(hexlify(derivedhalf1), 16)))
     wif = Base58(privraw)
     """ Verify Salt """
     privkey = PrivateKey(format(wif, "wif"))
@@ -115,5 +114,6 @@ def decrypt(encrypted_privkey, passphrase):
     a = bytes(addr, 'ascii')
     saltverify = hashlib.sha256(hashlib.sha256(a).digest()).digest()[0:4]
     if saltverify != salt:
-        raise SaltException('checksum verification failed! Password may be incorrect.')
+        raise SaltException(
+            'checksum verification failed! Password may be incorrect.')
     return wif

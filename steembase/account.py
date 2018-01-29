@@ -25,9 +25,7 @@ class PasswordKey(object):
         """ Derive private key from the brain key and the current sequence
             number
         """
-        a = bytes(self.account +
-                  self.role +
-                  self.password, 'utf8')
+        a = bytes(self.account + self.role + self.password, 'utf8')
         s = hashlib.sha256(a).digest()
         return PrivateKey(hexlify(s).decode('ascii'))
 
@@ -80,7 +78,8 @@ class BrainKey(object):
         return self
 
     def normalize(self, brainkey):
-        """ Correct formating with single whitespace syntax and no trailing space """
+        """ Correct formating with single whitespace syntax and no trailing
+        space """
         return " ".join(re.compile("[\t\n\v\f\r ]+").split(brainkey))
 
     def get_brainkey(self):
@@ -115,7 +114,7 @@ class BrainKey(object):
         assert len(dict_lines) == 49744
         for j in range(0, word_count):
             num = int.from_bytes(os.urandom(2), byteorder="little")
-            rndMult = num / 2 ** 16  # returns float between 0..1 (inclusive)
+            rndMult = num / 2**16  # returns float between 0..1 (inclusive)
             wIdx = round(len(dict_lines) * rndMult)
             brainkey[j] = dict_lines[wIdx]
         return " ".join(brainkey).upper()
@@ -231,10 +230,12 @@ class PublicKey(object):
     def compressed(self):
         """ Derive compressed public key """
         order = ecdsa.SECP256k1.generator.order()
-        p = ecdsa.VerifyingKey.from_string(bytes(self), curve=ecdsa.SECP256k1).pubkey.point
+        p = ecdsa.VerifyingKey.from_string(
+            bytes(self), curve=ecdsa.SECP256k1).pubkey.point
         x_str = ecdsa.util.number_to_string(p.x(), order)
         # y_str = ecdsa.util.number_to_string(p.y(), order)
-        compressed = hexlify(bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
+        compressed = hexlify(
+            bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
         return (compressed)
 
     def unCompressed(self):
@@ -252,7 +253,8 @@ class PublicKey(object):
     def point(self):
         """ Return the point for the public key """
         string = unhexlify(self.unCompressed())
-        return ecdsa.VerifyingKey.from_string(string[1:], curve=ecdsa.SECP256k1).pubkey.point
+        return ecdsa.VerifyingKey.from_string(
+            string[1:], curve=ecdsa.SECP256k1).pubkey.point
 
     def __repr__(self):
         """ Gives the hex representation of the Graphene public key. """
@@ -265,7 +267,8 @@ class PublicKey(object):
         return format(self._pk, self.prefix)
 
     def __format__(self, _format):
-        """ Formats the instance of:doc:`Base58 <base58>` according to ``_format`` """
+        """ Formats the instance of:doc:`Base58 <base58>` according
+        to ``_format`` """
         return format(self._pk, _format)
 
     def __bytes__(self):
@@ -308,19 +311,25 @@ class PrivateKey(object):
         # compress pubkeys only
         self._pubkeyhex, self._pubkeyuncompressedhex = self.compressedpubkey()
         self.pubkey = PublicKey(self._pubkeyhex, prefix=prefix)
-        self.uncompressed = PublicKey(self._pubkeyuncompressedhex, prefix=prefix)
-        self.uncompressed.address = Address(pubkey=self._pubkeyuncompressedhex, prefix=prefix)
+        self.uncompressed = PublicKey(
+            self._pubkeyuncompressedhex, prefix=prefix)
+        self.uncompressed.address = Address(
+            pubkey=self._pubkeyuncompressedhex, prefix=prefix)
         self.address = Address(pubkey=self._pubkeyhex, prefix=prefix)
 
     def compressedpubkey(self):
         """ Derive uncompressed public key """
         secret = unhexlify(repr(self._wif))
-        order = ecdsa.SigningKey.from_string(secret, curve=ecdsa.SECP256k1).curve.generator.order()
-        p = ecdsa.SigningKey.from_string(secret, curve=ecdsa.SECP256k1).verifying_key.pubkey.point
+        order = ecdsa.SigningKey.from_string(
+            secret, curve=ecdsa.SECP256k1).curve.generator.order()
+        p = ecdsa.SigningKey.from_string(
+            secret, curve=ecdsa.SECP256k1).verifying_key.pubkey.point
         x_str = ecdsa.util.number_to_string(p.x(), order)
         y_str = ecdsa.util.number_to_string(p.y(), order)
-        compressed = hexlify(bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
-        uncompressed = hexlify(bytes(chr(4), 'ascii') + x_str + y_str).decode('ascii')
+        compressed = hexlify(
+            bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
+        uncompressed = hexlify(bytes(chr(4), 'ascii') + x_str + y_str).decode(
+            'ascii')
         return [compressed, uncompressed]
 
     def __format__(self, _format):

@@ -1,5 +1,6 @@
 README.rst
 
+.vagrant
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -113,3 +114,5 @@ tests/failed_blocks/
 /tests/envdir-to-envfile.sh
 /deploy/
 /test.py
+
+.DS_Store

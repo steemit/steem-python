@@ -1,20 +1,77 @@
 # Official Python STEEM Library
-`steem-python` is the official STEEM library for Python. It comes with a BIP38 encrypted wallet and a practical CLI utility called `steempy`.
 
-## Installation
-You can install `steem-python` with `pip`:
+`steem-python` is the official Steem library for Python. It comes with a
+BIP38 encrypted wallet and a practical CLI utility called `steempy`.
+
+Currently only python3 is supported.  Python2 support is planned.
+
+# Installation
+
+## Installation with pipenv (recommended)
+
+Install pipenv first if you don't have it:
+
+`pip3 install --upgrade --user pipenv`
+
+Then, install steem-python using it:
 
 ```
-pip install -U steem
+git clone https://github.com/steemit/steem-python.git
+cd steem-python
+pipenv install --three --dev
+pipenv install .
 ```
 
-## Documentation
+## Installation with pip3
+
+```
+git clone https://github.com/steemit/steem-python.git
+cd steem-python
+pip3 install --user .
+```
+
+## Homebrew Build Prereqs
+
+If you're on a mac, you may need to do the following first:
+
+```
+brew install openssl
+export CFLAGS="-I$(brew --prefix openssl)/include $CFLAGS"
+export LDFLAGS="-L$(brew --prefix openssl)/lib $LDFLAGS"
+```
+
+# CLI tools bundled
+
+The library comes with a few console scripts.
+
+* `steempy`:
+    * rudimentary blockchain CLI (needs some TLC and more TLAs)
+* `steemtail`:
+    * useful for e.g. `steemtail -f -j | jq --unbuffered --sort-keys .`
+
+# Documentation
+
 Documentation is available at **http://steem.readthedocs.io**
 
-## TODO
-* more unit-tests
-* 100% documentation coverage
+# Tests
 
-## Notice
-This library is under *active development*. Use at own discretion.
+Some tests are included.  They can be run via either docker or vagrant,
+for reproducibility, e.g.:
 
+* `docker build .`
+
+or
+
+* `vagrant up`
+
+# TODO
+
+* fix parts that were copied from python-graphenelib that only support
+  python3 to support python2 as well
+* more unit tests
+* 100% documentation coverage, consistent documentation
+* migrate to click CLI library
+
+# Notice
+
+This library is *under development*.  Beware.

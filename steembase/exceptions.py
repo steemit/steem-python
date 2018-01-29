@@ -6,11 +6,9 @@ def decodeRPCErrorMsg(e):
         python Exception class
     """
     found = re.search(
-        (
-            "(10 assert_exception: Assert Exception\n|"
-            "3030000 tx_missing_posting_auth)"
-            ".*: (.*)\n"
-        ),
+        ("(10 assert_exception: Assert Exception\n|"
+         "3030000 tx_missing_posting_auth)"
+         ".*: (.*)\n"),
         str(e),
         flags=re.M)
     if found:

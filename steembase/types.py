@@ -65,10 +65,10 @@ def JsonObj(data):
     """
     try:
         return json.loads(str(data))
-    except:
+    except:  # noqa FIXME(sneak)
         try:
             return data.__str__()
-        except:
+        except:  # noqa FIXME(sneak)
             raise ValueError('JsonObj could not parse %s:\n%s' %
                              (type(data).__name__, data.__class__))
 
@@ -241,7 +241,9 @@ class PointInTime:
         self.data = d
 
     def __bytes__(self):
-        return struct.pack("<I", timegm(time.strptime((self.data + "UTC"), timeformat)))
+        return struct.pack("<I",
+                           timegm(
+                               time.strptime((self.data + "UTC"), timeformat)))
 
     def __str__(self):
         return self.data
@@ -290,7 +292,8 @@ class Optional:
         if not self.data:
             return bytes(Bool(0))
         else:
-            return bytes(Bool(1)) + bytes(self.data) if bytes(self.data) else bytes(Bool(0))
+            return bytes(Bool(1)) + bytes(self.data) if bytes(
+                self.data) else bytes(Bool(0))
 
     def __str__(self):
         return str(self.data)

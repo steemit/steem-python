@@ -1,7 +1,0 @@
-#!/usr/bin/env python3.6
-
-import steem
-import steem.cli
-
-if __name__=='__main__':
-   steem.cli.legacy()
