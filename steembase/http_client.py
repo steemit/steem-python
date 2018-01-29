@@ -5,9 +5,7 @@ import logging
 import socket
 import time
 from functools import partial
-from http.client import RemoteDisconnected
 from itertools import cycle
-from urllib.parse import urlparse
 
 import certifi
 import urllib3
@@ -112,7 +110,7 @@ class HttpClient(object):
         return urlparse(self.url).hostname
 
     @staticmethod
-    def json_rpc_body(name, *args, api=None, as_json=True, _id=0, kwargs=None):
+    def json_rpc_body(name, api=None, as_json=True, _id=0, kwargs=None, *args):
         """ Build request body for steemd RPC requests.
 
         Args:
@@ -141,13 +139,13 @@ class HttpClient(object):
         """
         headers = {"jsonrpc": "2.0", "id": _id}
         if kwargs is not None:
-            body_dict = {**headers, "method": "call",
-                         "params": [api, name, kwargs]}
+            body_dict = headers.update({"method": "call",
+                         "params": [api, name, kwargs]})
         elif api:
-            body_dict = {**headers, "method": "call",
-                         "params": [api, name, args]}
+            body_dict = headers.update({"method": "call",
+                         "params": [api, name, args]})
         else:
-            body_dict = {**headers, "method": name, "params": args}
+            body_dict = headers.update({"method": name, "params": args})
         if as_json:
             return json.dumps(body_dict, ensure_ascii=False).encode('utf8')
         else:
@@ -155,11 +153,11 @@ class HttpClient(object):
 
     def call(self,
              name,
-             *args,
              api=None,
              return_with_args=None,
              _ret_cnt=0,
-             kwargs=None):
+             kwargs=None,
+             *args):
         """ Call a remote procedure in steemd.
 
         Warnings:
@@ -206,8 +204,8 @@ class HttpClient(object):
                     args=args,
                     return_with_args=return_with_args)
         else:
-            if response.status not in tuple([*response.REDIRECT_STATUSES,
-                                             200]):
+            redirectStatuses = list(*response.REDIRECT_STATUSES).append(200)
+            if response.status not in tuple(*redirectStatuses):
                 logger.info('non 200 response:%s', response.status)
 
             return self._return(
