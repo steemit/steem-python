@@ -41,7 +41,7 @@ class Blog:
     """
 
     def __init__(self,
-                 account_name: str,
+                 account_name,
                  comments_only=False,
                  steemd_instance=None):
         self.steem = steemd_instance or shared_steemd_instance()
