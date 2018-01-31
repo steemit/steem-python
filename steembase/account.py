@@ -327,8 +327,8 @@ class PrivateKey(object):
         x_str = ecdsa.util.number_to_string(p.x(), order)
         y_str = ecdsa.util.number_to_string(p.y(), order)
         compressed = hexlify(
-            bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
-        uncompressed = hexlify(bytes(chr(4), 'ascii') + x_str + y_str).decode(
+            chr(2 + (p.y() & 1)).encode('ascii') + x_str).decode('ascii')
+        uncompressed = hexlify(chr(4).encode('ascii') + x_str + y_str).decode(
             'ascii')
         return [compressed, uncompressed]
 

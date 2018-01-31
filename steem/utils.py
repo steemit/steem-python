@@ -232,6 +232,8 @@ def construct_identifier(username_prefix='@', *args):
             construct_identifier({'author': 'username',
                 'permlink': 'permlink'})
     """
+    print(len(args))
+    print(args)
     if len(args) == 1:
         op = args[0]
         author, permlink = op['author'], op['permlink']

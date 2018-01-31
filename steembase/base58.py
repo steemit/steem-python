@@ -117,7 +117,7 @@ BASE58_ALPHABET = b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
 
 def base58decode(base58_str):
-    base58_text = bytes(base58_str, "ascii")
+    base58_text = base58_str.encode("ascii")
     n = 0
     leading_zeroes_count = 0
     for b in base58_text:
@@ -135,7 +135,7 @@ def base58decode(base58_str):
 
 
 def base58encode(hexstring):
-    byteseq = bytes(unhexlify(bytes(hexstring, 'ascii')))
+    byteseq = bytes(unhexlify(hexstring.encode('ascii')))
     n = 0
     leading_zeroes_count = 0
     for c in byteseq:
