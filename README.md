@@ -30,6 +30,8 @@ cd steem-python
 pip3 install --user .
 ```
 
+Note that installation using `pip3` requires that the `pipenv` module be installed to parse the requirements out of the `Pipfile` so that pip3 can do the install.  If you get an error about `pipenv` not being found, you can resolve it with a `pip3 install --upgrade --user pipenv`, then the install with `pip3` will work as usual.
+
 ## Homebrew Build Prereqs
 
 If you're on a mac, you may need to do the following first:
