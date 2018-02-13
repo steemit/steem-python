@@ -222,7 +222,7 @@ def remove_from_dict(obj, remove_keys=list()):
     return {k: v for k, v in items if k not in remove_keys}
 
 
-def construct_identifier(username_prefix='@', *args):
+def construct_identifier(*args):
     """ Create a post identifier from comment/post object or arguments.
 
     Examples:
@@ -232,8 +232,8 @@ def construct_identifier(username_prefix='@', *args):
             construct_identifier({'author': 'username',
                 'permlink': 'permlink'})
     """
-    print(len(args))
-    print(args)
+    username_prefix = '@'
+
     if len(args) == 1:
         op = args[0]
         author, permlink = op['author'], op['permlink']

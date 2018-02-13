@@ -1,6 +1,7 @@
 import hashlib
 import os
 import re
+import sys
 from binascii import hexlify, unhexlify
 
 import ecdsa
@@ -25,7 +26,10 @@ class PasswordKey(object):
         """ Derive private key from the brain key and the current sequence
             number
         """
-        a = bytes(self.account + self.role + self.password, 'utf8')
+        if sys.version > '3':
+            a = bytes(self.account + self.role + self.password, 'utf8')
+        else:
+            a = bytes(self.account + self.role + self.password).encode('utf8')
         s = hashlib.sha256(a).digest()
         return PrivateKey(hexlify(s).decode('ascii'))
 
@@ -91,7 +95,10 @@ class BrainKey(object):
             number
         """
         encoded = "%s %d" % (self.brainkey, self.sequence)
-        a = bytes(encoded, 'ascii')
+        if sys.version > '3':
+            a = bytes(encoded, 'ascii')
+        else:
+            a = bytes(encoded).encode('ascii')
         s = hashlib.sha256(hashlib.sha512(a).digest()).digest()
         return PrivateKey(hexlify(s).decode('ascii'))
 

@@ -137,6 +137,7 @@ class HttpClient(object):
             Otherwise, a Python dictionary is returned.
 
         """
+        print(name)
         headers = {"jsonrpc": "2.0", "id": _id}
         if kwargs is not None:
             body_dict = headers.update({"method": "call",
@@ -149,6 +150,7 @@ class HttpClient(object):
         if as_json:
             return json.dumps(body_dict, ensure_ascii=False).encode('utf8')
         else:
+            print(body_dict)
             return body_dict
 
     def call(self,
@@ -169,6 +171,7 @@ class HttpClient(object):
         """
         body = HttpClient.json_rpc_body(name, *args, api=api, kwargs=kwargs)
         response = None
+        print(args)
         try:
             response = self.request(body=body)
         except (MaxRetryError, ConnectionResetError, ReadTimeoutError,
@@ -204,8 +207,9 @@ class HttpClient(object):
                     args=args,
                     return_with_args=return_with_args)
         else:
-            redirectStatuses = list(*response.REDIRECT_STATUSES).append(200)
-            if response.status not in tuple(*redirectStatuses):
+            # redirectStatuses = list(response.REDIRECT_STATUSES)
+            # redirectStatuses.append(200)
+            if response.status not in tuple([*response.REDIRECT_STATUSES, 200]):
                 logger.info('non 200 response:%s', response.status)
 
             return self._return(
@@ -226,6 +230,7 @@ class HttpClient(object):
                 result = None
             else:
                 if 'error' in response_json:
+                    print(response_json)
                     error = response_json['error']
 
                     if self.re_raise:
