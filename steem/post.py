@@ -100,6 +100,7 @@ class Post(dict):
         if isinstance(post['json_metadata'], dict):
             if post["depth"] == 0:
                 post["tags"] = (post["parent_permlink"])
+                print(post["tags"])
                 post["tags"].append(*get_in(post, ['json_metadata', 'tags'], default=[]))
 
             post['community'] = get_in(
