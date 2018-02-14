@@ -262,7 +262,7 @@ class Signature:
 
 class Bool(Uint8):  # Bool = Uint8
     def __init__(self, d):
-        super().__init__(d)
+        Uint8.__init__(self, d)
 
     def __str__(self):
         return True if self.data else False
@@ -270,7 +270,7 @@ class Bool(Uint8):  # Bool = Uint8
 
 class Set(Array):  # Set = Array
     def __init__(self, d):
-        super().__init__(d)
+        Array.__init__(self, d)
 
 
 class FixedArray:

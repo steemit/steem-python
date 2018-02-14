@@ -1,19 +1,19 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "fe2d9e17c4f05b531909f6c4d17633b68efd407ba4e7e75878662f115a7cbeba"
+            "sha256": "f3b8df34e618448650982c10e58820f7d2f629272e4c590da28878d3e536f50b"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
-            "implementation_version": "3.6.4",
+            "implementation_version": "0",
             "os_name": "posix",
             "platform_machine": "x86_64",
             "platform_python_implementation": "CPython",
             "platform_release": "17.3.0",
             "platform_system": "Darwin",
             "platform_version": "Darwin Kernel Version 17.3.0: Thu Nov  9 18:09:22 PST 2017; root:xnu-4570.31.3~1/RELEASE_X86_64",
-            "python_full_version": "3.6.4",
-            "python_version": "3.6",
+            "python_full_version": "2.7.10",
+            "python_version": "2.7",
             "sys_platform": "darwin"
         },
         "pipfile-spec": 6,
@@ -82,6 +82,14 @@
                 "sha256:c38ef134d34c767b9d631de453e19f710ac0575b9463d55e30f4f93274e089e4"
             ],
             "version": "==1.10.1"
+        },
+        "futures": {
+            "hashes": [
+                "sha256:ec0a6cb848cc212002b9828c3e34c675e0c9ff6741dc445cab6fdd4e1085d1f1",
+                "sha256:9ec02aa7d674acb8618afb127e27fde7fc68994c0437ad759fa094a574adb265"
+            ],
+            "markers": "python_version < '3.0.0'",
+            "version": "==3.2.0"
         },
         "langdetect": {
             "hashes": [
@@ -206,6 +214,7 @@
                 "sha256:5b26757dc6f79a3b7dc9fab95359328d5747fcb2409d331ea66d0272b90ab2a0",
                 "sha256:8b995ffe925347a2138d7ac0fe77155e4311a0ea6d6da4f5128fe4b3cbe5ed71"
             ],
+            "markers": "sys_platform == 'darwin'",
             "version": "==0.1.0"
         },
         "astroid": {
@@ -235,6 +244,14 @@
             ],
             "markers": "python_version < '3.4'",
             "version": "==1.5"
+        },
+        "backports.shutil-get-terminal-size": {
+            "hashes": [
+                "sha256:0975ba55054c15e346944b38956a4c9cbee9009391e41b86c68990effb8c1f64",
+                "sha256:713e7a8228ae80341c70586d1cc0a8caa5207346927e23d09dcbcaf18eadec80"
+            ],
+            "markers": "python_version == '2.7'",
+            "version": "==1.0.0"
         },
         "commonmark": {
             "hashes": [
@@ -291,17 +308,18 @@
         },
         "futures": {
             "hashes": [
-                "sha256:c4884a65654a7c45435063e14ae85280eb1f111d94e542396717ba9828c4337f",
-                "sha256:51ecb45f0add83c806c68e4b06106f90db260585b25ef2abfcda0bd95c0132fd"
+                "sha256:ec0a6cb848cc212002b9828c3e34c675e0c9ff6741dc445cab6fdd4e1085d1f1",
+                "sha256:9ec02aa7d674acb8618afb127e27fde7fc68994c0437ad759fa094a574adb265"
             ],
-            "version": "==3.1.1"
+            "version": "==3.2.0"
         },
         "ipython": {
             "hashes": [
-                "sha256:fcc6d46f08c3c4de7b15ae1c426e15be1b7932bcda9d83ce1a4304e8c1129df3",
-                "sha256:51c158a6c8b899898d1c91c6b51a34110196815cc905f9be0fa5878e19355608"
+                "sha256:578e2f3d779ed130a3cfefc09b2eb965a81457f6a31a25cd38e0bab622d4777d",
+                "sha256:185ef2093dbac6d7250fe9ed4d4dd0f18f10d0a6ac6169f3eeb2ff0663d96b92",
+                "sha256:66469e894d1f09d14a1f23b971a410af131daa9ad2a19922082e02e0ddfd150f"
             ],
-            "version": "==6.2.1"
+            "version": "==5.5.0"
         },
         "ipython-genutils": {
             "hashes": [
@@ -317,13 +335,6 @@
                 "sha256:b9c40e9750f3d77e6e4d441d8b0266cf555e7cdabdcff33c4fd06366ca761ef8"
             ],
             "version": "==4.3.4"
-        },
-        "jedi": {
-            "hashes": [
-                "sha256:d795f2c2e659f5ea39a839e5230d70a0b045d0daee7ca2403568d8f348d0ad89",
-                "sha256:d6e799d04d1ade9459ed0f20de47c32f2285438956a677d083d3c98def59fa97"
-            ],
-            "version": "==0.11.1"
         },
         "lazy-object-proxy": {
             "hashes": [
@@ -373,13 +384,6 @@
             ],
             "version": "==2.0.0"
         },
-        "parso": {
-            "hashes": [
-                "sha256:a7bb86fe0844304869d1c08e8bd0e52be931228483025c422917411ab82d628a",
-                "sha256:5815f3fe254e5665f3c5d6f54f086c2502035cb631a91341591b5a564203cffb"
-            ],
-            "version": "==0.1.1"
-        },
         "pathlib2": {
             "hashes": [
                 "sha256:db3e43032d23787d3e9aec8c7ef1e0d2c3c589d5f303477661ebda2ca6d4bfba",
@@ -407,6 +411,7 @@
                 "sha256:6ff881b07aff0cb8ec02055670443f784434395f90c3285d2ae470f921ade52a",
                 "sha256:67b85a1565968e3d5b5e7c9283caddc90c3947a2625bed1905be27bd5a03e47d"
             ],
+            "markers": "sys_platform != 'win32'",
             "version": "==4.4.0"
         },
         "pickleshare": {
@@ -553,14 +558,6 @@
                 "sha256:9c4bd2d267b7153df9152698efb1050a5d84982d3384a37b2c1f7723ba3e7835"
             ],
             "version": "==4.3.2"
-        },
-        "typing": {
-            "hashes": [
-                "sha256:b2c689d54e1144bbcfd191b0832980a21c2dbcf7b5ff7a66248a60c90e951eb8",
-                "sha256:3a887b021a77b292e151afb75323dea88a7bc1b3dfa92176cff8e44c8b68bddf",
-                "sha256:d400a9344254803a2368533e4533a4200d21eb7b6b729c173bc38201a74db3f2"
-            ],
-            "version": "==3.6.4"
         },
         "wcwidth": {
             "hashes": [

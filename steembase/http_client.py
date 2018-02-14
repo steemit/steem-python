@@ -1,5 +1,4 @@
 # coding=utf-8
-import concurrent.futures
 import json
 import logging
 import socket
@@ -7,7 +6,7 @@ import time
 import sys
 from functools import partial
 from itertools import cycle
-
+import concurrent.futures
 import certifi
 import urllib3
 from steembase.exceptions import RPCError

@@ -1,6 +1,7 @@
 import hashlib
 import struct
 from binascii import hexlify, unhexlify
+import sys
 
 from .operations import Memo
 from Crypto.Cipher import AES
@@ -80,7 +81,11 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     from steembase import transactions
     shared_secret = get_shared_secret(priv, pub)
     aes, check = init_aes(shared_secret, nonce)
-    raw = bytes(message, 'utf8')
+    raw = 0
+    if sys.version > '3.0':
+        raw = bytes(message, 'utf8')
+    else:
+        raw = bytes(message).encode('utf8')
     " Padding "
     BS = 16
     if len(raw) % BS:
@@ -115,6 +120,7 @@ def decode_memo(priv, message):
     """
     " decode structure "
     raw = base58decode(message[1:])
+    print(raw)
     from_key = PublicKey(raw[:66])
     raw = raw[66:]
     to_key = PublicKey(raw[:66])

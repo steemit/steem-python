@@ -4,12 +4,16 @@ import logging
 import os
 import re
 import time
+import sys
 from datetime import datetime
 
 import w3lib.url
 from langdetect import DetectorFactory, detect
 from langdetect.lang_detect_exception import LangDetectException
 from toolz import update_in, assoc
+
+if sys.version < '3.0':
+    from urlparse import urlparse
 
 logger = logging.getLogger(__name__)
 

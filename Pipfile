@@ -20,6 +20,7 @@ toolz = "*"
 voluptuous = "*"
 "w3lib" = "*"
 "pytest-pep8" = "*"
+"futures" = {version = "*", markers="python_version < '3.0.0'"}
 
 
 [dev-packages]

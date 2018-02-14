@@ -70,7 +70,7 @@ class SignedTransaction(GrapheneObject):
                 else:
                     kwargs['operations'] = Array(kwargs["operations"])
 
-            super().__init__(
+            super(SignedTransaction, self).__init__(
                 OrderedDict([
                     ('ref_block_num', Uint16(kwargs['ref_block_num'])),
                     ('ref_block_prefix', Uint32(kwargs['ref_block_prefix'])),
