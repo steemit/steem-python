@@ -354,3 +354,10 @@ def strfdelta(tdelta, fmt):
 
 def is_valid_account_name(name):
     return re.match('^[a-z][a-z0-9\-.]{2,15}$', name)
+
+
+def compose_dictionary(dictionary, **kwargs):
+    for pairs in kwargs.items():
+        dictionary[pairs[0]] = pairs[1]
+
+    return dictionary

@@ -299,10 +299,11 @@ class Account(dict):
                     'type': op_type,
                 })
                 _id = Blockchain.hash_op(immutable)
-                return immutable.update({
+                immutable.update({
                     '_id': _id,
                     'index': index,
                 })
+                return immutable
 
             if filter_by is None:
                 yield construct_op(self.name)
