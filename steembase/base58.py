@@ -102,7 +102,7 @@ class Base58(object):
         """
         return gphBase58CheckEncode(self._hex)
 
-    def __bytes__(self):
+    def to_bytes(self):
         """ Return raw bytes
 
             :return: Raw bytes of instance
@@ -136,9 +136,12 @@ def base58decode(base58_str):
 
 def base58encode(hexstring):
     if sys.version > '3':
-        byteseq = bytes(unhexlify(bytes(hexstring, 'ascii')))
+        byteseq = bytes(hexstring, 'ascii')
+        byteseq = unhexlify(byteseq)
+        byteseq = bytes(byteseq)
     else:
-        byteseq = bytearray.fromhex(hexstring)
+        byteseq = bytesAsIntegerArrayFromHexString(bytes(hexstring))
+
     n = 0
     leading_zeroes_count = 0
     for c in byteseq:
@@ -152,8 +155,8 @@ def base58encode(hexstring):
         n = div
     else:
         res.insert(0, BASE58_ALPHABET[n])
-    return (BASE58_ALPHABET[0:1] * leading_zeroes_count + res).decode('ascii')
 
+    return (BASE58_ALPHABET[0:1] * leading_zeroes_count + res).decode('ascii')
 
 def ripemd160(s):
     ripemd160 = hashlib.new('ripemd160')
@@ -200,3 +203,18 @@ def gphBase58CheckDecode(s):
     checksum = ripemd160(dec)[:4]
     assert (s[-4:] == checksum)
     return dec
+
+
+def bytesAsIntegerArrayFromHexString(hexstring):
+    if len(hexstring) % 2:
+        raise ValueError("hexstring must be even length")
+
+    byteArray = []
+    hexIterator = iter(hexstring)
+
+    for c in hexIterator:
+        hexDigit = c + next(hexIterator)
+        byteArray.append(int(hexDigit, 16))
+
+    return byteArray
+

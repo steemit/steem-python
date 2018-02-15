@@ -365,3 +365,4 @@ def compose_dictionary(dictionary, **kwargs):
         dictionary[pairs[0]] = pairs[1]
 
     return dictionary
+

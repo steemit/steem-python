@@ -7,7 +7,6 @@ class Amount(dict):
     """
 
     def __init__(self, amount_string="0 SBD"):
-        print(type(amount_string))
         if isinstance(amount_string, Amount):
             self["amount"] = amount_string["amount"]
             self["asset"] = amount_string["asset"]

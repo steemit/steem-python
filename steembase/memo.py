@@ -2,6 +2,8 @@ import hashlib
 import struct
 from binascii import hexlify, unhexlify
 import sys
+from collections import OrderedDict
+import json
 
 from .operations import Memo
 from Crypto.Cipher import AES
@@ -81,11 +83,11 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     from steembase import transactions
     shared_secret = get_shared_secret(priv, pub)
     aes, check = init_aes(shared_secret, nonce)
-    raw = 0
     if sys.version > '3.0':
         raw = bytes(message, 'utf8')
     else:
-        raw = bytes(message).encode('utf8')
+        raw = bytes(message)
+
     " Padding "
     BS = 16
     if len(raw) % BS:
@@ -93,18 +95,22 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     " Encryption "
     cipher = hexlify(aes.encrypt(raw)).decode('ascii')
     prefix = kwargs.pop("prefix", default_prefix)
-    s = {
-        "from": format(priv.pubkey, prefix),
-        "to": format(pub, prefix),
-        "nonce": nonce,
-        "check": check,
-        "encrypted": cipher,
-        "from_priv": repr(priv),
-        "to_pub": repr(pub),
-        "shared_secret": shared_secret,
-    }
+    s = OrderedDict([
+        ("from",format(priv.pubkey, prefix)),
+        ("to", format(pub, prefix)),
+        ("nonce", nonce),
+        ("check", check),
+        ("encrypted", cipher),
+        ("from_priv", repr(priv)),
+        ("to_pub", repr(pub)),
+        ("shared_secret", shared_secret),
+    ])
+
     tx = Memo(**s)
-    return "#" + base58encode(hexlify(bytes(tx)).decode("ascii"))
+    print(tx.data)
+    print('\n\n')
+    print(tx)
+    return "#" + base58encode(hexlify(bytes(tx.data)).decode("ascii"))
 
 
 def decode_memo(priv, message):
@@ -132,8 +138,10 @@ def decode_memo(priv, message):
     cipher = raw
 
     if repr(to_key) == repr(priv.pubkey):
+        print('first')
         shared_secret = get_shared_secret(priv, from_key)
     elif repr(from_key) == repr(priv.pubkey):
+        print('second')
         shared_secret = get_shared_secret(priv, to_key)
     else:
         raise ValueError("Incorrect PrivateKey")
@@ -147,7 +155,10 @@ def decode_memo(priv, message):
     " Encryption "
     # remove the varint prefix (FIXME, long messages!)
     message = cipher[2:]
-    message = aes.decrypt(unhexlify(bytes(message, 'ascii')))
+    if sys.version > '3.0':
+        message = aes.decrypt(unhexlify(bytes(message, 'ascii')))
+    else:
+        message = aes.decrypt(unhexlify(bytes(message)))
     try:
         return _unpad(message.decode('utf8'), 16)
     except:  # noqa FIXME(sneak)

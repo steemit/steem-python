@@ -258,7 +258,6 @@ class HttpClient(object):
                 result = None
             else:
                 if 'error' in response_json:
-                    print(response_json)
                     error = response_json['error']
 
                     if self.re_raise:

@@ -270,7 +270,7 @@ class Bool(Uint8):  # Bool = Uint8
 
 class Set(Array):  # Set = Array
     def __init__(self, d):
-        Array.__init__(self, d)
+        Array.__init__(d)
 
 
 class FixedArray:

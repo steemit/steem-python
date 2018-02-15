@@ -216,8 +216,6 @@ class Steemd(HttpClient):
 
         while missing:
             for block in self._get_blocks(missing):
-                print("Missing")
-                print(block)
                 blocks[block['block_num']] = block
 
             available = set(blocks.keys())
