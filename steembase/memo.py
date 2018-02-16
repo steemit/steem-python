@@ -106,7 +106,7 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     ])
     tx = Memo(**s)
 
-    return "#" + base58encode(hexlify(future_bytes(tx.data)).decode("ascii"))
+    return "#" + base58encode(hexlify(future_bytes(tx)).decode("ascii"))
 
 
 def decode_memo(priv, message):
@@ -122,8 +122,6 @@ def decode_memo(priv, message):
     """
     " decode structure "
     raw = base58decode(message[1:])
-    print('\n\n base58 decoded raw data')
-    print(raw)
     from_key = PublicKey(raw[:66])
     raw = raw[66:]
     to_key = PublicKey(raw[:66])
