@@ -3,6 +3,7 @@ import os
 import re
 import sys
 from binascii import hexlify, unhexlify
+from steem.utils import future_bytes
 
 import ecdsa
 
@@ -26,10 +27,7 @@ class PasswordKey(object):
         """ Derive private key from the brain key and the current sequence
             number
         """
-        if sys.version > '3':
-            a = bytes(self.account + self.role + self.password, 'utf8')
-        else:
-            a = bytes(self.account + self.role + self.password).encode('utf8')
+        a = future_bytes(self.account + self.role + self.password, 'utf8')
         s = hashlib.sha256(a).digest()
         return PrivateKey(hexlify(s).decode('ascii'))
 
@@ -95,10 +93,8 @@ class BrainKey(object):
             number
         """
         encoded = "%s %d" % (self.brainkey, self.sequence)
-        if sys.version > '3':
-            a = bytes(encoded, 'ascii')
-        else:
-            a = bytes(encoded).encode('ascii')
+        a = future_bytes(encoded, 'ascii')
+
         s = hashlib.sha256(hashlib.sha512(a).digest()).digest()
         return PrivateKey(hexlify(s).decode('ascii'))
 
@@ -190,7 +186,7 @@ class Address(object):
         else:
             return format(self._address, _format)
 
-    def __bytes__(self):
+    def to_bytes(self):
         """ Returns the raw content of the ``Base58CheckEncoded`` address """
         if self._address is None:
             return bytes(self.derivesha512address())
@@ -238,11 +234,11 @@ class PublicKey(object):
         """ Derive compressed public key """
         order = ecdsa.SECP256k1.generator.order()
         p = ecdsa.VerifyingKey.from_string(
-            bytes(self), curve=ecdsa.SECP256k1).pubkey.point
+            future_bytes(self), curve=ecdsa.SECP256k1).pubkey.point
         x_str = ecdsa.util.number_to_string(p.x(), order)
         # y_str = ecdsa.util.number_to_string(p.y(), order)
         compressed = hexlify(
-            bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
+            future_bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
         return (compressed)
 
     def unCompressed(self):
@@ -278,7 +274,7 @@ class PublicKey(object):
         to ``_format`` """
         return format(self._pk, _format)
 
-    def __bytes__(self):
+    def to_bytes(self):
         """ Returns the raw public key (has length 33)"""
         return bytes(self._pk)
 
@@ -355,6 +351,6 @@ class PrivateKey(object):
         """
         return format(self._wif, "WIF")
 
-    def __bytes__(self):
+    def to_bytes(self):
         """ Returns the raw private key """
         return bytes(self._wif)

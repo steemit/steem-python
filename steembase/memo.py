@@ -63,8 +63,8 @@ def _pad(s, BS):
 
 
 def _unpad(s, BS):
-    count = int(struct.unpack('B', bytes(s[-1], 'ascii'))[0])
-    if bytes(s[-count::], 'ascii') == count * struct.pack('B', count):
+    count = int(struct.unpack('B', future_bytes(s[-1], 'ascii'))[0])
+    if future_bytes(s[-count::], 'ascii') == count * struct.pack('B', count):
         return s[:-count]
     return s
 
@@ -83,10 +83,7 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     from steembase import transactions
     shared_secret = get_shared_secret(priv, pub)
     aes, check = init_aes(shared_secret, nonce)
-    if sys.version > '3.0':
-        raw = bytes(message, 'utf8')
-    else:
-        raw = bytes(message)
+    raw = future_bytes(message)
 
     " Padding "
     BS = 16
@@ -109,8 +106,8 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     tx = Memo(**s)
     print(tx.data)
     print('\n\n')
-    print(tx)
-    return "#" + base58encode(hexlify(bytes(tx.data)).decode("ascii"))
+    print(tx.to_bytes())
+    return "#" + base58encode(hexlify(future_bytes(tx.data)).decode("ascii"))
 
 
 def decode_memo(priv, message):
@@ -155,10 +152,7 @@ def decode_memo(priv, message):
     " Encryption "
     # remove the varint prefix (FIXME, long messages!)
     message = cipher[2:]
-    if sys.version > '3.0':
-        message = aes.decrypt(unhexlify(bytes(message, 'ascii')))
-    else:
-        message = aes.decrypt(unhexlify(bytes(message)))
+    message = aes.decrypt(unhexlify(future_bytes(message, 'ascii')))
     try:
         return _unpad(message.decode('utf8'), 16)
     except:  # noqa FIXME(sneak)

@@ -3,6 +3,7 @@ import hashlib
 import sys
 import string
 import logging
+from steem.utils import future_bytes
 log = logging.getLogger(__name__)
 """ This class and the methods require python3 """
 # FIXME this library needs to support both 2 and 3
@@ -136,11 +137,11 @@ def base58decode(base58_str):
 
 def base58encode(hexstring):
     if sys.version > '3':
-        byteseq = bytes(hexstring, 'ascii')
+        byteseq = future_bytes(hexstring, 'ascii')
         byteseq = unhexlify(byteseq)
-        byteseq = bytes(byteseq)
+        byteseq = future_bytes(byteseq)
     else:
-        byteseq = bytesAsIntegerArrayFromHexString(bytes(hexstring))
+        byteseq = bytesAsIntegerArrayFromHexString(future_bytes(hexstring))
 
     n = 0
     leading_zeroes_count = 0

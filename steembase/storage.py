@@ -399,7 +399,7 @@ class MasterPassword(object):
     def deriveChecksum(self, s):
         """ Derive the checksum
         """
-        checksum = hashlib.sha256(bytes(s, "ascii")).hexdigest()
+        checksum = hashlib.sha256(future_bytes(s, "ascii")).hexdigest()
         return checksum[:4]
 
     def getEncryptedMaster(self):
