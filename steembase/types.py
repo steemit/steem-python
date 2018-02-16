@@ -3,6 +3,7 @@ import struct
 import time
 from binascii import hexlify, unhexlify
 from calendar import timegm
+from steem.utils import future_bytes
 
 object_type = {
     "dynamic_global_property": 0,
@@ -270,7 +271,7 @@ class Bool(Uint8):  # Bool = Uint8
 
 class Set(Array):  # Set = Array
     def __init__(self, d):
-        Array.__init__(d)
+        Array.__init__(self, d)
 
 
 class FixedArray:
