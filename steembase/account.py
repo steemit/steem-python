@@ -189,9 +189,9 @@ class Address(object):
     def to_bytes(self):
         """ Returns the raw content of the ``Base58CheckEncoded`` address """
         if self._address is None:
-            return bytes(self.derivesha512address())
+            return future_bytes(self.derivesha512address())
         else:
-            return bytes(self._address)
+            return future_bytes(self._address)
 
 
 class PublicKey(object):
@@ -276,7 +276,7 @@ class PublicKey(object):
 
     def to_bytes(self):
         """ Returns the raw public key (has length 33)"""
-        return bytes(self._pk)
+        return future_bytes(self._pk)
 
 
 class PrivateKey(object):
@@ -353,4 +353,4 @@ class PrivateKey(object):
 
     def to_bytes(self):
         """ Returns the raw private key """
-        return bytes(self._wif)
+        return future_bytes(self._wif)

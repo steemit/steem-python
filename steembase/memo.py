@@ -1,14 +1,16 @@
 import hashlib
-import struct
-from binascii import hexlify, unhexlify
-import sys
-from collections import OrderedDict
 import json
+import struct
+import sys
+from binascii import hexlify, unhexlify
+from collections import OrderedDict
+
+from Crypto.Cipher import AES
 
 from .operations import Memo
-from Crypto.Cipher import AES
 from .base58 import base58encode, base58decode
 from .account import PrivateKey, PublicKey
+from steem.utils import future_bytes
 
 default_prefix = "STM"
 
@@ -83,7 +85,7 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     from steembase import transactions
     shared_secret = get_shared_secret(priv, pub)
     aes, check = init_aes(shared_secret, nonce)
-    raw = future_bytes(message)
+    raw = future_bytes(message, 'utf8')
 
     " Padding "
     BS = 16
@@ -102,11 +104,8 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
         ("to_pub", repr(pub)),
         ("shared_secret", shared_secret),
     ])
-
     tx = Memo(**s)
-    print(tx.data)
-    print('\n\n')
-    print(tx.to_bytes())
+
     return "#" + base58encode(hexlify(future_bytes(tx.data)).decode("ascii"))
 
 
@@ -123,6 +122,7 @@ def decode_memo(priv, message):
     """
     " decode structure "
     raw = base58decode(message[1:])
+    print('\n\n base58 decoded raw data')
     print(raw)
     from_key = PublicKey(raw[:66])
     raw = raw[66:]
@@ -135,10 +135,8 @@ def decode_memo(priv, message):
     cipher = raw
 
     if repr(to_key) == repr(priv.pubkey):
-        print('first')
         shared_secret = get_shared_secret(priv, from_key)
     elif repr(from_key) == repr(priv.pubkey):
-        print('second')
         shared_secret = get_shared_secret(priv, to_key)
     else:
         raise ValueError("Incorrect PrivateKey")

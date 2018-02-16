@@ -5,6 +5,7 @@ from binascii import hexlify, unhexlify
 
 from .account import PrivateKey
 from .base58 import Base58, base58decode
+from steem.utils import future_bytes
 
 log = logging.getLogger(__name__)
 
@@ -52,15 +53,12 @@ def encrypt(privkey, passphrase):
     """
     privkeyhex = repr(privkey)  # hex
     addr = format(privkey.uncompressed.address, "BTC")
-    if sys.version > '3':
-        a = bytes(addr, 'ascii')
-    else:
-        a = bytes(addr).encode('ascii')
+    a = future_bytes(addr, 'ascii')
     salt = hashlib.sha256(hashlib.sha256(a).digest()).digest()[0:4]
     if SCRYPT_MODULE == "scrypt":
         key = scrypt.hash(passphrase, salt, 16384, 8, 8)
     elif SCRYPT_MODULE == "pylibscrypt":
-        key = scrypt.scrypt(bytes(passphrase, "utf-8"), salt, 16384, 8, 8)
+        key = scrypt.scrypt(future_bytes(passphrase, "utf-8"), salt, 16384, 8, 8)
     else:
         raise ValueError("No scrypt module loaded")
     (derived_half1, derived_half2) = (key[:32], key[32:])
@@ -98,7 +96,7 @@ def decrypt(encrypted_privkey, passphrase):
     if SCRYPT_MODULE == "scrypt":
         key = scrypt.hash(passphrase, salt, 16384, 8, 8)
     elif SCRYPT_MODULE == "pylibscrypt":
-        key = scrypt.scrypt(bytes(passphrase, "utf-8"), salt, 16384, 8, 8)
+        key = scrypt.scrypt(future_bytes(passphrase, "utf-8"), salt, 16384, 8, 8)
     else:
         raise ValueError("No scrypt module loaded")
     derivedhalf1 = key[0:32]
@@ -115,10 +113,7 @@ def decrypt(encrypted_privkey, passphrase):
     """ Verify Salt """
     privkey = PrivateKey(format(wif, "wif"))
     addr = format(privkey.uncompressed.address, "BTC")
-    if sys.version > '3':
-        a = bytes(addr, 'ascii')
-    else:
-        a = bytes(addr).encode('ascii')
+    a = future_bytes(addr, 'ascii')
     saltverify = hashlib.sha256(hashlib.sha256(a).digest()).digest()[0:4]
     if saltverify != salt:
         raise SaltException(

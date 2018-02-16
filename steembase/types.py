@@ -197,7 +197,7 @@ class Bytes:
 
     def to_bytes(self):
         # FIXME constraint data to self.length
-        d = unhexlify(bytes(self.data, 'utf-8'))
+        d = unhexlify(future_bytes(self.data, 'utf-8'))
         return varint(len(d)) + d
 
     def __str__(self):
@@ -221,7 +221,7 @@ class Array:
         self.length = Varint32(len(self.data))
 
     def to_bytes(self):
-        return bytes(self.length) + b"".join([bytes(a) for a in self.data])
+        return future_bytes(self.length) + b"".join([future_bytes(a) for a in self.data])
 
     def __str__(self):
         r = []
@@ -291,10 +291,10 @@ class Optional:
 
     def to_bytes(self):
         if not self.data:
-            return bytes(Bool(0))
+            return future_bytes(Bool(0))
         else:
-            return bytes(Bool(1)) + bytes(self.data) if bytes(
-                self.data) else bytes(Bool(0))
+            return future_bytes(Bool(1)) + future_bytes(self.data) if future_bytes(
+                self.data) else future_bytes(Bool(0))
 
     def __str__(self):
         return str(self.data)
@@ -311,7 +311,7 @@ class StaticVariant:
         self.type_id = type_id
 
     def to_bytes(self):
-        return varint(self.type_id) + bytes(self.data)
+        return varint(self.type_id) + future_bytes(self.data)
 
     def __str__(self):
         return json.dumps([self.type_id, self.data.json()])
@@ -325,7 +325,7 @@ class Map:
         b = b""
         b += varint(len(self.data))
         for e in self.data:
-            b += bytes(e[0]) + bytes(e[1])
+            b += future_bytes(e[0]) + future_bytes(e[1])
         return b
 
     def __str__(self):
@@ -340,7 +340,7 @@ class Id:
         self.data = Varint32(d)
 
     def to_bytes(self):
-        return bytes(self.data)
+        return future_bytes(self.data)
 
     def __str__(self):
         return str(self.data)
@@ -381,7 +381,7 @@ class ObjectId:
             raise Exception("Object id is invalid")
 
     def to_bytes(self):
-        return bytes(self.instance)  # only yield instance
+        return future_bytes(self.instance)  # only yield instance
 
     def __str__(self):
         return self.Id
