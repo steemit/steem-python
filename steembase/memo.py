@@ -72,6 +72,9 @@ def _unpad(s, BS):
 
 
 def encode_memo(priv, pub, nonce, message, **kwargs):
+
+    if sys.version < '3.0':
+        raise NotImplementedError("Memo encoding not currently supported in Python 2.")
     """ Encode a message with a shared secret between Alice and Bob
 
         :param PrivateKey priv: Private Key (of Alice)
@@ -110,6 +113,9 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
 
 
 def decode_memo(priv, message):
+
+    if sys.version < '3.0':
+        raise NotImplementedError("Memo encoding not currently supported in Python 2.")
     """ Decode a message with a shared secret between Alice and Bob
 
         :param PrivateKey priv: Private Key (of Bob)

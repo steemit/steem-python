@@ -184,7 +184,7 @@ class String:
                 r.append("u%04x" % o)
             else:
                 r.append(s)
-        return bytes("".join(r), "utf-8")
+        return future_bytes("".join(r), "utf-8")
 
 
 class Bytes:
