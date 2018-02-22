@@ -20,7 +20,6 @@ toolz = "*"
 voluptuous = "*"
 "w3lib" = "*"
 futures = {version = "*", markers="python_version < '3.0.0'"}
-"pytest-pep8" = "*"
 
 
 [dev-packages]
@@ -35,5 +34,3 @@ recommonmark = "*"
 yapf = "*"
 "autopep8" = "*"
 pytest-cov = "*"
-#[requires]
-#python_version = "3.6"
