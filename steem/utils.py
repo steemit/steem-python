@@ -7,6 +7,9 @@ import time
 import sys
 from datetime import datetime
 
+import future
+from builtins import bytes
+
 import w3lib.url
 from langdetect import DetectorFactory, detect
 from langdetect.lang_detect_exception import LangDetectException
@@ -368,19 +371,18 @@ def compose_dictionary(dictionary, **kwargs):
 
 
 def future_bytes(item, encoding=None):
-    if sys.version > '3.0':
-        if hasattr(item, 'to_bytes'):
-            return item.to_bytes()
-        else:
-            if encoding:
-                return bytes(item, encoding)
-            else:
-                return bytes(item)
+
+    if hasattr(item, 'to_bytes'):
+        return item.to_bytes()
     else:
-        if hasattr(item, 'to_bytes'):
-            return item.to_bytes()
+        if encoding:
+            return bytes(item, encoding)
         else:
-            if encoding:
-                return bytes(item).encode(encoding)
-            else:
-                return bytes(item)
+            return bytes(item)
+
+
+def to_chr(item):
+    if sys.version >= '3.0':
+        return chr(item)
+    else:
+        return unichr(item)

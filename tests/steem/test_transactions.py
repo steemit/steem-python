@@ -5,7 +5,7 @@ from steembase.account import PrivateKey
 from steembase.transactions import SignedTransaction
 from steembase import operations
 from collections import OrderedDict
-from steem.utils import future_bytes
+from steem.utils import future_bytes, to_chr
 import steem as stm
 
 wif = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
@@ -466,7 +466,7 @@ class Testcases(unittest.TestCase):
                 "author": "a",
                 "permlink": "a",
                 "title": "-",
-                "body": "".join([chr(i) for i in range(0, 2048)]),
+                "body": "".join([to_chr(i) for i in range(0, 2048)]),
                 "json_metadata": {}
             })
         ops = [operations.Operation(op)]

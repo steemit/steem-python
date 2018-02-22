@@ -2,13 +2,15 @@ import hashlib
 import logging
 import struct
 import time
+import array
+import sys
 from binascii import hexlify, unhexlify
 from collections import OrderedDict
 from datetime import datetime
 
 import ecdsa
 
-from steem.utils import future_bytes
+from steem.utils import future_bytes, to_chr
 from .account import PrivateKey, PublicKey
 from .chains import known_chains
 from .operations import Operation, GrapheneObject, isArgsThisClass
@@ -114,7 +116,7 @@ class SignedTransaction(GrapheneObject):
         order = pk.curve.generator.order()
         p = pk.pubkey.point
         x_str = ecdsa.util.number_to_string(p.x(), order)
-        return future_bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str
+        return future_bytes(to_chr(2 + (p.y() & 1)), 'ascii') + x_str
 
     # FIXME(sneak) this should be reviewed for correctness
     def recover_public_key(self, digest, signature, i):
@@ -179,7 +181,7 @@ class SignedTransaction(GrapheneObject):
         self.data["signatures"] = []
 
         # Get message to sign
-        #   bytes(self) will give the wire formated data according to
+        #   bytes(self) will give the wire formatted data according to
         #   GrapheneObject and the data given in __init__()
         self.message = unhexlify(self.chainid) + future_bytes(self)
         self.digest = hashlib.sha256(self.message).digest()
@@ -197,8 +199,10 @@ class SignedTransaction(GrapheneObject):
 
         for signature in signatures:
             sig = future_bytes(signature)[1:]
-            recoverParameter = (
-                future_bytes(signature)[0]) - 4 - 27  # recover parameter only
+            if sys.version > '3.0':
+                recoverParameter = (future_bytes(signature)[0]) - 4 - 27  # recover parameter only
+            else:
+                recoverParameter = ord((future_bytes(signature)[0])) - 4 - 27
 
             if USE_SECP256K1:
                 ALL_FLAGS = secp256k1.lib.SECP256K1_CONTEXT_VERIFY | \
@@ -316,6 +320,7 @@ class SignedTransaction(GrapheneObject):
 
                     # Make sure signature is canonical!
                     #
+                    sigder = array.array('B', sigder)
                     lenR = sigder[3]
                     lenS = sigder[5 + lenR]
                     if lenR is 32 and lenS is 32:

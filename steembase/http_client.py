@@ -15,10 +15,8 @@ from urllib3.exceptions import MaxRetryError, ReadTimeoutError, ProtocolError
 
 if sys.version > '3':
     from urllib.parse import urlparse
-    from http.client import RemoteDisconnected
 else:
     from urlparse import urlparse
-    from httplib import HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -196,14 +194,7 @@ class HttpClient(object):
 
         try:
             response = self.request(body=body)
-            errorList = 0
-            if sys.version > '3':
-                errorList = {MaxRetryError, ReadTimeoutError, ProtocolError,
-                             RemoteDisconnected, ConnectionResetError}
-            else:
-                errorList = {MaxRetryError, ReadTimeoutError, ProtocolError,
-                             HTTPException}
-        except (errorList) as e:
+        except (MaxRetryError, ReadTimeoutError, ProtocolError) as e:
             # if we broadcasted a transaction, always raise
             # this is to prevent potential for double spend scenario
             if api == 'network_broadcast_api':

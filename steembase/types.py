@@ -1,6 +1,7 @@
 import json
 import struct
 import time
+import array
 from binascii import hexlify, unhexlify
 from calendar import timegm
 from steem.utils import future_bytes
@@ -35,9 +36,9 @@ def varint(n):
     """
     data = b''
     while n >= 0x80:
-        data += bytes([(n & 0x7f) | 0x80])
+        data += future_bytes([(n & 0x7f) | 0x80])
         n >>= 7
-    data += bytes([n])
+    data += future_bytes([n])
     return data
 
 

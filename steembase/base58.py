@@ -136,12 +136,9 @@ def base58decode(base58_str):
 
 
 def base58encode(hexstring):
-    if sys.version > '3':
-        byteseq = future_bytes(hexstring, 'ascii')
-        byteseq = unhexlify(byteseq)
-        byteseq = future_bytes(byteseq)
-    else:
-        byteseq = bytesAsIntegerArrayFromHexString(future_bytes(hexstring))
+    byteseq = future_bytes(hexstring, 'ascii')
+    byteseq = unhexlify(byteseq)
+    byteseq = future_bytes(byteseq)
 
     n = 0
     leading_zeroes_count = 0
@@ -206,16 +203,4 @@ def gphBase58CheckDecode(s):
     return dec
 
 
-def bytesAsIntegerArrayFromHexString(hexstring):
-    if len(hexstring) % 2:
-        raise ValueError("hexstring must be even length")
-
-    byteArray = []
-    hexIterator = iter(hexstring)
-
-    for c in hexIterator:
-        hexDigit = c + next(hexIterator)
-        byteArray.append(int(hexDigit, 16))
-
-    return byteArray
 

@@ -1,9 +1,8 @@
 import hashlib
 import os
 import re
-import sys
 from binascii import hexlify, unhexlify
-from steem.utils import future_bytes
+from steem.utils import future_bytes, to_chr
 
 import ecdsa
 
@@ -238,7 +237,7 @@ class PublicKey(object):
         x_str = ecdsa.util.number_to_string(p.x(), order)
         # y_str = ecdsa.util.number_to_string(p.y(), order)
         compressed = hexlify(
-            future_bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
+            future_bytes(to_chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
         return (compressed)
 
     def unCompressed(self):
@@ -330,8 +329,8 @@ class PrivateKey(object):
         x_str = ecdsa.util.number_to_string(p.x(), order)
         y_str = ecdsa.util.number_to_string(p.y(), order)
         compressed = hexlify(
-            chr(2 + (p.y() & 1)).encode('ascii') + x_str).decode('ascii')
-        uncompressed = hexlify(chr(4).encode('ascii') + x_str + y_str).decode(
+            to_chr(2 + (p.y() & 1)).encode('ascii') + x_str).decode('ascii')
+        uncompressed = hexlify(to_chr(4).encode('ascii') + x_str + y_str).decode(
             'ascii')
         return [compressed, uncompressed]
 
