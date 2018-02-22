@@ -72,7 +72,6 @@ def _unpad(s, BS):
 
 
 def encode_memo(priv, pub, nonce, message, **kwargs):
-
     """ Encode a message with a shared secret between Alice and Bob
 
         :param PrivateKey priv: Private Key (of Alice)
@@ -96,7 +95,7 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     cipher = hexlify(aes.encrypt(raw)).decode('ascii')
     prefix = kwargs.pop("prefix", default_prefix)
     s = OrderedDict([
-        ("from",format(priv.pubkey, prefix)),
+        ("from", format(priv.pubkey, prefix)),
         ("to", format(pub, prefix)),
         ("nonce", nonce),
         ("check", check),
@@ -111,7 +110,6 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
 
 
 def decode_memo(priv, message):
-
     """ Decode a message with a shared secret between Alice and Bob
 
         :param PrivateKey priv: Private Key (of Bob)

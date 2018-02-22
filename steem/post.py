@@ -175,7 +175,7 @@ class Post(dict):
         """Return a float value of estimated total SBD reward.
         """
         return Amount(self.get("total_payout_value", "0 SBD")) + \
-            Amount(self.get("pending_payout_value", "0 SBD"))
+               Amount(self.get("pending_payout_value", "0 SBD"))
 
     def time_elapsed(self):
         """Return a timedelta on how old the post is.
@@ -316,20 +316,20 @@ class Post(dict):
         op = CommentOptions(
             **{
                 "author":
-                self["author"],
+                    self["author"],
                 "permlink":
-                self["permlink"],
+                    self["permlink"],
                 "max_accepted_payout":
-                options.get("max_accepted_payout",
-                            str(self["max_accepted_payout"])),
+                    options.get("max_accepted_payout",
+                                str(self["max_accepted_payout"])),
                 "percent_steem_dollars":
-                int(
-                    options.get("percent_steem_dollars",
-                                self["percent_steem_dollars"] / 100) * 100),
+                    int(
+                        options.get("percent_steem_dollars",
+                                    self["percent_steem_dollars"] / 100) * 100),
                 "allow_votes":
-                options.get("allow_votes", self["allow_votes"]),
+                    options.get("allow_votes", self["allow_votes"]),
                 "allow_curation_rewards":
-                options.get("allow_curation_rewards", self[
-                    "allow_curation_rewards"]),
+                    options.get("allow_curation_rewards", self[
+                        "allow_curation_rewards"]),
             })
         return self.commit.finalizeOp(op, self["author"], "posting")

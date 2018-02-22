@@ -24,7 +24,7 @@ class Converter(object):
         """
         return (Amount(self.steemd.get_feed_history()['current_median_history']
                        ['base']).amount / Amount(self.steemd.get_feed_history(
-                       )['current_median_history']['quote']).amount)
+        )['current_median_history']['quote']).amount)
 
     def steem_per_mvests(self):
         """ Obtain STEEM/MVESTS ratio
@@ -62,7 +62,7 @@ class Converter(object):
 
         # determine voting power used
         used_power = int((voting_power * vote_pct) / 10000);
-        max_vote_denom = props['vote_power_reserve_rate'] * (5*60*60*24) / (60*60*24);
+        max_vote_denom = props['vote_power_reserve_rate'] * (5 * 60 * 60 * 24) / (60 * 60 * 24);
         used_power = int((used_power + max_vote_denom - 1) / max_vote_denom)
 
         # calculate vote rshares
@@ -98,10 +98,10 @@ class Converter(object):
         total_reward_shares2 = int(props['total_reward_shares2'])
 
         post_rshares2 = (
-            steem_payout / total_reward_fund_steem) * total_reward_shares2
+                                steem_payout / total_reward_fund_steem) * total_reward_shares2
 
         rshares = math.sqrt(
-            self.CONTENT_CONSTANT**2 + post_rshares2) - self.CONTENT_CONSTANT
+            self.CONTENT_CONSTANT ** 2 + post_rshares2) - self.CONTENT_CONSTANT
         return rshares
 
     def rshares_2_weight(self, rshares):
@@ -109,5 +109,5 @@ class Converter(object):
 
             :param number rshares: R-Shares
         """
-        _max = 2**64 - 1
+        _max = 2 ** 64 - 1
         return (_max * rshares) / (2 * self.CONTENT_CONSTANT + rshares)

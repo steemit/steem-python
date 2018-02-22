@@ -4,6 +4,7 @@ import sys
 import string
 import logging
 from steem.utils import future_bytes
+
 log = logging.getLogger(__name__)
 
 """ Default Prefix """
@@ -152,6 +153,7 @@ def base58encode(hexstring):
 
     return (BASE58_ALPHABET[0:1] * leading_zeroes_count + res).decode('ascii')
 
+
 def ripemd160(s):
     ripemd160 = hashlib.new('ripemd160')
     ripemd160.update(unhexlify(s))
@@ -197,6 +199,3 @@ def gphBase58CheckDecode(s):
     checksum = ripemd160(dec)[:4]
     assert (s[-4:] == checksum)
     return dec
-
-
-

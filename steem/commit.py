@@ -30,6 +30,7 @@ log = logging.getLogger(__name__)
 STEEMIT_100_PERCENT = 10000
 STEEMIT_1_PERCENT = (STEEMIT_100_PERCENT / 100)
 
+
 # TODO
 # account_witness_proxy [active]
 # account_update [owner, active]
@@ -310,9 +311,9 @@ class Commit(object):
                 # or just simply vo.Schema([{'account': str, 'weight': int}])
                 schema = vo.Schema([{
                     vo.Required('account'):
-                    vo.All(str, vo.Length(max=16)),
+                        vo.All(str, vo.Length(max=16)),
                     vo.Required('weight', default=10000):
-                    vo.All(int, vo.Range(min=1, max=10000))
+                        vo.All(int, vo.Range(min=1, max=10000))
                 }])
                 schema(beneficiaries)
                 options['beneficiaries'] = beneficiaries
@@ -321,21 +322,21 @@ class Commit(object):
             comment_op = operations.CommentOptions(
                 **{
                     "author":
-                    author,
+                        author,
                     "permlink":
-                    permlink,
+                        permlink,
                     "max_accepted_payout":
-                    options.get("max_accepted_payout", default_max_payout),
+                        options.get("max_accepted_payout", default_max_payout),
                     "percent_steem_dollars":
-                    int(options.get("percent_steem_dollars", 10000)),
+                        int(options.get("percent_steem_dollars", 10000)),
                     "allow_votes":
-                    options.get("allow_votes", True),
+                        options.get("allow_votes", True),
                     "allow_curation_rewards":
-                    options.get("allow_curation_rewards", True),
+                        options.get("allow_curation_rewards", True),
                     "extensions":
-                    options.get("extensions", []),
+                        options.get("extensions", []),
                     "beneficiaries":
-                    options.get("beneficiaries"),
+                        options.get("beneficiaries"),
                 })
             ops.append(comment_op)
 
@@ -662,14 +663,14 @@ class Commit(object):
         op = operations.Transfer(
             **{
                 "from":
-                account,
+                    account,
                 "to":
-                to,
+                    to,
                 "amount":
-                '{:.{prec}f} {asset}'.format(
-                    float(amount), prec=3, asset=asset),
+                    '{:.{prec}f} {asset}'.format(
+                        float(amount), prec=3, asset=asset),
                 "memo":
-                memo
+                    memo
             })
         return self.finalizeOp(op, account, "active")
 
@@ -691,10 +692,10 @@ class Commit(object):
         op = operations.WithdrawVesting(
             **{
                 "account":
-                account,
+                    account,
                 "vesting_shares":
-                '{:.{prec}f} {asset}'.format(
-                    float(amount), prec=6, asset="VESTS"),
+                    '{:.{prec}f} {asset}'.format(
+                        float(amount), prec=6, asset="VESTS"),
             })
 
         return self.finalizeOp(op, account, "active")
@@ -722,12 +723,12 @@ class Commit(object):
         op = operations.TransferToVesting(
             **{
                 "from":
-                account,
+                    account,
                 "to":
-                to,
+                    to,
                 "amount":
-                '{:.{prec}f} {asset}'.format(
-                    float(amount), prec=3, asset='STEEM')
+                    '{:.{prec}f} {asset}'.format(
+                        float(amount), prec=3, asset='STEEM')
             })
 
         return self.finalizeOp(op, account, "active")
@@ -756,12 +757,12 @@ class Commit(object):
         op = operations.Convert(
             **{
                 "owner":
-                account,
+                    account,
                 "requestid":
-                request_id,
+                    request_id,
                 "amount":
-                '{:.{prec}f} {asset}'.format(
-                    float(amount), prec=3, asset='SBD')
+                    '{:.{prec}f} {asset}'.format(
+                        float(amount), prec=3, asset='SBD')
             })
 
         return self.finalizeOp(op, account, "active")
@@ -790,14 +791,14 @@ class Commit(object):
         op = operations.TransferToSavings(
             **{
                 "from":
-                account,
+                    account,
                 "to":
-                to,
+                    to,
                 "amount":
-                '{:.{prec}f} {asset}'.format(
-                    float(amount), prec=3, asset=asset),
+                    '{:.{prec}f} {asset}'.format(
+                        float(amount), prec=3, asset=asset),
                 "memo":
-                memo,
+                    memo,
             })
         return self.finalizeOp(op, account, "active")
 
@@ -838,16 +839,16 @@ class Commit(object):
         op = operations.TransferFromSavings(
             **{
                 "from":
-                account,
+                    account,
                 "request_id":
-                request_id,
+                    request_id,
                 "to":
-                to,
+                    to,
                 "amount":
-                '{:.{prec}f} {asset}'.format(
-                    float(amount), prec=3, asset=asset),
+                    '{:.{prec}f} {asset}'.format(
+                        float(amount), prec=3, asset=asset),
                 "memo":
-                memo,
+                    memo,
             })
         return self.finalizeOp(op, account, "active")
 
@@ -1006,7 +1007,7 @@ class Commit(object):
         """ Try to decode an encrypted memo
         """
         assert enc_memo[
-            0] == "#", "decode memo requires memos to start with '#'"
+                   0] == "#", "decode memo requires memos to start with '#'"
         keys = memo.involved_keys(enc_memo)
         wif = None
         for key in keys:
@@ -1026,9 +1027,9 @@ class Commit(object):
         last_payment = fmt_time_string(account["sbd_last_interest_payment"])
         next_payment = last_payment + timedelta(days=30)
         interest_rate = self.steemd.get_dynamic_global_properties()[
-            "sbd_interest_rate"] / 100  # percent
+                            "sbd_interest_rate"] / 100  # percent
         interest_amount = (interest_rate / 100) * int(
-            int(account["sbd_seconds"]) / (60 * 60 * 24 * 356)) * 10**-3
+            int(account["sbd_seconds"]) / (60 * 60 * 24 * 356)) * 10 ** -3
 
         return {
             "interest": interest_amount,
@@ -1414,17 +1415,17 @@ class Commit(object):
         op = operations.CommentOptions(
             **{
                 "author":
-                author,
+                    author,
                 "permlink":
-                permlink,
+                    permlink,
                 "max_accepted_payout":
-                options.get("max_accepted_payout", default_max_payout),
+                    options.get("max_accepted_payout", default_max_payout),
                 "percent_steem_dollars":
-                options.get("percent_steem_dollars", 100) * STEEMIT_1_PERCENT,
+                    options.get("percent_steem_dollars", 100) * STEEMIT_1_PERCENT,
                 "allow_votes":
-                options.get("allow_votes", True),
+                    options.get("allow_votes", True),
                 "allow_curation_rewards":
-                options.get("allow_curation_rewards", True),
+                    options.get("allow_curation_rewards", True),
             })
         return self.finalizeOp(op, account["name"], "posting")
 

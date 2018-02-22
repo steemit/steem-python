@@ -15,7 +15,9 @@ from langdetect import DetectorFactory, detect
 from langdetect.lang_detect_exception import LangDetectException
 from toolz import update_in, assoc
 
-if sys.version < '3.0':
+if sys.version >= '3.0':
+    from urllib.parse import urlparse
+else:
     from urlparse import urlparse
 
 logger = logging.getLogger(__name__)
@@ -371,7 +373,6 @@ def compose_dictionary(dictionary, **kwargs):
 
 
 def future_bytes(item, encoding=None):
-
     if hasattr(item, 'to_bytes'):
         return item.to_bytes()
     else:

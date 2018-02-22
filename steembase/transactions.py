@@ -65,8 +65,8 @@ class SignedTransaction(GrapheneObject):
 
             if "operations" in kwargs:
                 if all([
-                        not isinstance(a, Operation)
-                        for a in kwargs["operations"]
+                    not isinstance(a, Operation)
+                    for a in kwargs["operations"]
                 ]):
                     kwargs['operations'] = Array(
                         [Operation(a) for a in kwargs["operations"]])
@@ -151,7 +151,7 @@ class SignedTransaction(GrapheneObject):
         # paranoia's sake.
         if not ecdsa.VerifyingKey.from_public_point(
                 Q, curve=ecdsa.SECP256k1).verify_digest(
-                    signature, digest, sigdecode=ecdsa.util.sigdecode_string):
+            signature, digest, sigdecode=ecdsa.util.sigdecode_string):
             return None
         return ecdsa.VerifyingKey.from_public_point(Q, curve=ecdsa.SECP256k1)
 
@@ -206,7 +206,7 @@ class SignedTransaction(GrapheneObject):
 
             if USE_SECP256K1:
                 ALL_FLAGS = secp256k1.lib.SECP256K1_CONTEXT_VERIFY | \
-                    secp256k1.lib.SECP256K1_CONTEXT_SIGN
+                            secp256k1.lib.SECP256K1_CONTEXT_SIGN
                 # Placeholder
                 pub = secp256k1.PublicKey(flags=ALL_FLAGS)
                 # Recover raw signature

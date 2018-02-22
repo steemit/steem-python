@@ -103,7 +103,7 @@ class Key(DataDir):
         """ Check if the database table exists
         """
         query = ("SELECT name FROM sqlite_master " +
-                 "WHERE type='table' AND name=?", (self.__tablename__, ))
+                 "WHERE type='table' AND name=?", (self.__tablename__,))
         connection = sqlite3.connect(self.sqlDataBaseFile)
         cursor = connection.cursor()
         cursor.execute(*query)
@@ -139,7 +139,7 @@ class Key(DataDir):
            The encryption scheme is BIP38
         """
         query = ("SELECT wif from %s " % (self.__tablename__) + "WHERE pub=?",
-                 (pub, ))
+                 (pub,))
         connection = sqlite3.connect(self.sqlDataBaseFile)
         cursor = connection.cursor()
         cursor.execute(*query)
@@ -184,7 +184,7 @@ class Key(DataDir):
            :param str pub: Public key
         """
         query = ("DELETE FROM %s " % (self.__tablename__) + "WHERE pub=?",
-                 (pub, ))
+                 (pub,))
         connection = sqlite3.connect(self.sqlDataBaseFile)
         cursor = connection.cursor()
         cursor.execute(*query)
@@ -215,7 +215,7 @@ class Configuration(DataDir):
         """ Check if the database table exists
         """
         query = ("SELECT name FROM sqlite_master " +
-                 "WHERE type='table' AND name=?", (self.__tablename__, ))
+                 "WHERE type='table' AND name=?", (self.__tablename__,))
         connection = sqlite3.connect(self.sqlDataBaseFile)
         cursor = connection.cursor()
         cursor.execute(*query)
@@ -251,7 +251,7 @@ class Configuration(DataDir):
         """ Is the key `key` available int he configuration?
         """
         query = ("SELECT value FROM %s " %
-                 (self.__tablename__) + "WHERE key=?", (key, ))
+                 (self.__tablename__) + "WHERE key=?", (key,))
         connection = sqlite3.connect(self.sqlDataBaseFile)
         cursor = connection.cursor()
         cursor.execute(*query)
@@ -262,7 +262,7 @@ class Configuration(DataDir):
             it returns `None` if a key is not found!
         """
         query = ("SELECT value FROM %s " %
-                 (self.__tablename__) + "WHERE key=?", (key, ))
+                 (self.__tablename__) + "WHERE key=?", (key,))
         connection = sqlite3.connect(self.sqlDataBaseFile)
         cursor = connection.cursor()
         cursor.execute(*query)
@@ -306,7 +306,7 @@ class Configuration(DataDir):
         """ Delete a key from the configuration store
         """
         query = ("DELETE FROM %s " % (self.__tablename__) + "WHERE key=?",
-                 (key, ))
+                 (key,))
         connection = sqlite3.connect(self.sqlDataBaseFile)
         cursor = connection.cursor()
         cursor.execute(*query)

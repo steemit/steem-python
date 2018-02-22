@@ -2,12 +2,12 @@ import hashlib
 import json
 import time
 import warnings
-import sys
 
 from .instance import shared_steemd_instance, stm
 from .utils import parse_time, future_bytes
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 

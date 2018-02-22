@@ -245,7 +245,7 @@ class Amount:
     def to_bytes(self):
         # padding
         asset = self.asset + "\x00" * (7 - len(self.asset))
-        amount = round(float(self.amount) * 10**self.precision)
+        amount = round(float(self.amount) * 10 ** self.precision)
         return (struct.pack("<q", amount) + struct.pack("<b", self.precision) +
                 future_bytes(asset, "ascii"))
 
@@ -659,7 +659,7 @@ class WitnessUpdate(GrapheneObject):
             if not kwargs["block_signing_key"]:
                 kwargs[
                     "block_signing_key"] = \
-                        "STM1111111111111111111111111111111114T1Anm"
+                    "STM1111111111111111111111111111111114T1Anm"
             super(WitnessUpdate, self).__init__(
                 OrderedDict([
                     ('owner', String(kwargs["owner"])),

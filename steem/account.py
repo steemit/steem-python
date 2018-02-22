@@ -96,11 +96,11 @@ class Account(dict):
 
         totals = {
             'STEEM':
-            sum([available['STEEM'], savings['STEEM'], rewards['STEEM']]),
+                sum([available['STEEM'], savings['STEEM'], rewards['STEEM']]),
             'SBD':
-            sum([available['SBD'], savings['SBD'], rewards['SBD']]),
+                sum([available['SBD'], savings['SBD'], rewards['SBD']]),
             'VESTS':
-            sum([available['VESTS'], rewards['VESTS']]),
+                sum([available['VESTS'], rewards['VESTS']]),
         }
 
         total = walk_values(rpartial(round, 3), totals)
@@ -331,13 +331,13 @@ class Account(dict):
         i = start_index
         while i < max_index + batch_size:
             for account_history in self.get_account_history(
-                index=i,
-                limit=batch_size,
-                start=i - batch_size,
-                stop=max_index,
-                order=1,
-                filter_by=filter_by,
-                raw_output=raw_output,
+                    index=i,
+                    limit=batch_size,
+                    start=i - batch_size,
+                    stop=max_index,
+                    order=1,
+                    filter_by=filter_by,
+                    raw_output=raw_output,
             ):
                 yield account_history
             i += (batch_size + 1)
@@ -357,11 +357,11 @@ class Account(dict):
             if i - batch_size < 0:
                 batch_size = i
             for account_history in self.get_account_history(
-                index=i,
-                limit=batch_size,
-                order=-1,
-                filter_by=filter_by,
-                raw_output=raw_output,
+                    index=i,
+                    limit=batch_size,
+                    order=-1,
+                    filter_by=filter_by,
+                    raw_output=raw_output,
             ):
                 yield account_history
             i -= (batch_size + 1)

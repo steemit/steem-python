@@ -70,7 +70,7 @@ class Steemd(HttpClient):
         chain = props["current_supply"].split(" ")[1]
 
         assert chain in known_chains, "The chain you are connecting " + \
-            "to is not supported"
+                                      "to is not supported"
         return known_chains.get(chain)
 
     def get_replies(self, author, skip_own=True):
@@ -121,8 +121,8 @@ class Steemd(HttpClient):
             discussion_query["start_permlink"] = permlink
 
         if sort not in [
-                "trending", "created", "active", "cashout", "payout", "votes",
-                "children", "hot"
+            "trending", "created", "active", "cashout", "payout", "votes",
+            "children", "hot"
         ]:
             raise Exception("Invalid choice of '--sort'!")
 

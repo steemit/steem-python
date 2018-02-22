@@ -67,7 +67,7 @@ def encrypt(privkey, passphrase):
     encrypted_half2 = _encrypt_xor(privkeyhex[32:], derived_half1[16:], aes)
     " flag byte is forced 0xc0 because Graphene only uses compressed keys "
     payload = (
-        b'\x01' + b'\x42' + b'\xc0' + salt + encrypted_half1 + encrypted_half2)
+            b'\x01' + b'\x42' + b'\xc0' + salt + encrypted_half1 + encrypted_half2)
     " Checksum "
     checksum = hashlib.sha256(hashlib.sha256(payload).digest()).digest()[:4]
     privatkey = hexlify(payload + checksum).decode('ascii')
