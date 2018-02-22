@@ -199,7 +199,7 @@ class SignedTransaction(GrapheneObject):
 
         for signature in signatures:
             sig = future_bytes(signature)[1:]
-            if sys.version > '3.0':
+            if sys.version >= '3.0':
                 recoverParameter = (future_bytes(signature)[0]) - 4 - 27  # recover parameter only
             else:
                 recoverParameter = ord((future_bytes(signature)[0])) - 4 - 27

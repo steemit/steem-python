@@ -13,7 +13,7 @@ from steembase.exceptions import RPCError
 from urllib3.connection import HTTPConnection
 from urllib3.exceptions import MaxRetryError, ReadTimeoutError, ProtocolError
 
-if sys.version > '3':
+if sys.version >= '3.0':
     from urllib.parse import urlparse
 else:
     from urlparse import urlparse

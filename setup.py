@@ -4,9 +4,6 @@ from pipenv.utils import convert_deps_to_pip
 from setuptools import setup, find_packages
 import sys
 
-if sys.version_info < (3, 0):
-    sys.exit('Sorry, python2 is not yet supported. Please use python3.')
-
 pfile = Project(chdir=False).parsed_pipfile
 requirements = convert_deps_to_pip(pfile['packages'], r=False)
 test_requirements = convert_deps_to_pip(pfile['dev-packages'], r=False)
@@ -38,7 +35,9 @@ setup(
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
-        'Natural Language :: English', 'Programming Language :: Python :: 3',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 2.7'
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',

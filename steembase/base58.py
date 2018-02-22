@@ -5,10 +5,6 @@ import string
 import logging
 from steem.utils import future_bytes
 log = logging.getLogger(__name__)
-""" This class and the methods require python3 """
-# FIXME this library needs to support both 2 and 3
-
-#assert sys.version_info[0] == 3, "graphenelib requires python3"
 
 """ Default Prefix """
 PREFIX = "STM"
