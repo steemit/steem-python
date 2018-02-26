@@ -79,7 +79,7 @@ class Uint8:
     def __init__(self, d):
         self.data = d
 
-    def to_bytes(self):
+    def __bytes__(self):
         return struct.pack("<B", self.data)
 
     def __str__(self):
@@ -90,7 +90,7 @@ class Int16:
     def __init__(self, d):
         self.data = int(d)
 
-    def to_bytes(self):
+    def __bytes__(self):
         return struct.pack("<h", int(self.data))
 
     def __str__(self):
@@ -101,7 +101,7 @@ class Uint16:
     def __init__(self, d):
         self.data = int(d)
 
-    def to_bytes(self):
+    def __bytes__(self):
         return struct.pack("<H", self.data)
 
     def __str__(self):
@@ -112,7 +112,7 @@ class Uint32:
     def __init__(self, d):
         self.data = int(d)
 
-    def to_bytes(self):
+    def __bytes__(self):
         return struct.pack("<I", self.data)
 
     def __str__(self):
@@ -123,7 +123,7 @@ class Uint64:
     def __init__(self, d):
         self.data = int(d)
 
-    def to_bytes(self):
+    def __bytes__(self):
         return struct.pack("<Q", self.data)
 
     def __str__(self):
@@ -134,7 +134,7 @@ class Varint32:
     def __init__(self, d):
         self.data = d
 
-    def to_bytes(self):
+    def __bytes__(self):
         return varint(self.data)
 
     def __str__(self):
@@ -145,7 +145,7 @@ class Int64:
     def __init__(self, d):
         self.data = d
 
-    def to_bytes(self):
+    def __bytes__(self):
         return struct.pack("<q", self.data)
 
     def __str__(self):
@@ -156,7 +156,7 @@ class String:
     def __init__(self, d):
         self.data = d
 
-    def to_bytes(self):
+    def __bytes__(self):
         d = self.unicodify()
         return varint(len(d)) + d
 
@@ -196,7 +196,7 @@ class Bytes:
         else:
             self.length = len(self.data)
 
-    def to_bytes(self):
+    def __bytes__(self):
         # FIXME constraint data to self.length
         d = unhexlify(future_bytes(self.data, 'utf-8'))
         return varint(len(d)) + d
@@ -209,7 +209,7 @@ class Void:
     def __init__(self):
         pass
 
-    def to_bytes(self):
+    def __bytes__(self):
         return b''
 
     def __str__(self):
@@ -221,7 +221,7 @@ class Array:
         self.data = d
         self.length = Varint32(len(self.data))
 
-    def to_bytes(self):
+    def __bytes__(self):
         return future_bytes(self.length) + b"".join([future_bytes(a) for a in self.data])
 
     def __str__(self):
@@ -242,7 +242,7 @@ class PointInTime:
     def __init__(self, d):
         self.data = d
 
-    def to_bytes(self):
+    def __bytes__(self):
         return struct.pack("<I",
                            timegm(
                                time.strptime((self.data + "UTC"), timeformat)))
@@ -255,7 +255,7 @@ class Signature:
     def __init__(self, d):
         self.data = d
 
-    def to_bytes(self):
+    def __bytes__(self):
         return self.data
 
     def __str__(self):
@@ -279,7 +279,7 @@ class FixedArray:
     def __init__(self, d):
         raise NotImplementedError
 
-    def to_bytes(self):
+    def __bytes__(self):
         raise NotImplementedError
 
     def __str__(self):
@@ -290,7 +290,7 @@ class Optional:
     def __init__(self, d):
         self.data = d
 
-    def to_bytes(self):
+    def __bytes__(self):
         if not self.data:
             return future_bytes(Bool(0))
         else:
@@ -311,7 +311,7 @@ class StaticVariant:
         self.data = d
         self.type_id = type_id
 
-    def to_bytes(self):
+    def __bytes__(self):
         return varint(self.type_id) + future_bytes(self.data)
 
     def __str__(self):
@@ -322,7 +322,7 @@ class Map:
     def __init__(self, data):
         self.data = data
 
-    def to_bytes(self):
+    def __bytes__(self):
         b = b""
         b += varint(len(self.data))
         for e in self.data:
@@ -340,7 +340,7 @@ class Id:
     def __init__(self, d):
         self.data = Varint32(d)
 
-    def to_bytes(self):
+    def __bytes__(self):
         return future_bytes(self.data)
 
     def __str__(self):
@@ -354,7 +354,7 @@ class VoteId:
         self.type = int(parts[0])
         self.instance = int(parts[1])
 
-    def to_bytes(self):
+    def __bytes__(self):
         binary = (self.type & 0xff) | (self.instance << 8)
         return struct.pack("<I", binary)
 
@@ -381,7 +381,7 @@ class ObjectId:
         else:
             raise Exception("Object id is invalid")
 
-    def to_bytes(self):
+    def __bytes__(self):
         return future_bytes(self.instance)  # only yield instance
 
     def __str__(self):

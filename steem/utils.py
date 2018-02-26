@@ -373,8 +373,8 @@ def compose_dictionary(dictionary, **kwargs):
 
 
 def future_bytes(item, encoding=None):
-    if hasattr(item, 'to_bytes'):
-        return item.to_bytes()
+    if hasattr(item, '__bytes__'):
+        return item.__bytes__()
     else:
         if encoding:
             return bytes(item, encoding)

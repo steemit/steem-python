@@ -75,7 +75,7 @@ class Operation:
         module = importlib.import_module('steembase.operations')
         return getattr(module, class_name)
 
-    def to_bytes(self):
+    def __bytes__(self):
         return future_bytes(Id(self.opId)) + future_bytes(self.op)
 
     def __str__(self):
@@ -98,7 +98,7 @@ class GrapheneObject(object):
     def __init__(self, data=None):
         self.data = data
 
-    def to_bytes(self):
+    def __bytes__(self):
         if self.data is None:
             return bytes()
         b = b""
@@ -242,7 +242,7 @@ class Amount:
         else:
             raise Exception("Asset unknown")
 
-    def to_bytes(self):
+    def __bytes__(self):
         # padding
         asset = self.asset + "\x00" * (7 - len(self.asset))
         amount = round(float(self.amount) * 10 ** self.precision)

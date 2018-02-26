@@ -100,7 +100,7 @@ class Base58(object):
         """
         return gphBase58CheckEncode(self._hex)
 
-    def to_bytes(self):
+    def __bytes__(self):
         """ Return raw bytes
 
             :return: Raw bytes of instance
