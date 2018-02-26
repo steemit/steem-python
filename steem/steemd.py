@@ -12,7 +12,7 @@ from .block import Block
 from .blockchain import Blockchain
 from .post import Post
 from .utils import resolve_identifier
-from .utils import compose_dictionary
+from .utils import compat_compose_dictionary
 
 logger = logging.getLogger(__name__)
 
@@ -193,7 +193,7 @@ class Steemd(HttpClient):
         """
         results = self.call_multi_with_futures(
             'get_block', blocks, max_workers=10)
-        return (compose_dictionary(x, block_num=int(x['block_id'][:8], base=16))
+        return (compat_compose_dictionary(x, block_num=int(x['block_id'][:8], base=16))
                 for x in results if x)
 
     def get_blocks(self, block_nums):

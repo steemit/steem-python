@@ -4,7 +4,7 @@ import time
 import warnings
 
 from .instance import shared_steemd_instance, stm
-from .utils import parse_time, future_bytes
+from .utils import parse_time, compat_bytes
 
 import logging
 
@@ -300,7 +300,7 @@ class Blockchain(object):
     def hash_op(event):
         """ This method generates a hash of blockchain operation. """
         data = json.dumps(event, sort_keys=True)
-        return hashlib.sha1(future_bytes(data, 'utf-8')).hexdigest()
+        return hashlib.sha1(compat_bytes(data, 'utf-8')).hexdigest()
 
     def get_all_usernames(self, *args, **kwargs):
         """ Fetch the full list of STEEM usernames. """

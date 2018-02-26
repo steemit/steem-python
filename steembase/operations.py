@@ -4,7 +4,7 @@ import re
 import struct
 from collections import OrderedDict
 
-from steem.utils import future_bytes
+from steem.utils import compat_bytes
 from .account import PublicKey
 from .operationids import operations
 from .types import (Int16, Uint16, Uint32, Uint64, String, Bytes, Array,
@@ -76,7 +76,7 @@ class Operation:
         return getattr(module, class_name)
 
     def __bytes__(self):
-        return future_bytes(Id(self.opId)) + future_bytes(self.op)
+        return compat_bytes(Id(self.opId)) + compat_bytes(self.op)
 
     def __str__(self):
         return json.dumps(
@@ -104,9 +104,9 @@ class GrapheneObject(object):
         b = b""
         for name, value in self.data.items():
             if isinstance(value, str):
-                b += future_bytes(value, 'utf-8')
+                b += compat_bytes(value, 'utf-8')
             else:
-                b += future_bytes(value)
+                b += compat_bytes(value)
         return b
 
     def __json__(self):
@@ -247,7 +247,7 @@ class Amount:
         asset = self.asset + "\x00" * (7 - len(self.asset))
         amount = round(float(self.amount) * 10 ** self.precision)
         return (struct.pack("<q", amount) + struct.pack("<b", self.precision) +
-                future_bytes(asset, "ascii"))
+                compat_bytes(asset, "ascii"))
 
     def __str__(self):
         return '{:.{}f} {}'.format(self.amount, self.precision, self.asset)

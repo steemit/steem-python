@@ -10,7 +10,7 @@ from datetime import datetime
 
 import ecdsa
 
-from steem.utils import future_bytes, to_chr
+from steem.utils import compat_bytes, compat_chr
 from .account import PrivateKey, PublicKey
 from .chains import known_chains
 from .operations import Operation, GrapheneObject, isArgsThisClass
@@ -116,7 +116,7 @@ class SignedTransaction(GrapheneObject):
         order = pk.curve.generator.order()
         p = pk.pubkey.point
         x_str = ecdsa.util.number_to_string(p.x(), order)
-        return future_bytes(to_chr(2 + (p.y() & 1)), 'ascii') + x_str
+        return compat_bytes(compat_chr(2 + (p.y() & 1)), 'ascii') + x_str
 
     # FIXME(sneak) this should be reviewed for correctness
     def recover_public_key(self, digest, signature, i):
@@ -183,7 +183,7 @@ class SignedTransaction(GrapheneObject):
         # Get message to sign
         #   bytes(self) will give the wire formatted data according to
         #   GrapheneObject and the data given in __init__()
-        self.message = unhexlify(self.chainid) + future_bytes(self)
+        self.message = unhexlify(self.chainid) + compat_bytes(self)
         self.digest = hashlib.sha256(self.message).digest()
 
         # restore signatures
@@ -198,11 +198,11 @@ class SignedTransaction(GrapheneObject):
         pubKeysFound = []
 
         for signature in signatures:
-            sig = future_bytes(signature)[1:]
+            sig = compat_bytes(signature)[1:]
             if sys.version >= '3.0':
-                recoverParameter = (future_bytes(signature)[0]) - 4 - 27  # recover parameter only
+                recoverParameter = (compat_bytes(signature)[0]) - 4 - 27  # recover parameter only
             else:
-                recoverParameter = ord((future_bytes(signature)[0])) - 4 - 27
+                recoverParameter = ord((compat_bytes(signature)[0])) - 4 - 27
 
             if USE_SECP256K1:
                 ALL_FLAGS = secp256k1.lib.SECP256K1_CONTEXT_VERIFY | \
@@ -213,11 +213,11 @@ class SignedTransaction(GrapheneObject):
                 sig = pub.ecdsa_recoverable_deserialize(sig, recoverParameter)
                 # Recover PublicKey
                 verifyPub = secp256k1.PublicKey(
-                    pub.ecdsa_recover(future_bytes(self.message), sig))
+                    pub.ecdsa_recover(compat_bytes(self.message), sig))
                 # Convert recoverable sig to normal sig
                 normalSig = verifyPub.ecdsa_recoverable_convert(sig)
                 # Verify
-                verifyPub.ecdsa_verify(future_bytes(self.message), normalSig)
+                verifyPub.ecdsa_verify(compat_bytes(self.message), normalSig)
                 phex = hexlify(
                     verifyPub.serialize(compressed=True)).decode('ascii')
                 pubKeysFound.append(phex)
@@ -268,7 +268,7 @@ class SignedTransaction(GrapheneObject):
         # Sign the message with every private key given!
         sigs = []
         for wif in self.privkeys:
-            p = future_bytes(PrivateKey(wif))
+            p = compat_bytes(PrivateKey(wif))
             i = 0
             if USE_SECP256K1:
                 ndata = secp256k1.ffi.new("const int *ndata")

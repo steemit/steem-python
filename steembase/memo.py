@@ -10,7 +10,7 @@ from Crypto.Cipher import AES
 from .operations import Memo
 from .base58 import base58encode, base58decode
 from .account import PrivateKey, PublicKey
-from steem.utils import future_bytes
+from steem.utils import compat_bytes
 
 default_prefix = "STM"
 
@@ -65,8 +65,8 @@ def _pad(s, BS):
 
 
 def _unpad(s, BS):
-    count = int(struct.unpack('B', future_bytes(s[-1], 'ascii'))[0])
-    if future_bytes(s[-count::], 'ascii') == count * struct.pack('B', count):
+    count = int(struct.unpack('B', compat_bytes(s[-1], 'ascii'))[0])
+    if compat_bytes(s[-count::], 'ascii') == count * struct.pack('B', count):
         return s[:-count]
     return s
 
@@ -85,7 +85,7 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     from steembase import transactions
     shared_secret = get_shared_secret(priv, pub)
     aes, check = init_aes(shared_secret, nonce)
-    raw = future_bytes(message, 'utf8')
+    raw = compat_bytes(message, 'utf8')
 
     " Padding "
     BS = 16
@@ -106,7 +106,7 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     ])
     tx = Memo(**s)
 
-    return "#" + base58encode(hexlify(future_bytes(tx)).decode("ascii"))
+    return "#" + base58encode(hexlify(compat_bytes(tx)).decode("ascii"))
 
 
 def decode_memo(priv, message):
@@ -148,7 +148,7 @@ def decode_memo(priv, message):
     " Encryption "
     # remove the varint prefix (FIXME, long messages!)
     message = cipher[2:]
-    message = aes.decrypt(unhexlify(future_bytes(message, 'ascii')))
+    message = aes.decrypt(unhexlify(compat_bytes(message, 'ascii')))
     try:
         return _unpad(message.decode('utf8'), 16)
     except:  # noqa FIXME(sneak)

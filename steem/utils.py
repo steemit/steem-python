@@ -365,7 +365,7 @@ def is_valid_account_name(name):
     return re.match('^[a-z][a-z0-9\-.]{2,15}$', name)
 
 
-def compose_dictionary(dictionary, **kwargs):
+def compat_compose_dictionary(dictionary, **kwargs):
     """
     This method allows us the one line dictionary composition that is offered by the ** dictionary unpacking
     available in 3.6.
@@ -380,7 +380,7 @@ def compose_dictionary(dictionary, **kwargs):
     return dictionary
 
 
-def future_bytes(item, encoding=None):
+def compat_bytes(item, encoding=None):
     """
     This method is required because Python 2.7 `bytes` is simply an alias for `str`. Without this method,
     code execution would look something like:
@@ -423,7 +423,7 @@ def future_bytes(item, encoding=None):
             return bytes(item)
 
 
-def to_chr(item):
+def compat_chr(item):
     """
     This is necessary to maintain compatibility across Python 2.7 and 3.6.
     In 3.6, 'chr' handles any unicode character, whereas in 2.7, `chr` only handles

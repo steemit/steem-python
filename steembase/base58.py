@@ -3,7 +3,7 @@ import hashlib
 import sys
 import string
 import logging
-from steem.utils import future_bytes
+from steem.utils import compat_bytes
 
 log = logging.getLogger(__name__)
 
@@ -133,9 +133,9 @@ def base58decode(base58_str):
 
 
 def base58encode(hexstring):
-    byteseq = future_bytes(hexstring, 'ascii')
+    byteseq = compat_bytes(hexstring, 'ascii')
     byteseq = unhexlify(byteseq)
-    byteseq = future_bytes(byteseq)
+    byteseq = compat_bytes(byteseq)
 
     n = 0
     leading_zeroes_count = 0
