@@ -48,7 +48,7 @@ class Post(dict):
         elif isinstance(post,
                         dict) and "author" in post and "permlink" in post:
             post["author"] = post["author"].replace('@', '')
-            self.identifier = construct_identifier(post["author"],
+            self.identifier = construct_identifier('@', post["author"],
                                                    post["permlink"])
         else:
             raise ValueError("Post expects an identifier or a dict "
@@ -142,7 +142,7 @@ class Post(dict):
             category = m.group(1)
             author = m.group(2)
             permlink = m.group(3)
-            return construct_identifier(author, permlink), category
+            return construct_identifier('@', author, permlink), category
 
     def get_replies(self):
         """ Return **first-level** comments of the post.
@@ -274,7 +274,7 @@ class Post(dict):
                 log.info("No changes made! Skipping ...")
                 return
 
-        reply_identifier = construct_identifier(
+        reply_identifier = construct_identifier('@',
             original_post["parent_author"], original_post["parent_permlink"])
 
         new_meta = {}

@@ -253,13 +253,15 @@ class Blockchain(object):
                     if kwargs.get('raw_output'):
                         yield event
                     else:
-                        yield op.update({
+                        updated_op = op.copy()
+                        updated_op.update({
                             "_id": self.hash_op(event),
                             "type": op_type,
                             "timestamp": parse_time(event.get("timestamp")),
                             "block_num": event.get("block"),
                             "trx_id": event.get("trx_id"),
                         })
+                        yield updated_op
 
     def history(self,
                 filter_by=list(),

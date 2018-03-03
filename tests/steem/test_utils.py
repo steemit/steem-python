@@ -11,7 +11,7 @@ from steem.utils import (
 
 class Testcases(unittest.TestCase):
     def test_constructIdentifier(self):
-        self.assertEqual(construct_identifier("A", "B"), "@A/B")
+        self.assertEqual(construct_identifier('@', "A", "B"), "@A/B")
 
     def test_sanitizePermlink(self):
         self.assertEqual(sanitize_permlink("aAf_0.12"), "aaf-0-12")

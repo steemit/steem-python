@@ -318,9 +318,12 @@ class SignedTransaction(GrapheneObject):
                     signature = ecdsa.util.sigencode_string(
                         r, s, sk.curve.generator.order())
 
+                    # This line allows us to convert a 2.7 byte array(which is just binary) to an array of byte values.
+                    # We can then use the elements in sigder as integers, as in the following two lines.
+                    sigder = array.array('B', sigder)
+
                     # Make sure signature is canonical!
                     #
-                    sigder = array.array('B', sigder)
                     lenR = sigder[3]
                     lenS = sigder[5 + lenR]
                     if lenR is 32 and lenS is 32:

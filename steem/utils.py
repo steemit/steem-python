@@ -231,17 +231,16 @@ def remove_from_dict(obj, remove_keys=list()):
     return {k: v for k, v in items if k not in remove_keys}
 
 
-def construct_identifier(*args):
+def construct_identifier(username_prefix='@', *args):
     """ Create a post identifier from comment/post object or arguments.
 
     Examples:
 
         ::
-            construct_identifier('username', 'permlink')
-            construct_identifier({'author': 'username',
+            construct_identifier('@', 'username', 'permlink')
+            construct_identifier('@', {'author': 'username',
                 'permlink': 'permlink'})
     """
-    username_prefix = '@'
 
     if len(args) == 1:
         op = args[0]
@@ -374,10 +373,11 @@ def compat_compose_dictionary(dictionary, **kwargs):
     :param kwargs: a set of key/value pairs to add to `dictionary`.
     :return: the composed dictionary.
     """
+    composed_dict = dictionary.copy()
     for pairs in kwargs.items():
-        dictionary[pairs[0]] = pairs[1]
+        composed_dict[pairs[0]] = pairs[1]
 
-    return dictionary
+    return composed_dict
 
 
 def compat_bytes(item, encoding=None):
