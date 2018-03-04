@@ -142,15 +142,12 @@ class HttpClient(object):
             Otherwise, a Python dictionary is returned.
 
         """
-        api = kwargs.get('kwargs').pop('api', None)
-        as_json = kwargs.get('kwargs').pop('as_json', True)
-        _id = kwargs.get('kwargs').pop('_id', 0)
-
-        if len(kwargs) == 1 and 'kwargs' in kwargs:
-            kwargs = None
+        api = kwargs.pop('api', None)
+        as_json = kwargs.pop('as_json', True)
+        _id = kwargs.pop('_id', 0)
 
         headers = {"jsonrpc": "2.0", "id": _id}
-        if kwargs is not None:
+        if kwargs is not None and len(kwargs) > 0:
 
             body_dict = dict(headers)
             body_dict.update({"method": "call",
@@ -189,7 +186,7 @@ class HttpClient(object):
         return_with_args = kwargs.get('return_with_args', None)
         _ret_cnt = kwargs.get('_ret_cnt', 0)
 
-        body = HttpClient.json_rpc_body(name, *args, kwargs=kwargs)
+        body = HttpClient.json_rpc_body(name, *args, **kwargs)
         response = None
 
         try:
