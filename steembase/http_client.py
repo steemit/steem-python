@@ -55,7 +55,7 @@ class HttpClient(object):
         # None is not known
         # 19.4 is appbase
         # 19.3 is not appbase
-        self.server_version = None
+        self.node_version = None
 
         num_pools = kwargs.get('num_pools', 10)
         maxsize = kwargs.get('maxsize', 10)
@@ -164,6 +164,7 @@ class HttpClient(object):
              api=None,
              return_with_args=None,
              _ret_cnt=0,
+             _node_version=None,
              kwargs=None):
         """ Call a remote procedure in steemd.
 
@@ -174,8 +175,11 @@ class HttpClient(object):
             transaction.  In latter case, the exception is **re-raised**.
 
         """
+        if _node_version is None:
+            _node_version = self.node_version
+        
         body = None
-        if self.node_version is None or self.node_version < 19.4:
+        if _node_version is None or _node_version < 19.4:
             body = HttpClient.json_rpc_body(name, *args, api=api, kwargs=kwargs)
         else:
             body = HttpClient.json_rpc_body(name, *args, api='condenser_api', kwargs=kwargs)
@@ -225,15 +229,15 @@ class HttpClient(object):
                     response=response,
                     args=args,
                     return_with_args=return_with_args)
-                self.node_version = 19.3
+                self.node_version = _node_version
             except Exception as e:
+                # Default 19.3 didn't work.  Try using the condenser
                 if self.node_version is None:
-                    self.node_version = 19.4
                     answer = self.call(
                         name,
                         *args,
                         return_with_args=return_with_args,
-                        _ret_cnt=_ret_cnt + 1)
+                        _ret_cnt=_ret_cnt + 1, _node_version=19.4)
                 raise e
             finally:
                 return answer
