@@ -15,6 +15,7 @@ from urllib3.exceptions import MaxRetryError, ReadTimeoutError, ProtocolError
 
 if sys.version >= '3.0':
     from http.client import RemoteDisconnected
+    from urllib.parse import urlparse
 else:
     from urlparse import urlparse
     from httplib import HTTPException

@@ -374,8 +374,7 @@ def compat_compose_dictionary(dictionary, **kwargs):
     :return: the composed dictionary.
     """
     composed_dict = dictionary.copy()
-    for pairs in kwargs.items():
-        composed_dict[pairs[0]] = pairs[1]
+    composed_dict.update(kwargs)
 
     return composed_dict
 
