@@ -52,6 +52,10 @@ class HttpClient(object):
         self.return_with_args = kwargs.get('return_with_args', False)
         self.re_raise = kwargs.get('re_raise', True)
         self.max_workers = kwargs.get('max_workers', None)
+        # None is not known
+        # 19.4 is appbase
+        # 19.3 is not appbase
+        self.server_version = None
 
         num_pools = kwargs.get('num_pools', 10)
         maxsize = kwargs.get('maxsize', 10)
@@ -105,6 +109,7 @@ class HttpClient(object):
     def set_node(self, node_url):
         """ Change current node to provided node URL. """
         self.url = node_url
+        self.node_version = None
         self.request = partial(self.http.urlopen, 'POST', self.url)
 
     @property
@@ -169,7 +174,11 @@ class HttpClient(object):
             transaction.  In latter case, the exception is **re-raised**.
 
         """
-        body = HttpClient.json_rpc_body(name, *args, api=api, kwargs=kwargs)
+        body = None
+        if self.node_version is None or self.node_version < 19.4:
+            body = HttpClient.json_rpc_body(name, *args, api=api, kwargs=kwargs)
+        else:
+            body = HttpClient.json_rpc_body(name, *args, api='condenser_api', kwargs=kwargs)
         response = None
         try:
             response = self.request(body=body)
@@ -210,15 +219,30 @@ class HttpClient(object):
                                              200]):
                 logger.info('non 200 response:%s', response.status)
 
-            return self._return(
-                response=response,
-                args=args,
-                return_with_args=return_with_args)
+            answer = None
+            try:
+                answer = self._return(
+                    response=response,
+                    args=args,
+                    return_with_args=return_with_args)
+                self.node_version = 19.3
+            except Exception as e:
+                if self.node_version is None:
+                    self.node_version = 19.4
+                    answer = self.call(
+                        name,
+                        *args,
+                        return_with_args=return_with_args,
+                        _ret_cnt=_ret_cnt + 1)
+                raise e
+            finally:
+                return answer
+           
 
     def _return(self, response=None, args=None, return_with_args=None):
         return_with_args = return_with_args or self.return_with_args
         result = None
-
+        
         if response:
             try:
                 response_json = json.loads(response.data.decode('utf-8'))
@@ -229,7 +253,7 @@ class HttpClient(object):
             else:
                 if 'error' in response_json:
                     error = response_json['error']
-
+                    
                     if self.re_raise:
                         error_message = error.get(
                             'detail', response_json['error']['message'])
