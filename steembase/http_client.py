@@ -198,7 +198,6 @@ class HttpClient(object):
                          HTTPException,)
 
         try:
-            raise HTTPException
             response = self.request(body=body)
         except (errorList) as e:
             # if we broadcasted a transaction, always raise
