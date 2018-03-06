@@ -106,7 +106,7 @@ def legacyentry():
         nargs='*',
         type=str,
         help='General information about the blockchain, a block, an account'
-        ' name, a post, a public key, ...')
+             ' name, a post, a public key, ...')
     """
         Command "changewalletpassphrase"
     """
@@ -123,7 +123,7 @@ def legacyentry():
         nargs='*',
         type=str,
         help='private key to import into the wallet (unsafe, unless you ' +
-        'delete your shell history)')
+             'delete your shell history)')
     addkey.set_defaults(command="addkey")
 
     parsewif = subparsers.add_parser(
@@ -176,7 +176,7 @@ def legacyentry():
         'post',
         type=str,
         help='@author/permlink-identifier of the post to upvote ' +
-        'to (e.g. @xeroc/python-steem-0-1)')
+             'to (e.g. @xeroc/python-steem-0-1)')
     parser_upvote.add_argument(
         '--account',
         type=str,
@@ -203,7 +203,7 @@ def legacyentry():
         'post',
         type=str,
         help='@author/permlink-identifier of the post to downvote ' +
-        'to (e.g. @xeroc/python-steem-0-1)')
+             'to (e.g. @xeroc/python-steem-0-1)')
     parser_downvote.add_argument(
         '--weight',
         type=float,
@@ -360,7 +360,7 @@ def legacyentry():
         type=str,
         nargs="?",
         help='The account or key that will be allowed to interact with ' +
-        'your account')
+             'your account')
     parser_allow.add_argument(
         '--permission',
         type=str,
@@ -397,7 +397,7 @@ def legacyentry():
         'foreign_account',
         type=str,
         help='The account or key whose allowance to interact as your ' +
-        'account will be removed')
+             'account will be removed')
     parser_disallow.add_argument(
         '--permission',
         type=str,
@@ -497,7 +497,7 @@ def legacyentry():
         type=str,
         required=False,
         help='Load transaction from file. If "-", read from ' +
-        'stdin (defaults to "-")')
+             'stdin (defaults to "-")')
     """
         Command "broadcast"
     """
@@ -509,7 +509,7 @@ def legacyentry():
         type=str,
         required=False,
         help='Load transaction from file. If "-", read from ' +
-        'stdin (defaults to "-")')
+             'stdin (defaults to "-")')
     """
         Command "orderbook"
     """
@@ -591,7 +591,7 @@ def legacyentry():
         required=False,
         default=configStorage["default_account"],
         help='Resteem as this user (requires to have the ' +
-        'key installed in the wallet)')
+             'key installed in the wallet)')
     """
         Command "follow"
     """
@@ -645,7 +645,7 @@ def legacyentry():
         required=False,
         default=configStorage["default_account"],
         help='setprofile as this user (requires to have the key ' +
-        'installed in the wallet)')
+             'installed in the wallet)')
     parser_setprofile_a = parser_setprofile.add_argument_group(
         'Multiple keys at once')
     parser_setprofile_a.add_argument(
@@ -668,7 +668,7 @@ def legacyentry():
         required=False,
         default=configStorage["default_account"],
         help='delprofile as this user (requires to have the ' +
-        'key installed in the wallet)')
+             'key installed in the wallet)')
     parser_delprofile.add_argument(
         'variable', type=str, nargs='*', help='Variable to set')
     """
@@ -797,8 +797,8 @@ def legacyentry():
             info = blockchain.info()
             median_price = steem.get_current_median_history_price()
             steem_per_mvest = (
-                Amount(info["total_vesting_fund_steem"]).amount /
-                (Amount(info["total_vesting_shares"]).amount / 1e6))
+                    Amount(info["total_vesting_fund_steem"]).amount /
+                    (Amount(info["total_vesting_shares"]).amount / 1e6))
             price = (Amount(median_price["base"]).amount / Amount(
                 median_price["quote"]).amount)
             for key in info:
@@ -1157,7 +1157,7 @@ def legacyentry():
             posting_key = PasswordKey(args.account, password, role="posting")
             posting_pubkey = format(posting_key.get_public_key(), "STM")
             if posting_pubkey in [
-                    x[0] for x in account["posting"]["key_auths"]
+                x[0] for x in account["posting"]["key_auths"]
             ]:
                 print("Importing posting key!")
                 posting_privkey = posting_key.get_private_key()
@@ -1300,11 +1300,11 @@ def legacyentry():
     elif args.command == "witnesscreate":
         props = {
             "account_creation_fee":
-            str(Amount("%f STEEM" % args.account_creation_fee)),
+                str(Amount("%f STEEM" % args.account_creation_fee)),
             "maximum_block_size":
-            args.maximum_block_size,
+                args.maximum_block_size,
             "sbd_interest_rate":
-            int(args.sbd_interest_rate * 100)
+                int(args.sbd_interest_rate * 100)
         }
         print_json(
             steem.commit.witness_update(
@@ -1366,11 +1366,11 @@ def format_operation_details(op, memos=False):
     if op[0] == "vote":
         return "%s: %s" % (
             op[1]["voter"],
-            construct_identifier(op[1]["author"], op[1]["permlink"]))
+            construct_identifier('@', op[1]["author"], op[1]["permlink"]))
     elif op[0] == "comment":
         return "%s: %s" % (
             op[1]["author"],
-            construct_identifier(op[1]["author"], op[1]["permlink"]))
+            construct_identifier('@', op[1]["author"], op[1]["permlink"]))
     elif op[0] == "transfer":
         str_ = "%s -> %s %s" % (
             op[1]["from"],

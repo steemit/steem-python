@@ -5,6 +5,7 @@ from steembase.account import PrivateKey
 from steembase.transactions import SignedTransaction
 from steembase import operations
 from collections import OrderedDict
+from steem.utils import compat_bytes, compat_chr
 import steem as stm
 
 wif = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
@@ -40,7 +41,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c80457010107666f6f6261726107666f6f626172620"
                    "7666f6f6261726307666f6f6261726407666f6f6261726507666f6f62"
@@ -67,7 +68,7 @@ class Testcases(unittest.TestCase):
 
         tx.verify([PrivateKey(wif).pubkey], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c80457010007666f6f6261726107666f6f62617263"
                    "07666f6f62617264e8030001202e09123f732a438ef6d6138484d7ad"
@@ -136,7 +137,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c804570109102700000000000003535445454d000"
                    "0057865726f63086673616661617366010000000002026f6231b8ed"
@@ -170,7 +171,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c80457010203666f6f046261617206b201000000"
                    "000003535445454d000004466f6f6f00012025416c234dd5ff15d8"
@@ -193,7 +194,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
 
         compare = ("f68585abf4dce7c80457010303666f6f046261617206b201000000"
                    "000003535445454d00000001203a34cd45fb4a2585514614be2c1"
@@ -214,7 +215,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
 
         compare = (
             "f68585abf4dce7c80457010403666f6f00e1f5050000000006564553545300000"
@@ -239,7 +240,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
 
         compare = (
             "f68585abf4dce7c804570120087465737475736572087465737475736572e8030"
@@ -265,7 +266,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
 
         compare = (
             "f68585abf4dce7c804570121087465737475736572292300000774657374736"
@@ -287,7 +288,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
 
         compare = (
             "f68585abf4dce7c8045701220774657375736572292300000001200942474f672"
@@ -313,7 +314,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c8045701050000000000000000000000000003535"
                    "445454d0000000000000000000003535445454d0000007f46685800"
                    "011f28a2fc52dcfc19378c5977917b158dfab93e7760259aab7ecdb"
@@ -375,7 +376,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c80457010a0973747265656d69616e01010000"
                    "00000202bbcf38855c9ae9d55704ee50ff56552af1242266c105"
                    "44a75b61005e17fa78a601000389d28937022880a7f0c7deaa6f"
@@ -406,7 +407,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c804570106003cac20000001206c9888d0c2c3"
                    "1dba1302566f524dfac01a15760b93a8726241a7ae6ba00edfd"
                    "e5b83edaf94a4bd35c2957ded6023576dcbe936338fb9d340e2"
@@ -429,7 +430,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c804570114057865726f63057865726f63e803"
                    "0000011f12d2b8f93f9528f31979e0e1f59a6d45346a88c02ab2"
                    "c4115b10c9e273fc1e99621af0c2188598c84762b7e99ca63f6b"
@@ -450,7 +451,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c804570108057865726f6343529d8ba0860100000"
                    "00000035342440000000000011f3d22eb66e5cddcc90f5d6ca0bd7a"
                    "43e0ab811ecd480022af8a847c45eac720b342188d55643d8cb1711"
@@ -465,7 +466,7 @@ class Testcases(unittest.TestCase):
                 "author": "a",
                 "permlink": "a",
                 "title": "-",
-                "body": "".join([chr(i) for i in range(0, 2048)]),
+                "body": "".join([compat_chr(i) for i in range(0, 2048)]),
                 "json_metadata": {}
             })
         ops = [operations.Operation(op)]
@@ -476,7 +477,7 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
 
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c804570101000001610161012dec1f75303030307"
                    "5303030317530303032753030303375303030347530303035753030"
                    "3036753030303762090a7530303062660d753030306575303030667"
@@ -647,7 +648,7 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c804570107057865726f63e803000000000"
                    "00003534244000000001b1000000000000003535445454d00"
                    "000001203847a02aa76964cacfb41565c23286cc64b18f6bb"
@@ -679,7 +680,7 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c80457010b057865726f6308666f6f6f6f6261"
                    "720314aa202c9158990b3ec51a1aa49b2ab5d300c97b391df3be"
                    "b34bb74f3c62699e102700000000000003535445454d000047f4"
@@ -702,7 +703,7 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c80457010c057865726f630a636"
                    "861696e73717561640100011f16b43411e11f4739"
                    "4c1624a3c4d3cf4daba700b8690f494e6add7ad9b"
@@ -734,7 +735,7 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c8045701120001057865726f6306666f6c6c"
                    "6f777f5b227265626c6f67222c207b226163636f756e74223a"
                    "20227865726f63222c2022617574686f72223a202263686169"
@@ -776,7 +777,7 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
-        txWire = hexlify(bytes(tx)).decode("ascii")
+        txWire = hexlify(compat_bytes(tx)).decode("ascii")
         compare = ("f68585abf4dce7c804570113057865726f6306706973746f6e"
                    "00ca9a3b000000000353424400000000102701010100020a67"
                    "6f6f642d6b61726d61d007046e756c6c881300011f59634e65"
@@ -805,7 +806,7 @@ class Testcases(unittest.TestCase):
             expiration=expiration,
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
-        tx_wire = hexlify(bytes(tx)).decode("ascii")
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
 
         # todo
         rpc = self.steem.commit.wallet

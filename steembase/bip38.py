@@ -1,9 +1,11 @@
 import hashlib
 import logging
+import sys
 from binascii import hexlify, unhexlify
 
 from .account import PrivateKey
 from .base58 import Base58, base58decode
+from steem.utils import compat_bytes
 
 log = logging.getLogger(__name__)
 
@@ -51,12 +53,12 @@ def encrypt(privkey, passphrase):
     """
     privkeyhex = repr(privkey)  # hex
     addr = format(privkey.uncompressed.address, "BTC")
-    a = bytes(addr, 'ascii')
+    a = compat_bytes(addr, 'ascii')
     salt = hashlib.sha256(hashlib.sha256(a).digest()).digest()[0:4]
     if SCRYPT_MODULE == "scrypt":
         key = scrypt.hash(passphrase, salt, 16384, 8, 8)
     elif SCRYPT_MODULE == "pylibscrypt":
-        key = scrypt.scrypt(bytes(passphrase, "utf-8"), salt, 16384, 8, 8)
+        key = scrypt.scrypt(compat_bytes(passphrase, "utf-8"), salt, 16384, 8, 8)
     else:
         raise ValueError("No scrypt module loaded")
     (derived_half1, derived_half2) = (key[:32], key[32:])
@@ -65,7 +67,7 @@ def encrypt(privkey, passphrase):
     encrypted_half2 = _encrypt_xor(privkeyhex[32:], derived_half1[16:], aes)
     " flag byte is forced 0xc0 because Graphene only uses compressed keys "
     payload = (
-        b'\x01' + b'\x42' + b'\xc0' + salt + encrypted_half1 + encrypted_half2)
+            b'\x01' + b'\x42' + b'\xc0' + salt + encrypted_half1 + encrypted_half2)
     " Checksum "
     checksum = hashlib.sha256(hashlib.sha256(payload).digest()).digest()[:4]
     privatkey = hexlify(payload + checksum).decode('ascii')
@@ -94,7 +96,7 @@ def decrypt(encrypted_privkey, passphrase):
     if SCRYPT_MODULE == "scrypt":
         key = scrypt.hash(passphrase, salt, 16384, 8, 8)
     elif SCRYPT_MODULE == "pylibscrypt":
-        key = scrypt.scrypt(bytes(passphrase, "utf-8"), salt, 16384, 8, 8)
+        key = scrypt.scrypt(compat_bytes(passphrase, "utf-8"), salt, 16384, 8, 8)
     else:
         raise ValueError("No scrypt module loaded")
     derivedhalf1 = key[0:32]
@@ -111,7 +113,7 @@ def decrypt(encrypted_privkey, passphrase):
     """ Verify Salt """
     privkey = PrivateKey(format(wif, "wif"))
     addr = format(privkey.uncompressed.address, "BTC")
-    a = bytes(addr, 'ascii')
+    a = compat_bytes(addr, 'ascii')
     saltverify = hashlib.sha256(hashlib.sha256(a).digest()).digest()[0:4]
     if saltverify != salt:
         raise SaltException(

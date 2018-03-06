@@ -1,19 +1,24 @@
 # coding=utf-8
-import concurrent.futures
 import json
 import logging
 import socket
 import time
+import sys
 from functools import partial
-from http.client import RemoteDisconnected
 from itertools import cycle
-from urllib.parse import urlparse
-
+import concurrent.futures
 import certifi
 import urllib3
 from steembase.exceptions import RPCError
 from urllib3.connection import HTTPConnection
 from urllib3.exceptions import MaxRetryError, ReadTimeoutError, ProtocolError
+
+if sys.version >= '3.0':
+    from http.client import RemoteDisconnected
+    from urllib.parse import urlparse
+else:
+    from urlparse import urlparse
+    from httplib import HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +67,7 @@ class HttpClient(object):
 
         if tcp_keepalive:
             socket_options = HTTPConnection.default_socket_options + \
-                [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1), ]
+                             [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1), ]
         else:
             socket_options = HTTPConnection.default_socket_options
 
@@ -112,7 +117,7 @@ class HttpClient(object):
         return urlparse(self.url).hostname
 
     @staticmethod
-    def json_rpc_body(name, *args, api=None, as_json=True, _id=0, kwargs=None):
+    def json_rpc_body(name, *args, **kwargs):
         """ Build request body for steemd RPC requests.
 
         Args:
@@ -139,15 +144,27 @@ class HttpClient(object):
             Otherwise, a Python dictionary is returned.
 
         """
+        api = kwargs.pop('api', None)
+        as_json = kwargs.pop('as_json', True)
+        _id = kwargs.pop('_id', 0)
+
         headers = {"jsonrpc": "2.0", "id": _id}
-        if kwargs is not None:
-            body_dict = {**headers, "method": "call",
-                         "params": [api, name, kwargs]}
+        if kwargs is not None and len(kwargs) > 0:
+
+            body_dict = dict(headers)
+            body_dict.update({"method": "call",
+                              "params": [api, name, kwargs]})
         elif api:
-            body_dict = {**headers, "method": "call",
-                         "params": [api, name, args]}
+
+            body_dict = dict(headers)
+            body_dict.update({"method": "call",
+                              "params": [api, name, args]})
+
         else:
-            body_dict = {**headers, "method": name, "params": args}
+
+            body_dict = dict(headers)
+            body_dict.update({"method": name, "params": args})
+
         if as_json:
             return json.dumps(body_dict, ensure_ascii=False).encode('utf8')
         else:
@@ -156,10 +173,7 @@ class HttpClient(object):
     def call(self,
              name,
              *args,
-             api=None,
-             return_with_args=None,
-             _ret_cnt=0,
-             kwargs=None):
+             **kwargs):
         """ Call a remote procedure in steemd.
 
         Warnings:
@@ -169,12 +183,24 @@ class HttpClient(object):
             transaction.  In latter case, the exception is **re-raised**.
 
         """
-        body = HttpClient.json_rpc_body(name, *args, api=api, kwargs=kwargs)
+
+        api = kwargs.get('api', None)
+        return_with_args = kwargs.get('return_with_args', None)
+        _ret_cnt = kwargs.get('_ret_cnt', 0)
+
+        body = HttpClient.json_rpc_body(name, *args, **kwargs)
         response = None
+
+        if sys.version > '3.0':
+            errorList = (MaxRetryError, ReadTimeoutError, ProtocolError,
+                         RemoteDisconnected, ConnectionResetError,)
+        else:
+            errorList = (MaxRetryError, ReadTimeoutError, ProtocolError,
+                         HTTPException,)
+
         try:
             response = self.request(body=body)
-        except (MaxRetryError, ConnectionResetError, ReadTimeoutError,
-                RemoteDisconnected, ProtocolError) as e:
+        except (errorList) as e:
             # if we broadcasted a transaction, always raise
             # this is to prevent potential for double spend scenario
             if api == 'network_broadcast_api':
@@ -192,9 +218,9 @@ class HttpClient(object):
                           (self.hostname, e.__class__.__name__))
             return self.call(
                 name,
-                *args,
                 return_with_args=return_with_args,
-                _ret_cnt=_ret_cnt + 1)
+                _ret_cnt=_ret_cnt + 1,
+                *args)
         except Exception as e:
             if self.re_raise:
                 raise e
@@ -206,8 +232,9 @@ class HttpClient(object):
                     args=args,
                     return_with_args=return_with_args)
         else:
-            if response.status not in tuple([*response.REDIRECT_STATUSES,
-                                             200]):
+            redirectStatuses = list(response.REDIRECT_STATUSES)
+            redirectStatuses.append(200)
+            if response.status not in tuple(redirectStatuses):
                 logger.info('non 200 response:%s', response.status)
 
             return self._return(
@@ -254,6 +281,6 @@ class HttpClient(object):
 
             futures = (executor.submit(
                 self.call, name, *ensure_list(param), api=api)
-                       for param in params)
+                for param in params)
             for future in concurrent.futures.as_completed(futures):
                 yield future.result()

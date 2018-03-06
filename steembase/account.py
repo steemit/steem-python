@@ -2,6 +2,7 @@ import hashlib
 import os
 import re
 from binascii import hexlify, unhexlify
+from steem.utils import compat_bytes, compat_chr
 
 import ecdsa
 
@@ -25,7 +26,7 @@ class PasswordKey(object):
         """ Derive private key from the brain key and the current sequence
             number
         """
-        a = bytes(self.account + self.role + self.password, 'utf8')
+        a = compat_bytes(self.account + self.role + self.password, 'utf8')
         s = hashlib.sha256(a).digest()
         return PrivateKey(hexlify(s).decode('ascii'))
 
@@ -91,7 +92,8 @@ class BrainKey(object):
             number
         """
         encoded = "%s %d" % (self.brainkey, self.sequence)
-        a = bytes(encoded, 'ascii')
+        a = compat_bytes(encoded, 'ascii')
+
         s = hashlib.sha256(hashlib.sha512(a).digest()).digest()
         return PrivateKey(hexlify(s).decode('ascii'))
 
@@ -114,7 +116,7 @@ class BrainKey(object):
         assert len(dict_lines) == 49744
         for j in range(0, word_count):
             num = int.from_bytes(os.urandom(2), byteorder="little")
-            rndMult = num / 2**16  # returns float between 0..1 (inclusive)
+            rndMult = num / 2 ** 16  # returns float between 0..1 (inclusive)
             wIdx = round(len(dict_lines) * rndMult)
             brainkey[j] = dict_lines[wIdx]
         return " ".join(brainkey).upper()
@@ -186,9 +188,9 @@ class Address(object):
     def __bytes__(self):
         """ Returns the raw content of the ``Base58CheckEncoded`` address """
         if self._address is None:
-            return bytes(self.derivesha512address())
+            return compat_bytes(self.derivesha512address())
         else:
-            return bytes(self._address)
+            return compat_bytes(self._address)
 
 
 class PublicKey(object):
@@ -231,11 +233,11 @@ class PublicKey(object):
         """ Derive compressed public key """
         order = ecdsa.SECP256k1.generator.order()
         p = ecdsa.VerifyingKey.from_string(
-            bytes(self), curve=ecdsa.SECP256k1).pubkey.point
+            compat_bytes(self), curve=ecdsa.SECP256k1).pubkey.point
         x_str = ecdsa.util.number_to_string(p.x(), order)
         # y_str = ecdsa.util.number_to_string(p.y(), order)
         compressed = hexlify(
-            bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
+            compat_bytes(compat_chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
         return (compressed)
 
     def unCompressed(self):
@@ -273,7 +275,7 @@ class PublicKey(object):
 
     def __bytes__(self):
         """ Returns the raw public key (has length 33)"""
-        return bytes(self._pk)
+        return compat_bytes(self._pk)
 
 
 class PrivateKey(object):
@@ -327,8 +329,8 @@ class PrivateKey(object):
         x_str = ecdsa.util.number_to_string(p.x(), order)
         y_str = ecdsa.util.number_to_string(p.y(), order)
         compressed = hexlify(
-            bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str).decode('ascii')
-        uncompressed = hexlify(bytes(chr(4), 'ascii') + x_str + y_str).decode(
+            compat_chr(2 + (p.y() & 1)).encode('ascii') + x_str).decode('ascii')
+        uncompressed = hexlify(compat_chr(4).encode('ascii') + x_str + y_str).decode(
             'ascii')
         return [compressed, uncompressed]
 
@@ -350,4 +352,4 @@ class PrivateKey(object):
 
     def __bytes__(self):
         """ Returns the raw private key """
-        return bytes(self._wif)
+        return compat_bytes(self._wif)

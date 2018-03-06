@@ -186,21 +186,21 @@ class Dex(object):
         op = operations.LimitOrderCreate(
             **{
                 "owner":
-                account,
+                    account,
                 "orderid":
-                order_id or random.getrandbits(32),
+                    order_id or random.getrandbits(32),
                 "amount_to_sell":
-                '{:.{prec}f} {asset}'.format(
-                    amount * rate,
-                    prec=base["precision"],
-                    asset=base["symbol"]),
+                    '{:.{prec}f} {asset}'.format(
+                        amount * rate,
+                        prec=base["precision"],
+                        asset=base["symbol"]),
                 "min_to_receive":
-                '{:.{prec}f} {asset}'.format(
-                    amount, prec=quote["precision"], asset=quote["symbol"]),
+                    '{:.{prec}f} {asset}'.format(
+                        amount, prec=quote["precision"], asset=quote["symbol"]),
                 "fill_or_kill":
-                killfill,
+                    killfill,
                 "expiration":
-                transactions.fmt_time_from_now(expiration)
+                    transactions.fmt_time_from_now(expiration)
             })
         return self.steemd.commit.finalizeOp(op, account, "active")
 
@@ -247,21 +247,21 @@ class Dex(object):
         op = operations.LimitOrderCreate(
             **{
                 "owner":
-                account,
+                    account,
                 "orderid":
-                orderid or random.getrandbits(32),
+                    orderid or random.getrandbits(32),
                 "amount_to_sell":
-                '{:.{prec}f} {asset}'.format(
-                    amount, prec=quote["precision"], asset=quote["symbol"]),
+                    '{:.{prec}f} {asset}'.format(
+                        amount, prec=quote["precision"], asset=quote["symbol"]),
                 "min_to_receive":
-                '{:.{prec}f} {asset}'.format(
-                    amount * rate,
-                    prec=base["precision"],
-                    asset=base["symbol"]),
+                    '{:.{prec}f} {asset}'.format(
+                        amount * rate,
+                        prec=base["precision"],
+                        asset=base["symbol"]),
                 "fill_or_kill":
-                killfill,
+                    killfill,
                 "expiration":
-                transactions.fmt_time_from_now(expiration)
+                    transactions.fmt_time_from_now(expiration)
             })
         return self.steemd.commit.finalizeOp(op, account, "active")
 

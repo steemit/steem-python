@@ -6,6 +6,7 @@ name = "pypi"
 
 
 [packages]
+
 appdirs = "*"
 certifi = "*"
 ecdsa = "*"
@@ -15,22 +16,22 @@ prettytable = "*"
 pycrypto = "*"
 scrypt = "*"
 toolz = "*"
-urllib3 = "*"
+"urllib3" = "*"
 voluptuous = "*"
-w3lib = "*"
+"w3lib" = "*"
+futures = {version = "*", markers="python_version < '3.0.0'"}
+future = "*"
 
 
 [dev-packages]
+
 ipython = "*"
-pep8 = "*"
+"pep8" = "*"
 pytest = "*"
-pytest-pep8 = "*"
+"pytest-pep8" = "*"
 pytest-console-scripts = "*"
 pytest-pylint = "*"
 recommonmark = "*"
 yapf = "*"
-autopep8 = "*"
-
-
-#[requires]
-#python_version = "3.6"
+"autopep8" = "*"
+pytest-cov = "*"

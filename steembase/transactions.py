@@ -2,12 +2,15 @@ import hashlib
 import logging
 import struct
 import time
+import array
+import sys
 from binascii import hexlify, unhexlify
 from collections import OrderedDict
 from datetime import datetime
 
 import ecdsa
 
+from steem.utils import compat_bytes, compat_chr
 from .account import PrivateKey, PublicKey
 from .chains import known_chains
 from .operations import Operation, GrapheneObject, isArgsThisClass
@@ -62,15 +65,15 @@ class SignedTransaction(GrapheneObject):
 
             if "operations" in kwargs:
                 if all([
-                        not isinstance(a, Operation)
-                        for a in kwargs["operations"]
+                    not isinstance(a, Operation)
+                    for a in kwargs["operations"]
                 ]):
                     kwargs['operations'] = Array(
                         [Operation(a) for a in kwargs["operations"]])
                 else:
                     kwargs['operations'] = Array(kwargs["operations"])
 
-            super().__init__(
+            super(SignedTransaction, self).__init__(
                 OrderedDict([
                     ('ref_block_num', Uint16(kwargs['ref_block_num'])),
                     ('ref_block_prefix', Uint32(kwargs['ref_block_prefix'])),
@@ -113,7 +116,7 @@ class SignedTransaction(GrapheneObject):
         order = pk.curve.generator.order()
         p = pk.pubkey.point
         x_str = ecdsa.util.number_to_string(p.x(), order)
-        return bytes(chr(2 + (p.y() & 1)), 'ascii') + x_str
+        return compat_bytes(compat_chr(2 + (p.y() & 1)), 'ascii') + x_str
 
     # FIXME(sneak) this should be reviewed for correctness
     def recover_public_key(self, digest, signature, i):
@@ -148,7 +151,7 @@ class SignedTransaction(GrapheneObject):
         # paranoia's sake.
         if not ecdsa.VerifyingKey.from_public_point(
                 Q, curve=ecdsa.SECP256k1).verify_digest(
-                    signature, digest, sigdecode=ecdsa.util.sigdecode_string):
+            signature, digest, sigdecode=ecdsa.util.sigdecode_string):
             return None
         return ecdsa.VerifyingKey.from_public_point(Q, curve=ecdsa.SECP256k1)
 
@@ -178,9 +181,9 @@ class SignedTransaction(GrapheneObject):
         self.data["signatures"] = []
 
         # Get message to sign
-        #   bytes(self) will give the wire formated data according to
+        #   bytes(self) will give the wire formatted data according to
         #   GrapheneObject and the data given in __init__()
-        self.message = unhexlify(self.chainid) + bytes(self)
+        self.message = unhexlify(self.chainid) + compat_bytes(self)
         self.digest = hashlib.sha256(self.message).digest()
 
         # restore signatures
@@ -195,24 +198,26 @@ class SignedTransaction(GrapheneObject):
         pubKeysFound = []
 
         for signature in signatures:
-            sig = bytes(signature)[1:]
-            recoverParameter = (
-                bytes(signature)[0]) - 4 - 27  # recover parameter only
+            sig = compat_bytes(signature)[1:]
+            if sys.version >= '3.0':
+                recoverParameter = (compat_bytes(signature)[0]) - 4 - 27  # recover parameter only
+            else:
+                recoverParameter = ord((compat_bytes(signature)[0])) - 4 - 27
 
             if USE_SECP256K1:
                 ALL_FLAGS = secp256k1.lib.SECP256K1_CONTEXT_VERIFY | \
-                    secp256k1.lib.SECP256K1_CONTEXT_SIGN
+                            secp256k1.lib.SECP256K1_CONTEXT_SIGN
                 # Placeholder
                 pub = secp256k1.PublicKey(flags=ALL_FLAGS)
                 # Recover raw signature
                 sig = pub.ecdsa_recoverable_deserialize(sig, recoverParameter)
                 # Recover PublicKey
                 verifyPub = secp256k1.PublicKey(
-                    pub.ecdsa_recover(bytes(self.message), sig))
+                    pub.ecdsa_recover(compat_bytes(self.message), sig))
                 # Convert recoverable sig to normal sig
                 normalSig = verifyPub.ecdsa_recoverable_convert(sig)
                 # Verify
-                verifyPub.ecdsa_verify(bytes(self.message), normalSig)
+                verifyPub.ecdsa_verify(compat_bytes(self.message), normalSig)
                 phex = hexlify(
                     verifyPub.serialize(compressed=True)).decode('ascii')
                 pubKeysFound.append(phex)
@@ -263,7 +268,7 @@ class SignedTransaction(GrapheneObject):
         # Sign the message with every private key given!
         sigs = []
         for wif in self.privkeys:
-            p = bytes(PrivateKey(wif))
+            p = compat_bytes(PrivateKey(wif))
             i = 0
             if USE_SECP256K1:
                 ndata = secp256k1.ffi.new("const int *ndata")
@@ -312,6 +317,10 @@ class SignedTransaction(GrapheneObject):
                                                     sk.curve.generator.order())
                     signature = ecdsa.util.sigencode_string(
                         r, s, sk.curve.generator.order())
+
+                    # This line allows us to convert a 2.7 byte array(which is just binary) to an array of byte values.
+                    # We can then use the elements in sigder as integers, as in the following two lines.
+                    sigder = array.array('B', sigder)
 
                     # Make sure signature is canonical!
                     #

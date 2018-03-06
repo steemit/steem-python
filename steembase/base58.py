@@ -3,10 +3,10 @@ import hashlib
 import sys
 import string
 import logging
+from steem.utils import compat_bytes
+
 log = logging.getLogger(__name__)
-""" This class and the methods require python3 """
-# FIXME this library needs to support both 2 and 3
-assert sys.version_info[0] == 3, "graphenelib requires python3"
+
 """ Default Prefix """
 PREFIX = "STM"
 
@@ -115,7 +115,7 @@ BASE58_ALPHABET = b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
 
 def base58decode(base58_str):
-    base58_text = bytes(base58_str, "ascii")
+    base58_text = base58_str.encode('ascii')
     n = 0
     leading_zeroes_count = 0
     for b in base58_text:
@@ -133,7 +133,10 @@ def base58decode(base58_str):
 
 
 def base58encode(hexstring):
-    byteseq = bytes(unhexlify(bytes(hexstring, 'ascii')))
+    byteseq = compat_bytes(hexstring, 'ascii')
+    byteseq = unhexlify(byteseq)
+    byteseq = compat_bytes(byteseq)
+
     n = 0
     leading_zeroes_count = 0
     for c in byteseq:
@@ -147,6 +150,7 @@ def base58encode(hexstring):
         n = div
     else:
         res.insert(0, BASE58_ALPHABET[n])
+
     return (BASE58_ALPHABET[0:1] * leading_zeroes_count + res).decode('ascii')
 
 

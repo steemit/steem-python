@@ -41,7 +41,7 @@ class Blog:
     """
 
     def __init__(self,
-                 account_name: str,
+                 account_name,
                  comments_only=False,
                  steemd_instance=None):
         self.steem = steemd_instance or shared_steemd_instance()
@@ -89,7 +89,8 @@ class Blog:
         while True:
             chunk = self.take(10)
             if chunk:
-                yield from iter(chunk)
+                for little_chunk in iter(chunk):
+                    yield little_chunk
             else:
                 break
 

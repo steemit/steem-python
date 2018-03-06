@@ -1,4 +1,5 @@
 import steem as stm
+import sys
 
 _shared_steemd_instance = None
 
@@ -17,8 +18,12 @@ def shared_steemd_instance():
 
     global _shared_steemd_instance
     if not _shared_steemd_instance:
-        _shared_steemd_instance = stm.steemd.Steemd(
-            nodes=get_config_node_list())
+        if sys.version >= '3.0':
+            _shared_steemd_instance = stm.steemd.Steemd(
+                nodes=get_config_node_list())
+        else:
+            _shared_steemd_instance = stm.Steemd(
+                nodes=get_config_node_list())
     return _shared_steemd_instance
 
 

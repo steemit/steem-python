@@ -48,7 +48,7 @@ class Post(dict):
         elif isinstance(post,
                         dict) and "author" in post and "permlink" in post:
             post["author"] = post["author"].replace('@', '')
-            self.identifier = construct_identifier(post["author"],
+            self.identifier = construct_identifier('@', post["author"],
                                                    post["permlink"])
         else:
             raise ValueError("Post expects an identifier or a dict "
@@ -99,8 +99,9 @@ class Post(dict):
         post['community'] = ''
         if isinstance(post['json_metadata'], dict):
             if post["depth"] == 0:
-                post["tags"] = (post["parent_permlink"], *get_in(
-                    post, ['json_metadata', 'tags'], default=[]))
+                tags = [post["parent_permlink"]]
+                tags += get_in(post, ['json_metadata', 'tags'], default=[])
+                post["tags"] = set(tags)
 
             post['community'] = get_in(
                 post, ['json_metadata', 'community'], default='')
@@ -143,7 +144,7 @@ class Post(dict):
             category = m.group(1)
             author = m.group(2)
             permlink = m.group(3)
-            return construct_identifier(author, permlink), category
+            return construct_identifier('@', author, permlink), category
 
     def get_replies(self):
         """ Return **first-level** comments of the post.
@@ -176,7 +177,7 @@ class Post(dict):
         """Return a float value of estimated total SBD reward.
         """
         return Amount(self.get("total_payout_value", "0 SBD")) + \
-            Amount(self.get("pending_payout_value", "0 SBD"))
+               Amount(self.get("pending_payout_value", "0 SBD"))
 
     def time_elapsed(self):
         """Return a timedelta on how old the post is.
@@ -275,7 +276,7 @@ class Post(dict):
                 log.info("No changes made! Skipping ...")
                 return
 
-        reply_identifier = construct_identifier(
+        reply_identifier = construct_identifier('@',
             original_post["parent_author"], original_post["parent_permlink"])
 
         new_meta = {}
@@ -317,20 +318,20 @@ class Post(dict):
         op = CommentOptions(
             **{
                 "author":
-                self["author"],
+                    self["author"],
                 "permlink":
-                self["permlink"],
+                    self["permlink"],
                 "max_accepted_payout":
-                options.get("max_accepted_payout",
-                            str(self["max_accepted_payout"])),
+                    options.get("max_accepted_payout",
+                                str(self["max_accepted_payout"])),
                 "percent_steem_dollars":
-                int(
-                    options.get("percent_steem_dollars",
-                                self["percent_steem_dollars"] / 100) * 100),
+                    int(
+                        options.get("percent_steem_dollars",
+                                    self["percent_steem_dollars"] / 100) * 100),
                 "allow_votes":
-                options.get("allow_votes", self["allow_votes"]),
+                    options.get("allow_votes", self["allow_votes"]),
                 "allow_curation_rewards":
-                options.get("allow_curation_rewards", self[
-                    "allow_curation_rewards"]),
+                    options.get("allow_curation_rewards", self[
+                        "allow_curation_rewards"]),
             })
         return self.commit.finalizeOp(op, self["author"], "posting")

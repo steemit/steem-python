@@ -1,11 +1,16 @@
 import hashlib
+import json
 import struct
+import sys
 from binascii import hexlify, unhexlify
+from collections import OrderedDict
+
+from Crypto.Cipher import AES
 
 from .operations import Memo
-from Crypto.Cipher import AES
 from .base58 import base58encode, base58decode
 from .account import PrivateKey, PublicKey
+from steem.utils import compat_bytes
 
 default_prefix = "STM"
 
@@ -60,8 +65,8 @@ def _pad(s, BS):
 
 
 def _unpad(s, BS):
-    count = int(struct.unpack('B', bytes(s[-1], 'ascii'))[0])
-    if bytes(s[-count::], 'ascii') == count * struct.pack('B', count):
+    count = int(struct.unpack('B', compat_bytes(s[-1], 'ascii'))[0])
+    if compat_bytes(s[-count::], 'ascii') == count * struct.pack('B', count):
         return s[:-count]
     return s
 
@@ -80,7 +85,8 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     from steembase import transactions
     shared_secret = get_shared_secret(priv, pub)
     aes, check = init_aes(shared_secret, nonce)
-    raw = bytes(message, 'utf8')
+    raw = compat_bytes(message, 'utf8')
+
     " Padding "
     BS = 16
     if len(raw) % BS:
@@ -88,18 +94,19 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     " Encryption "
     cipher = hexlify(aes.encrypt(raw)).decode('ascii')
     prefix = kwargs.pop("prefix", default_prefix)
-    s = {
-        "from": format(priv.pubkey, prefix),
-        "to": format(pub, prefix),
-        "nonce": nonce,
-        "check": check,
-        "encrypted": cipher,
-        "from_priv": repr(priv),
-        "to_pub": repr(pub),
-        "shared_secret": shared_secret,
-    }
+    s = OrderedDict([
+        ("from", format(priv.pubkey, prefix)),
+        ("to", format(pub, prefix)),
+        ("nonce", nonce),
+        ("check", check),
+        ("encrypted", cipher),
+        ("from_priv", repr(priv)),
+        ("to_pub", repr(pub)),
+        ("shared_secret", shared_secret),
+    ])
     tx = Memo(**s)
-    return "#" + base58encode(hexlify(bytes(tx)).decode("ascii"))
+
+    return "#" + base58encode(hexlify(compat_bytes(tx)).decode("ascii"))
 
 
 def decode_memo(priv, message):
@@ -141,7 +148,7 @@ def decode_memo(priv, message):
     " Encryption "
     # remove the varint prefix (FIXME, long messages!)
     message = cipher[2:]
-    message = aes.decrypt(unhexlify(bytes(message, 'ascii')))
+    message = aes.decrypt(unhexlify(compat_bytes(message, 'ascii')))
     try:
         return _unpad(message.decode('utf8'), 16)
     except:  # noqa FIXME(sneak)

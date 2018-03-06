@@ -2,12 +2,12 @@ import hashlib
 import json
 import time
 import warnings
-from typing import Union
 
 from .instance import shared_steemd_instance, stm
-from .utils import parse_time
+from .utils import parse_time, compat_bytes
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -96,7 +96,8 @@ class Blockchain(object):
                 elif batch_operations:
                     yield self.steem.get_ops_in_block(block_num, False)
                 else:
-                    yield from self.steem.get_ops_in_block(block_num, False)
+                    for ops in self.steem.get_ops_in_block(block_num, False):
+                        yield ops
 
             # next round
             start_block = head_block + 1
@@ -215,14 +216,16 @@ class Blockchain(object):
                     yield get_reliable_ops_in_block(_reliable_client,
                                                     head_block)
                 else:
-                    yield from get_reliable_ops_in_block(
-                        _reliable_client, head_block)
+                    for reliable_ops in get_reliable_ops_in_block(
+                            _reliable_client, head_block):
+                        yield reliable_ops
+
                 sleep_interval = sleep_interval / 2
 
             time.sleep(sleep_interval)
             start_block = head_block + 1
 
-    def stream(self, filter_by: Union[str, list] = list(), *args, **kwargs):
+    def stream(self, filter_by=list(), *args, **kwargs):
         """ Yield a stream of operations, starting with current head block.
 
             Args:
@@ -250,17 +253,18 @@ class Blockchain(object):
                     if kwargs.get('raw_output'):
                         yield event
                     else:
-                        yield {
-                            **op,
+                        updated_op = op.copy()
+                        updated_op.update({
                             "_id": self.hash_op(event),
                             "type": op_type,
                             "timestamp": parse_time(event.get("timestamp")),
                             "block_num": event.get("block"),
                             "trx_id": event.get("trx_id"),
-                        }
+                        })
+                        yield updated_op
 
     def history(self,
-                filter_by: Union[str, list] = list(),
+                filter_by=list(),
                 start_block=1,
                 end_block=None,
                 raw_output=False,
@@ -295,10 +299,10 @@ class Blockchain(object):
         return self.history(**kwargs)
 
     @staticmethod
-    def hash_op(event: dict):
+    def hash_op(event):
         """ This method generates a hash of blockchain operation. """
         data = json.dumps(event, sort_keys=True)
-        return hashlib.sha1(bytes(data, 'utf-8')).hexdigest()
+        return hashlib.sha1(compat_bytes(data, 'utf-8')).hexdigest()
 
     def get_all_usernames(self, *args, **kwargs):
         """ Fetch the full list of STEEM usernames. """

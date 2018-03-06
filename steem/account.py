@@ -1,7 +1,6 @@
 import datetime
 import math
 import time
-from contextlib import suppress
 
 from funcy.colls import walk_values, get_in
 from funcy.seqs import take
@@ -57,8 +56,11 @@ class Account(dict):
 
     @property
     def profile(self):
-        with suppress(TypeError):
+        try:
             return get_in(self, ['json_metadata', 'profile'], default={})
+        except TypeError:
+            pass
+
         return {}
 
     @property
@@ -94,11 +96,11 @@ class Account(dict):
 
         totals = {
             'STEEM':
-            sum([available['STEEM'], savings['STEEM'], rewards['STEEM']]),
+                sum([available['STEEM'], savings['STEEM'], rewards['STEEM']]),
             'SBD':
-            sum([available['SBD'], savings['SBD'], rewards['SBD']]),
+                sum([available['SBD'], savings['SBD'], rewards['SBD']]),
             'VESTS':
-            sum([available['VESTS'], rewards['VESTS']]),
+                sum([available['VESTS'], rewards['VESTS']]),
         }
 
         total = walk_values(rpartial(round, 3), totals)
@@ -134,6 +136,7 @@ class Account(dict):
 
     def _get_followers(self, direction="follower", last_user=""):
         if direction == "follower":
+
             followers = self.steemd.get_followers(self.name, last_user, "blog",
                                                   100)
         elif direction == "following":
@@ -233,14 +236,18 @@ class Account(dict):
                 "conversion_requests": self.get_conversion_requests(),
             }
 
-        return {
-            **self,
-            **extras,
-            "profile": self.profile,
-            "sp": self.sp,
-            "rep": self.rep,
-            "balances": self.get_balances(),
-        }
+        composedDict = self.copy()
+        composedDict.update(extras)
+        composedDict.update(
+            {
+                "profile": self.profile,
+                "sp": self.sp,
+                "rep": self.rep,
+                "balances": self.get_balances(),
+            }
+        )
+
+        return composedDict
 
     def get_account_history(self,
                             index,
@@ -285,18 +292,18 @@ class Account(dict):
 
                 # index can change during reindexing in
                 # future hard-forks. Thus we cannot take it for granted.
-                immutable = {
-                    **op,
-                    **block_props,
+                immutable = op.copy()
+                immutable.update(block_props)
+                immutable.update({
                     'account': account_name,
                     'type': op_type,
-                }
+                })
                 _id = Blockchain.hash_op(immutable)
-                return {
-                    **immutable,
+                immutable.update({
                     '_id': _id,
                     'index': index,
-                }
+                })
+                return immutable
 
             if filter_by is None:
                 yield construct_op(self.name)
@@ -323,15 +330,16 @@ class Account(dict):
         start_index = start + batch_size
         i = start_index
         while i < max_index + batch_size:
-            yield from self.get_account_history(
-                index=i,
-                limit=batch_size,
-                start=i - batch_size,
-                stop=max_index,
-                order=1,
-                filter_by=filter_by,
-                raw_output=raw_output,
-            )
+            for account_history in self.get_account_history(
+                    index=i,
+                    limit=batch_size,
+                    start=i - batch_size,
+                    stop=max_index,
+                    order=1,
+                    filter_by=filter_by,
+                    raw_output=raw_output,
+            ):
+                yield account_history
             i += (batch_size + 1)
 
     def history_reverse(self,
@@ -348,11 +356,12 @@ class Account(dict):
         while i > 0:
             if i - batch_size < 0:
                 batch_size = i
-            yield from self.get_account_history(
-                index=i,
-                limit=batch_size,
-                order=-1,
-                filter_by=filter_by,
-                raw_output=raw_output,
-            )
+            for account_history in self.get_account_history(
+                    index=i,
+                    limit=batch_size,
+                    order=-1,
+                    filter_by=filter_by,
+                    raw_output=raw_output,
+            ):
+                yield account_history
             i -= (batch_size + 1)

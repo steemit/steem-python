@@ -3,7 +3,7 @@
 `steem-python` is the official Steem library for Python. It comes with a
 BIP38 encrypted wallet and a practical CLI utility called `steempy`.
 
-Currently only python3 is supported.  Python2 support is planned.
+This library works on both Python 2.7 and 3.6.
 
 # Installation
 
@@ -18,7 +18,7 @@ Then, install steem-python using it:
 ```
 git clone https://github.com/steemit/steem-python.git
 cd steem-python
-pipenv install --three --dev
+pipenv install --three --dev        # use --two instead of --three for Python 2.7
 pipenv install .
 ```
 
@@ -68,8 +68,6 @@ or
 
 # TODO
 
-* fix parts that were copied from python-graphenelib that only support
-  python3 to support python2 as well
 * more unit tests
 * 100% documentation coverage, consistent documentation
 * migrate to click CLI library

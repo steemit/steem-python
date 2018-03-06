@@ -1,6 +1,6 @@
 import logging
 
-from steem.wallet import Wallet
+from .wallet import Wallet
 from steembase.account import PrivateKey
 from steembase.exceptions import (InsufficientAuthorityError, MissingKeyError,
                                   InvalidKeyFormat)
@@ -152,7 +152,7 @@ class TransactionBuilder(dict):
                 account_auth[0], steemd_instance=self.steemd)
             self["required_authorities"].update({
                 account_auth[0]:
-                account_auth_account.get(permission)
+                    account_auth_account.get(permission)
             })
 
         # Try to resolve required signatures for offline signing
