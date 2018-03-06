@@ -241,6 +241,10 @@ def construct_identifier(username_prefix='@', *args):
             construct_identifier('@', {'author': 'username',
                 'permlink': 'permlink'})
     """
+    # https://github.com/steemit/steem-python/issues/165
+    # this is assert here will be removed with the above issue
+    # addressed.
+    assert(username_prefix == '@')
 
     if len(args) == 1:
         op = args[0]
