@@ -1,34 +1,13 @@
-FROM phusion/baseimage:0.9.19
+FROM themattrix/tox-base
 
-# Standard stuff
-ENV LANG en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
+MAINTAINER Matthew Tardiff <mattrix@gmail.com>
 
-# Stuff for building steem-python
-ARG BUILD_ROOT=/build
-
-# Now we install the essentials
-RUN \
-    apt-get update && \
-    apt-get install -y python3-pip libssl-dev build-essential
-
-# This updates the distro-provided pip
-RUN pip3 install --upgrade pip
-
-RUN mkdir ${BUILD_ROOT}
-
-COPY Makefile ${BUILD_ROOT}/
-COPY Pipfile ${BUILD_ROOT}/
-COPY Pipfile.lock ${BUILD_ROOT}/
-
-WORKDIR ${BUILD_ROOT}
-
-RUN pip3 install --upgrade pip && \
-	pip3 install --upgrade pipenv && \
-	pipenv install --three --dev && \
-	pipenv install .
-
-COPY . ${BUILD_ROOT}
-
-# run tests
-RUN pipenv run py.test
+ONBUILD COPY install-prereqs*.sh requirements*.txt tox.ini /app/
+ONBUILD ARG SKIP_TOX=false
+ONBUILD RUN bash -c " \
+    if [ -f '/app/install-prereqs.sh' ]; then \
+        bash /app/install-prereqs.sh; \
+    fi && \
+    if [ $SKIP_TOX == false ]; then \
+        TOXBUILD=true tox; \
+    fi"
