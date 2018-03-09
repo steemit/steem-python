@@ -76,17 +76,11 @@ class UploadCommand(Command):
         """Prints things in bold."""
         print('\033[1m{0}\033[0m'.format(s))
 
-<<<<<<< HEAD
-pfile = Project(chdir=False).parsed_pipfile
-requirements = convert_deps_to_pip(pfile['packages'], r=False)
-test_requirements = convert_deps_to_pip(pfile['dev-packages'], r=False)
-=======
     def initialize_options(self):
         pass
 
     def finalize_options(self):
         pass
->>>>>>> b9cb650c91bbe252d86578c67980efb4ec2f1b98
 
     def run(self):
         try:
@@ -137,9 +131,7 @@ setup(
             # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 2.7'
-        'Programming Language :: Python :: 3',
+        'Natural Language :: English', 'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
