@@ -42,7 +42,7 @@ workflows:
   test_all_envs:
     jobs:
       - test27
-      - test33
-      - test34
-      - test35
-      - test36
+#      - test33
+#      - test34
+#      - test35
+#      - test36
