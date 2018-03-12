@@ -4,6 +4,7 @@ from .wallet import Wallet
 from steembase.account import PrivateKey
 from steembase.exceptions import (InsufficientAuthorityError, MissingKeyError,
                                   InvalidKeyFormat)
+from steembase import operations
 from steembase.operations import Operation
 from steembase.transactions import SignedTransaction, fmt_time_from_now, \
     get_block_params
@@ -103,6 +104,14 @@ class TransactionBuilder(dict):
                 from the wallet as defined in "missing_signatures" key
                 of the transactions.
         """
+
+        # We need to set the default prefix, otherwise pubkeys are
+        # presented wrongly!
+        if self.steemd:
+            operations.default_prefix = self.steemd.chain_params["prefix"]
+        elif "blockchain" in self:
+            operations.default_prefix = self["blockchain"]["prefix"]
+
         try:
             signedtx = SignedTransaction(**self.json())
         except:  # noqa FIXME(sneak)
