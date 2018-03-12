@@ -34,7 +34,8 @@ REQUIRED = [
     'toolz',
     'ujson',
     'urllib3',
-    'voluptuous'
+    'voluptuous',
+    'w3lib'
 ]
 TEST_REQUIRED = [
     'pep8',
