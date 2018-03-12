@@ -40,6 +40,8 @@ TEST_REQUIRED = [
     'pytest-pylint',
     'pytest-xdist',
     'pytest-runner',
+    'pytest-pep8',
+    'pytest-cov',
     'yapf',
     'autopep8'
 ]
