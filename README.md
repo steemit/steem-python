@@ -3,34 +3,15 @@
 `steem-python` is the official Steem library for Python. It comes with a
 BIP38 encrypted wallet and a practical CLI utility called `steempy`.
 
-This library works on both Python 2.7 and 3.6.
+This library currently works on Python 2.7, 3.5 and 3.6. Python 3.3 and 3.4 support forthcoming.
 
 # Installation
 
-## Installation with pipenv (recommended)
-
-Install pipenv first if you don't have it:
-
-`pip3 install --upgrade --user pipenv`
-
-Then, install steem-python using it:
-
 ```
 git clone https://github.com/steemit/steem-python.git
 cd steem-python
-pipenv install --three --dev        # use --two instead of --three for Python 2.7
-pipenv install .
+python install setup.py
 ```
-
-## Installation with pip3
-
-```
-git clone https://github.com/steemit/steem-python.git
-cd steem-python
-pip3 install --user .
-```
-
-Note that installation using `pip3` requires that the `pipenv` module be installed to parse the requirements out of the `Pipfile` so that pip3 can do the install.  If you get an error about `pipenv` not being found, you can resolve it with a `pip3 install --upgrade --user pipenv`, then the install with `pip3` will work as usual.
 
 ## Homebrew Build Prereqs
 
@@ -57,14 +38,9 @@ Documentation is available at **http://steem.readthedocs.io**
 
 # Tests
 
-Some tests are included.  They can be run via either docker or vagrant,
-for reproducibility, e.g.:
+Some tests are included.  They can be run via:
 
-* `docker build .`
-
-or
-
-* `vagrant up`
+* `python setup.py test`
 
 # TODO
 

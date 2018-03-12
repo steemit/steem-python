@@ -1,0 +1,48 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - checkout
+      - run: python setup.py install
+  test27:
+    docker:
+      - image: circleci/python:2.7
+    steps:
+      - checkout
+      - run: python setup.py test
+  test33:
+    docker:
+      - image: circleci/python:3.3
+    steps:
+      - checkout
+      - run: python setup.py test
+  test34:
+    docker:
+      - image: circleci/python:3.4
+    steps:
+      - checkout
+      - run: python setup.py test
+  test35:
+    docker:
+      - image: circleci/python:3.5
+    steps:
+      - checkout
+      - run: python setup.py test
+  test36:
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - checkout
+      - run: python setup.py test
+
+workflows:
+  version: 2
+  test_all_envs:
+    jobs:
+      - test27
+#      - test33 - TODO: Fix issues with deps for 3.3.
+#      - test34 - TODO: Fix steemd import in instance.py.
+      - test35
+      - test36
