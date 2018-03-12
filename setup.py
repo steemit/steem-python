@@ -25,6 +25,8 @@ REQUIRED = [
     'certifi',
     'ecdsa>=0.13',
     'funcy',
+    'futures ; markers="python_version < "3.0.0"',
+    'future',
     'prettytable',
     'pycrypto>=1.9.1',
     'pylibscrypt>=1.6.1',
