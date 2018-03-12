@@ -27,6 +27,7 @@ REQUIRED = [
     'funcy',
     'futures ; python_version < "3.0.0"',
     'future',
+    'langdetect',
     'prettytable',
     'pycrypto>=1.9.1',
     'pylibscrypt>=1.6.1',
