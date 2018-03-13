@@ -16,11 +16,11 @@ from .utils import parse_time, json_expand
 
 
 class Account(dict):
-    """ This class allows to easily access Account data
+    """ This class provides access to Account data
 
         :param str account_name: Name of the account
         :param Steemd steemd_instance: Steemd() instance to use when
-            accessing a RPC
+            accessing an RPC Node.
 
     """
 
