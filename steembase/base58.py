@@ -12,6 +12,7 @@ PREFIX = "STM"
 
 known_prefixes = [
     PREFIX,
+    "GLS",
     "TST",
 ]
 
