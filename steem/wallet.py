@@ -55,7 +55,13 @@ class Wallet:
 
         # RPC
         self.steemd = steemd_instance or shared_steemd_instance()
-        self.prefix = "STM"
+
+        # Prefix
+        if self.steemd:
+            self.prefix = self.steemd.chain_params["prefix"]
+        else:
+            # If not connected, load prefix from config
+            self.prefix = self.configStorage["prefix"]
 
         if "keys" in kwargs:
             self.setKeys(kwargs["keys"])
