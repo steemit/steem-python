@@ -46,7 +46,7 @@ def legacyentry():
         '--node',
         type=str,
         default=configStorage["node"],
-        help='URL for public Steem API (default: "https://steemd.steemit.com")'
+        help='URL for public Steem API (default: "https://api.steemit.com")'
     )
 
     parser.add_argument(
