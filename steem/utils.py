@@ -410,7 +410,7 @@ def compat_bytes(item, encoding=None):
 
     This is the expected and necessary behavior across both platforms.
 
-    w/ future_bytes method, we will ensure that the correct bytes method is always invoked, avoiding the `str` alias in
+    w/ compat_bytes method, we will ensure that the correct bytes method is always invoked, avoiding the `str` alias in
     2.7.
 
     :param item: this is the object who's bytes method needs to be invoked

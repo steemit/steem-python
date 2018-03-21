@@ -10,6 +10,7 @@ from datetime import datetime
 from appdirs import user_data_dir
 
 from steem.aes import AESCipher
+from steem.utils import compat_bytes
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -399,7 +400,7 @@ class MasterPassword(object):
     def deriveChecksum(self, s):
         """ Derive the checksum
         """
-        checksum = hashlib.sha256(future_bytes(s, "ascii")).hexdigest()
+        checksum = hashlib.sha256(compat_bytes(s, "ascii")).hexdigest()
         return checksum[:4]
 
     def getEncryptedMaster(self):
