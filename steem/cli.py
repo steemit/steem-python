@@ -1366,11 +1366,11 @@ def format_operation_details(op, memos=False):
     if op[0] == "vote":
         return "%s: %s" % (
             op[1]["voter"],
-            construct_identifier('@', op[1]["author"], op[1]["permlink"]))
+            construct_identifier(op[1]["author"], op[1]["permlink"]))
     elif op[0] == "comment":
         return "%s: %s" % (
             op[1]["author"],
-            construct_identifier('@', op[1]["author"], op[1]["permlink"]))
+            construct_identifier(op[1]["author"], op[1]["permlink"]))
     elif op[0] == "transfer":
         str_ = "%s -> %s %s" % (
             op[1]["from"],

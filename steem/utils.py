@@ -231,20 +231,16 @@ def remove_from_dict(obj, remove_keys=list()):
     return {k: v for k, v in items if k not in remove_keys}
 
 
-def construct_identifier(username_prefix='@', *args):
+def construct_identifier(*args):
     """ Create a post identifier from comment/post object or arguments.
 
     Examples:
 
         ::
-            construct_identifier('@', 'username', 'permlink')
-            construct_identifier('@', {'author': 'username',
+            construct_identifier('username', 'permlink')
+            construct_identifier({'author': 'username',
                 'permlink': 'permlink'})
     """
-    # https://github.com/steemit/steem-python/issues/165
-    # this is assert here will be removed with the above issue
-    # addressed.
-    assert(username_prefix == '@')
 
     if len(args) == 1:
         op = args[0]
@@ -255,8 +251,8 @@ def construct_identifier(username_prefix='@', *args):
         raise ValueError(
             'construct_identifier() received unparsable arguments')
 
-    fields = dict(prefix=username_prefix, author=author, permlink=permlink)
-    return "{prefix}{author}/{permlink}".format(**fields)
+    fields = dict(author=author, permlink=permlink)
+    return "{author}/{permlink}".format(**fields)
 
 
 def json_expand(json_op, key_name='json'):
