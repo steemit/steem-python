@@ -251,6 +251,8 @@ def construct_identifier(*args):
         raise ValueError(
             'construct_identifier() received unparsable arguments')
 
+    # remove the @ sign in case it was passed in by the user.
+    author = author.replace('@', '')
     fields = dict(author=author, permlink=permlink)
     return "{author}/{permlink}".format(**fields)
 
@@ -288,7 +290,11 @@ def derive_permlink(title, parent_permlink=None):
 
 
 def resolve_identifier(identifier):
-    match = re.match("@?([\w\-\.]*)/([\w\-]*)", identifier)
+
+    # in case the user supplied the @ sign.
+    identifier = identifier.replace('@', '')
+
+    match = re.match("([\w\-\.]*)/([\w\-]*)", identifier)
     if not hasattr(match, "group"):
         raise ValueError("Invalid identifier")
     return match.group(1), match.group(2)

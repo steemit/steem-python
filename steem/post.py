@@ -27,7 +27,7 @@ class Post(dict):
 
         Args:
 
-            post (str or dict): ``@author/permlink`` or raw ``comment`` as
+            post (str or dict): ``author/permlink`` or raw ``comment`` as
             dictionary.
 
             steemd_instance (Steemd): Steemd node to connect to
@@ -47,7 +47,7 @@ class Post(dict):
             self.identifier = self.parse_identifier(post)
         elif isinstance(post,
                         dict) and "author" in post and "permlink" in post:
-            post["author"] = post["author"].replace('@', '')
+
             self.identifier = construct_identifier(post["author"],
                                                    post["permlink"])
         else:
@@ -157,7 +157,7 @@ class Post(dict):
     def get_all_replies(root_post=None, comments=list(), all_comments=list()):
         """ Recursively fetch all the child comments, and return them as a list.
 
-        Usage: all_comments = Post.get_all_replies(Post('@foo/bar'))
+        Usage: all_comments = Post.get_all_replies(Post('foo/bar'))
         """
         # see if our root post has any comments
         if root_post:

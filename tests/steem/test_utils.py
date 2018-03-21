@@ -23,7 +23,7 @@ class Testcases(unittest.TestCase):
         self.assertEqual(derive_permlink("[](){}"), "")
 
     def test_resolveIdentifier(self):
-        self.assertEqual(resolve_identifier("@A/B"), ("A", "B"))
+        self.assertEqual(resolve_identifier("A/B"), ("A", "B"))
 
     def test_formatTime(self):
         self.assertEqual(fmt_time(1463480746), "20160517t102546")
