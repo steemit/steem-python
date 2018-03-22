@@ -58,8 +58,8 @@ class Post(dict):
 
     @staticmethod
     def parse_identifier(uri):
-        """ Extract post identifier from post URL. """
-        return '%s' % uri.split('@')[-1]
+        """ Extract canonical post id/url (i.e. strip any leading `@`). """
+        return uri.split('@')[-1]
 
     def refresh(self):
         post_author, post_permlink = resolve_identifier(self.identifier)
