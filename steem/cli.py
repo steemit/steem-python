@@ -175,8 +175,8 @@ def legacyentry():
     parser_upvote.add_argument(
         'post',
         type=str,
-        help='@author/permlink-identifier of the post to upvote ' +
-             'to (e.g. @xeroc/python-steem-0-1)')
+        help='author/permlink-identifier of the post to upvote ' +
+             'to (e.g. xeroc/python-steem-0-1)')
     parser_upvote.add_argument(
         '--account',
         type=str,
@@ -202,8 +202,8 @@ def legacyentry():
     parser_downvote.add_argument(
         'post',
         type=str,
-        help='@author/permlink-identifier of the post to downvote ' +
-             'to (e.g. @xeroc/python-steem-0-1)')
+        help='author/permlink-identifier of the post to downvote ' +
+             'to (e.g. xeroc/python-steem-0-1)')
     parser_downvote.add_argument(
         '--weight',
         type=float,
@@ -584,7 +584,7 @@ def legacyentry():
     parser_resteem.add_argument(
         'identifier',
         type=str,
-        help='@author/permlink-identifier of the post to resteem')
+        help='author/permlink-identifier of the post to resteem')
     parser_resteem.add_argument(
         '--account',
         type=str,
@@ -776,6 +776,7 @@ def legacyentry():
     steem = stm.Steem(no_broadcast=args.no_broadcast, **options)
 
     if args.command == "set":
+        # TODO: Evaluate this line with cli refactor.
         if (args.key in ["default_account"] and args.value[0] == "@"):
             args.value = args.value[1:]
         configStorage[args.key] = args.value
@@ -1011,7 +1012,7 @@ def legacyentry():
             for account in args.account:
                 a = Account(account)
 
-                print("\n@%s" % a.name)
+                print("\n%s" % a.name)
                 t = PrettyTable(["Account", "STEEM", "SBD", "VESTS"])
                 t.align = "r"
                 t.add_row([
@@ -1366,11 +1367,11 @@ def format_operation_details(op, memos=False):
     if op[0] == "vote":
         return "%s: %s" % (
             op[1]["voter"],
-            construct_identifier('@', op[1]["author"], op[1]["permlink"]))
+            construct_identifier(op[1]["author"], op[1]["permlink"]))
     elif op[0] == "comment":
         return "%s: %s" % (
             op[1]["author"],
-            construct_identifier('@', op[1]["author"], op[1]["permlink"]))
+            construct_identifier(op[1]["author"], op[1]["permlink"]))
     elif op[0] == "transfer":
         str_ = "%s -> %s %s" % (
             op[1]["from"],

@@ -27,7 +27,7 @@ class Post(dict):
 
         Args:
 
-            post (str or dict): ``@author/permlink`` or raw ``comment`` as
+            post (str or dict): ``author/permlink`` or raw ``comment`` as
             dictionary.
 
             steemd_instance (Steemd): Steemd node to connect to
@@ -47,8 +47,8 @@ class Post(dict):
             self.identifier = self.parse_identifier(post)
         elif isinstance(post,
                         dict) and "author" in post and "permlink" in post:
-            post["author"] = post["author"].replace('@', '')
-            self.identifier = construct_identifier('@', post["author"],
+
+            self.identifier = construct_identifier(post["author"],
                                                    post["permlink"])
         else:
             raise ValueError("Post expects an identifier or a dict "
@@ -58,8 +58,8 @@ class Post(dict):
 
     @staticmethod
     def parse_identifier(uri):
-        """ Extract post identifier from post URL. """
-        return '@%s' % uri.split('@')[-1]
+        """ Extract canonical post id/url (i.e. strip any leading `@`). """
+        return uri.split('@')[-1]
 
     def refresh(self):
         post_author, post_permlink = resolve_identifier(self.identifier)
@@ -144,7 +144,7 @@ class Post(dict):
             category = m.group(1)
             author = m.group(2)
             permlink = m.group(3)
-            return construct_identifier('@', author, permlink), category
+            return construct_identifier(author, permlink), category
 
     def get_replies(self):
         """ Return **first-level** comments of the post.
@@ -157,7 +157,7 @@ class Post(dict):
     def get_all_replies(root_post=None, comments=list(), all_comments=list()):
         """ Recursively fetch all the child comments, and return them as a list.
 
-        Usage: all_comments = Post.get_all_replies(Post('@foo/bar'))
+        Usage: all_comments = Post.get_all_replies(Post('foo/bar'))
         """
         # see if our root post has any comments
         if root_post:
@@ -276,7 +276,7 @@ class Post(dict):
                 log.info("No changes made! Skipping ...")
                 return
 
-        reply_identifier = construct_identifier('@',
+        reply_identifier = construct_identifier(
             original_post["parent_author"], original_post["parent_permlink"])
 
         new_meta = {}

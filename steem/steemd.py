@@ -108,7 +108,7 @@ class Steemd(HttpClient):
             :param str sort: Sort the list by "recent" or "payout"
             :param str category: Only show posts in this category
             :param str start: Show posts after this post. Takes an
-                              identifier of the form ``@author/permlink``
+                              identifier of the form ``author/permlink``
         """
 
         discussion_query = {

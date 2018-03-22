@@ -181,7 +181,7 @@ class Commit(object):
 
         If this post is intended as a reply/comment, `reply_identifier` needs
         to be set with the identifier of the parent post/comment (eg.
-        `@author/permlink`).
+        `author/permlink`).
 
         Optionally you can also set json_metadata, comment_options and upvote
         the newly created post as an author.
@@ -356,7 +356,7 @@ class Commit(object):
         """ Vote for a post
 
             :param str identifier: Identifier for the post to upvote Takes
-                                   the form ``@author/permlink``
+                                   the form ``author/permlink``
             :param float weight: Voting weight. Range: -100.0 - +100.0. May
                                  not be 0.0
             :param str account: Voter to use for voting. (Optional)
@@ -1308,7 +1308,7 @@ class Commit(object):
     def resteem(self, identifier, account=None):
         """ Resteem a post
 
-            :param str identifier: post identifier (@<account>/<permlink>)
+            :param str identifier: post identifier (<account>/<permlink>)
             :param str account: (optional) the account to allow access
                 to (defaults to ``default_account``)
         """

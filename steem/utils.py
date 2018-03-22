@@ -231,20 +231,16 @@ def remove_from_dict(obj, remove_keys=list()):
     return {k: v for k, v in items if k not in remove_keys}
 
 
-def construct_identifier(username_prefix='@', *args):
+def construct_identifier(*args):
     """ Create a post identifier from comment/post object or arguments.
 
     Examples:
 
         ::
-            construct_identifier('@', 'username', 'permlink')
-            construct_identifier('@', {'author': 'username',
+            construct_identifier('username', 'permlink')
+            construct_identifier({'author': 'username',
                 'permlink': 'permlink'})
     """
-    # https://github.com/steemit/steem-python/issues/165
-    # this is assert here will be removed with the above issue
-    # addressed.
-    assert(username_prefix == '@')
 
     if len(args) == 1:
         op = args[0]
@@ -255,8 +251,10 @@ def construct_identifier(username_prefix='@', *args):
         raise ValueError(
             'construct_identifier() received unparsable arguments')
 
-    fields = dict(prefix=username_prefix, author=author, permlink=permlink)
-    return "{prefix}{author}/{permlink}".format(**fields)
+    # remove the @ sign in case it was passed in by the user.
+    author = author.replace('@', '')
+    fields = dict(author=author, permlink=permlink)
+    return "{author}/{permlink}".format(**fields)
 
 
 def json_expand(json_op, key_name='json'):
@@ -292,7 +290,11 @@ def derive_permlink(title, parent_permlink=None):
 
 
 def resolve_identifier(identifier):
-    match = re.match("@?([\w\-\.]*)/([\w\-]*)", identifier)
+
+    # in case the user supplied the @ sign.
+    identifier = identifier.replace('@', '')
+
+    match = re.match("([\w\-\.]*)/([\w\-]*)", identifier)
     if not hasattr(match, "group"):
         raise ValueError("Invalid identifier")
     return match.group(1), match.group(2)
