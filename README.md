@@ -7,10 +7,18 @@ This library currently works on Python 2.7, 3.5 and 3.6. Python 3.3 and 3.4 supp
 
 # Installation
 
+With pip:
+
+```
+pip3 install steem      # pip install steem for 2.7
+```
+
+From Source:
+
 ```
 git clone https://github.com/steemit/steem-python.git
 cd steem-python
-python setup.py install
+python3 setup.py install        # python setup.py install for 2.7
 ```
 
 ## Homebrew Build Prereqs
