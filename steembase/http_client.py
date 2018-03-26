@@ -57,6 +57,10 @@ class HttpClient(object):
         self.return_with_args = kwargs.get('return_with_args', False)
         self.re_raise = kwargs.get('re_raise', True)
         self.max_workers = kwargs.get('max_workers', None)
+        # None is not known
+        # 19.4 is appbase
+        # 19.3 is not appbase
+        self.node_version = None
 
         num_pools = kwargs.get('num_pools', 10)
         maxsize = kwargs.get('maxsize', 10)
@@ -111,6 +115,7 @@ class HttpClient(object):
         """ Change current node to provided node URL. """
         self.url = node_url
         self.request = partial(self.http.urlopen, 'POST', self.url)
+        self.node_version = self.call()
 
     @property
     def hostname(self):
@@ -182,13 +187,22 @@ class HttpClient(object):
             as handle node fail-over, unless we are broadcasting a
             transaction.  In latter case, the exception is **re-raised**.
 
+        TODO: Documentation for args and kwargs.
         """
 
         api = kwargs.get('api', None)
         return_with_args = kwargs.get('return_with_args', None)
         _ret_cnt = kwargs.get('_ret_cnt', 0)
+        _node_version = kwargs.get('_node_version', None)
 
-        body = HttpClient.json_rpc_body(name, *args, **kwargs)
+        if _node_version is None:
+            _node_version = self.node_version
+
+        body = None
+        if _node_version is None or _node_version < 19.4:
+            body = HttpClient.json_rpc_body(name, *args, api=api, kwargs=kwargs)
+        else:
+            body = HttpClient.json_rpc_body(name, *args, api='condenser_api', kwargs=kwargs)
         response = None
 
         if sys.version > '3.0':
@@ -237,15 +251,30 @@ class HttpClient(object):
             if response.status not in tuple(redirectStatuses):
                 logger.info('non 200 response:%s', response.status)
 
-            return self._return(
-                response=response,
-                args=args,
-                return_with_args=return_with_args)
+            answer = None
+            try:
+                answer = self._return(
+                    response=response,
+                    args=args,
+                    return_with_args=return_with_args)
+                self.node_version = _node_version
+            except Exception as e:
+                # Default 19.3 didn't work.  Try using the condenser
+                if self.node_version is None:
+                    answer = self.call(
+                        name,
+                        *args,
+                        return_with_args=return_with_args,
+                        _ret_cnt=_ret_cnt + 1, _node_version=19.4)
+                raise e
+            finally:
+                return answer
+           
 
     def _return(self, response=None, args=None, return_with_args=None):
         return_with_args = return_with_args or self.return_with_args
         result = None
-
+        
         if response:
             try:
                 response_json = json.loads(response.data.decode('utf-8'))
@@ -256,7 +285,7 @@ class HttpClient(object):
             else:
                 if 'error' in response_json:
                     error = response_json['error']
-
+                    
                     if self.re_raise:
                         error_message = error.get(
                             'detail', response_json['error']['message'])
