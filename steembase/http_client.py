@@ -203,19 +203,16 @@ class HttpClient(object):
         TODO: Documentation for args and kwargs.
         """
 
-        api = kwargs.pop('api', None)
+        api = kwargs.get('api', None)
         return_with_args = kwargs.get('return_with_args', None)
         _ret_cnt = kwargs.get('_ret_cnt', 0)
 
-        body = None
-
         # the only time _node_version will be None is if the node has not finished being set
         # and
-        if self._node_version is None or self._node_version < 19.4:
-            body = HttpClient.json_rpc_body(name, *args, api=api, **kwargs)
-        else:
-            body = HttpClient.json_rpc_body(name, *args, api='condenser_api', **kwargs)
+        if not self._node_version or self._node_version >= 19.4:
+            kwargs['api'] = 'condenser_api'
 
+        body = HttpClient.json_rpc_body(name, *args, **kwargs)
             
         response = None
 
