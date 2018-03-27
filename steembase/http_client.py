@@ -123,7 +123,7 @@ class HttpClient(object):
         if version is None:
             self._node_version = 19.3
         else:
-            self._node_version = float(version.get('blockchain_version')[2:])
+            self._node_version = float(version[2:])
 
     def set_node_version(self, node_version):
         self._node_version = node_version
