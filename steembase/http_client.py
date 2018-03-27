@@ -258,8 +258,7 @@ class HttpClient(object):
                     error = response_json['error']
 
                     if self.re_raise:
-                        error_message = error.get(
-                            'detail', response_json['error']['message'])
+                        error_message = "Error Response: " + str(error)
                         raise RPCError(error_message)
 
                     result = response_json['error']
