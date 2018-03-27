@@ -1,6 +1,15 @@
 from funcy.colls import pluck
 from steem.steemd import Steemd
 
+from steem import Steem
+from steem.commit import Commit
+
+
+def test_broadcast():
+    wif = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3'
+    c = Commit(steem=Steem(keys=[wif]))
+    c.claim_reward_balance(account='test')
+
 
 def test_get_version():
     """ We should be able to call get_version on steemd """
