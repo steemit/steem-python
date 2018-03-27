@@ -118,7 +118,7 @@ class HttpClient(object):
         """ Change current node to provided node URL. """
         self.url = node_url
         self.request = partial(self.http.urlopen, 'POST', self.url)
-        version = self.call('get_version', api='condenser_api').get('blockchain_version', None)
+        version = self.call('get_version', api='login_api').get('blockchain_version', None)
 
         if version is None:
             self._node_version = 19.3
@@ -168,25 +168,15 @@ class HttpClient(object):
         if kwargs is not None and len(kwargs) > 0:
 
             body_dict = dict(headers)
-            if api == 'condenser_api':
-                arg_list = []
-                for key, value in kwargs:
-                    arg_list.append(value)
-                body_dict.update({"method": "call",
-                                  "params": [api, name, arg_list]})
-            else:
-                body_dict.update({"method": "call",
-                                  "params": [api, name, kwargs]})
+
+            body_dict.update({"method": "call",
+                              "params": [api, name, kwargs]})
 
         elif api:
 
             body_dict = dict(headers)
-            if api == 'condenser_api':
-                body_dict.update({"method": "call",
-                                  "params": [api, name, list(args)]})
-            else:
-                body_dict.update({"method": "call",
-                                  "params": [api, name, args]})
+            body_dict.update({"method": "call",
+                              "params": [api, name, args]})
 
         else:
 
