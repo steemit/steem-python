@@ -118,7 +118,7 @@ class HttpClient(object):
         """ Change current node to provided node URL. """
         self.url = node_url
         self.request = partial(self.http.urlopen, 'POST', self.url)
-        version = self.call('get_version', api='login_api').get('blockchain_version', None)
+        version = self.call('get_version', api='condenser_api').get('blockchain_version', None)
 
         if version is None:
             self._node_version = 19.3
