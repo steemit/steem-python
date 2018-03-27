@@ -57,10 +57,6 @@ class HttpClient(object):
         self.return_with_args = kwargs.get('return_with_args', False)
         self.re_raise = kwargs.get('re_raise', True)
         self.max_workers = kwargs.get('max_workers', None)
-        # None is not known
-        # 19.4 is appbase
-        # 19.3 is not appbase
-        self.node_version = None
 
         num_pools = kwargs.get('num_pools', 10)
         maxsize = kwargs.get('maxsize', 10)
@@ -68,6 +64,12 @@ class HttpClient(object):
         retries = kwargs.get('retries', 20)
         pool_block = kwargs.get('pool_block', False)
         tcp_keepalive = kwargs.get('tcp_keepalive', True)
+
+        # None is not known
+        # 19.4 is appbase
+        # 19.3 is not appbase
+        # Eventually this will be removed as non-appbase nodes get deprecated.
+        self._node_version = None
 
         if tcp_keepalive:
             socket_options = HTTPConnection.default_socket_options + \
@@ -109,13 +111,17 @@ class HttpClient(object):
         node.
 
         """
+        self._node_version = None
         self.set_node(next(self.nodes))
 
     def set_node(self, node_url):
         """ Change current node to provided node URL. """
         self.url = node_url
         self.request = partial(self.http.urlopen, 'POST', self.url)
-        self.node_version = self.call()
+        self._node_version = self.call('get_version', api='condenser_api')
+
+    def set_node_version(self, node_version):
+        self._node_version = node_version
 
     @property
     def hostname(self):
@@ -157,13 +163,25 @@ class HttpClient(object):
         if kwargs is not None and len(kwargs) > 0:
 
             body_dict = dict(headers)
-            body_dict.update({"method": "call",
-                              "params": [api, name, kwargs]})
+            if api == 'condenser_api':
+                arg_list = []
+                for key, value in kwargs:
+                    arg_list.append(value)
+                body_dict.update({"method": "call",
+                                  "params": [api, name, arg_list]})
+            else:
+                body_dict.update({"method": "call",
+                                  "params": [api, name, kwargs]})
+
         elif api:
 
             body_dict = dict(headers)
-            body_dict.update({"method": "call",
-                              "params": [api, name, args]})
+            if api == 'condenser_api':
+                body_dict.update({"method": "call",
+                                  "params": [api, name, list(args)]})
+            else:
+                body_dict.update({"method": "call",
+                                  "params": [api, name, args]})
 
         else:
 
@@ -190,19 +208,20 @@ class HttpClient(object):
         TODO: Documentation for args and kwargs.
         """
 
-        api = kwargs.get('api', None)
+        api = kwargs.pop('api', None)
         return_with_args = kwargs.get('return_with_args', None)
         _ret_cnt = kwargs.get('_ret_cnt', 0)
-        _node_version = kwargs.get('_node_version', None)
-
-        if _node_version is None:
-            _node_version = self.node_version
 
         body = None
-        if _node_version is None or _node_version < 19.4:
-            body = HttpClient.json_rpc_body(name, *args, api=api, kwargs=kwargs)
+
+        # the only time _node_version will be None is if the node has not finished being set
+        # and
+        if self._node_version is None or self._node_version < 19.4:
+            body = HttpClient.json_rpc_body(name, *args, api=api, **kwargs)
         else:
-            body = HttpClient.json_rpc_body(name, *args, api='condenser_api', kwargs=kwargs)
+            body = HttpClient.json_rpc_body(name, *args, api='condenser_api', **kwargs)
+
+            
         response = None
 
         if sys.version > '3.0':
@@ -214,7 +233,7 @@ class HttpClient(object):
 
         try:
             response = self.request(body=body)
-        except (errorList) as e:
+        except errorList as e:
             # if we broadcasted a transaction, always raise
             # this is to prevent potential for double spend scenario
             if api == 'network_broadcast_api':
@@ -251,25 +270,10 @@ class HttpClient(object):
             if response.status not in tuple(redirectStatuses):
                 logger.info('non 200 response:%s', response.status)
 
-            answer = None
-            try:
-                answer = self._return(
+            return self._return(
                     response=response,
                     args=args,
                     return_with_args=return_with_args)
-                self.node_version = _node_version
-            except Exception as e:
-                # Default 19.3 didn't work.  Try using the condenser
-                if self.node_version is None:
-                    answer = self.call(
-                        name,
-                        *args,
-                        return_with_args=return_with_args,
-                        _ret_cnt=_ret_cnt + 1, _node_version=19.4)
-                raise e
-            finally:
-                return answer
-           
 
     def _return(self, response=None, args=None, return_with_args=None):
         return_with_args = return_with_args or self.return_with_args
