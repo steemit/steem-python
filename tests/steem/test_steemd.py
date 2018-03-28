@@ -1,8 +1,6 @@
 from funcy.colls import pluck
 from steem.steemd import Steemd
 
-from steem import Steem
-
 
 def test_get_version():
     """ We should be able to call get_version on steemd """
