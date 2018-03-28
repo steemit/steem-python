@@ -114,9 +114,9 @@ class TransactionBuilder(dict):
 
         try:
             signedtx = SignedTransaction(**self.json())
-        except:  # noqa FIXME(sneak)
-            raise ValueError("Invalid TransactionBuilder Format")
-
+        except Exception as e:  # noqa FIXME(sneak)
+            # raise ValueError("Invalid TransactionBuilder Format")
+            print("TransactionBuilder Error: {}".format(e.message))
         if not any(self.wifs):
             raise MissingKeyError
 
