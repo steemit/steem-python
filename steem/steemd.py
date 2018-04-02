@@ -13,14 +13,10 @@ from .blockchain import Blockchain
 from .post import Post
 from .utils import resolve_identifier
 from .utils import compat_compose_dictionary
+from .instance import get_config_node_list
 
 logger = logging.getLogger(__name__)
 
-
-def get_config_node_list():
-    nodes = configStorage.get('nodes', None)
-    if nodes:
-        return nodes.split(',')
 
 
 class Steemd(HttpClient):
