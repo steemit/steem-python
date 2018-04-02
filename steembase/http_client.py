@@ -53,6 +53,9 @@ class HttpClient(object):
 
     """
 
+    # set of endpoints which were found to not support appbase/condenser_api
+    downgraded = set()
+
     def __init__(self, nodes, **kwargs):
         self.return_with_args = kwargs.get('return_with_args', False)
         self.re_raise = kwargs.get('re_raise', True)
@@ -64,6 +67,9 @@ class HttpClient(object):
         retries = kwargs.get('retries', 20)
         pool_block = kwargs.get('pool_block', False)
         tcp_keepalive = kwargs.get('tcp_keepalive', True)
+
+        # When everyone upgrades to appbase, remove this flag
+        self._use_appbase = True
 
         if tcp_keepalive:
             socket_options = HTTPConnection.default_socket_options + \
@@ -111,6 +117,7 @@ class HttpClient(object):
         """ Change current node to provided node URL. """
         self.url = node_url
         self.request = partial(self.http.urlopen, 'POST', self.url)
+        self._use_appbase = node_url not in HttpClient.downgraded
 
     @property
     def hostname(self):
@@ -148,21 +155,15 @@ class HttpClient(object):
         as_json = kwargs.pop('as_json', True)
         _id = kwargs.pop('_id', 0)
 
-        headers = {"jsonrpc": "2.0", "id": _id}
+        body_dict = {"jsonrpc": "2.0", "id": _id}
         if kwargs is not None and len(kwargs) > 0:
-
-            body_dict = dict(headers)
             body_dict.update({"method": "call",
                               "params": [api, name, kwargs]})
         elif api:
-
-            body_dict = dict(headers)
             body_dict.update({"method": "call",
                               "params": [api, name, args]})
 
         else:
-
-            body_dict = dict(headers)
             body_dict.update({"method": name, "params": args})
 
         if as_json:
@@ -182,25 +183,59 @@ class HttpClient(object):
             as handle node fail-over, unless we are broadcasting a
             transaction.  In latter case, the exception is **re-raised**.
 
+        TODO: Documentation for args and kwargs.
         """
 
         api = kwargs.get('api', None)
         return_with_args = kwargs.get('return_with_args', None)
         _ret_cnt = kwargs.get('_ret_cnt', 0)
 
+        if self._use_appbase:
+            kwargs['api'] = 'condenser_api'
+        else:
+            raise Exception("not using appbase... {}".format(self.url))
+
         body = HttpClient.json_rpc_body(name, *args, **kwargs)
         response = None
 
+        retryExceptions = (MaxRetryError, ReadTimeoutError, ProtocolError, RPCError,)
         if sys.version > '3.0':
-            errorList = (MaxRetryError, ReadTimeoutError, ProtocolError,
-                         RemoteDisconnected, ConnectionResetError,)
+            retryExceptions += (RemoteDisconnected, ConnectionResetError,)
         else:
-            errorList = (MaxRetryError, ReadTimeoutError, ProtocolError,
-                         HTTPException,)
+            retryExceptions += (HTTPException, RPCError,)
 
         try:
             response = self.request(body=body)
-        except (errorList) as e:
+
+            # check for valid response http status code
+            successCodes = tuple(list(response.REDIRECT_STATUSES) + [200])
+            if response.status not in successCodes:
+                raise RPCError("non-200 response:%s" % response.status)
+
+            # check response format/success
+            result = json.loads(response.data.decode('utf-8'))
+            assert result, 'result entirely blank'
+
+            # check for steemd error
+            if 'error' in result:
+                error = result['error']
+                if error['code'] == 1 and 'no method with' in error['message']:
+                    assert self.url not in HttpClient.downgraded
+                    HttpClient.downgraded.add(self.url)
+                    logging.info("Downgrading {} to pre-appbase.".format(self.url))
+                    return self.call(
+                        name,
+                        return_with_args=return_with_args,
+                        _ret_cnt=_ret_cnt + 1,
+                        *args)
+
+                raise RPCError("RPC {}: {}".format(self.url, str(error)))
+
+            if return_with_args or self.return_with_args:
+                return result['result'], args
+            return result['result']
+
+        except retryExceptions as e:
             # if we broadcasted a transaction, always raise
             # this is to prevent potential for double spend scenario
             if api == 'network_broadcast_api':
@@ -221,53 +256,12 @@ class HttpClient(object):
                 return_with_args=return_with_args,
                 _ret_cnt=_ret_cnt + 1,
                 *args)
+
         except Exception as e:
-            if self.re_raise:
-                raise e
-            else:
-                extra = dict(err=e, request=self.request)
-                logger.info('Request error', extra=extra)
-                return self._return(
-                    response=response,
-                    args=args,
-                    return_with_args=return_with_args)
-        else:
-            redirectStatuses = list(response.REDIRECT_STATUSES)
-            redirectStatuses.append(200)
-            if response.status not in tuple(redirectStatuses):
-                logger.info('non 200 response:%s', response.status)
+            extra = dict(err=e, request=self.request)
+            logger.error('Request error: {}'.format(e), extra=extra)
+            raise e
 
-            return self._return(
-                response=response,
-                args=args,
-                return_with_args=return_with_args)
-
-    def _return(self, response=None, args=None, return_with_args=None):
-        return_with_args = return_with_args or self.return_with_args
-        result = None
-
-        if response:
-            try:
-                response_json = json.loads(response.data.decode('utf-8'))
-            except Exception as e:
-                extra = dict(response=response, request_args=args, err=e)
-                logger.info('failed to load response', extra=extra)
-                result = None
-            else:
-                if 'error' in response_json:
-                    error = response_json['error']
-
-                    if self.re_raise:
-                        error_message = "Error Response: " + str(error)
-                        raise RPCError(error_message)
-
-                    result = response_json['error']
-                else:
-                    result = response_json.get('result', None)
-        if return_with_args:
-            return result, args
-        else:
-            return result
 
     def call_multi_with_futures(self, name, params, api=None,
                                 max_workers=None):
