@@ -62,7 +62,6 @@ class Steemd(HttpClient):
             dictionary with keys chain_id, prefix, and other chain
             specific settings
         """
-
         props = self.get_dynamic_global_properties()
         chain = props["current_supply"].split(" ")[1]
 

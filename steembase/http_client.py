@@ -164,23 +164,15 @@ class HttpClient(object):
         as_json = kwargs.pop('as_json', True)
         _id = kwargs.pop('_id', 0)
 
-        headers = {"jsonrpc": "2.0", "id": _id}
+        body_dict = {"jsonrpc": "2.0", "id": _id}
         if kwargs is not None and len(kwargs) > 0:
-
-            body_dict = dict(headers)
-
             body_dict.update({"method": "call",
                               "params": [api, name, kwargs]})
-
         elif api:
-
-            body_dict = dict(headers)
             body_dict.update({"method": "call",
                               "params": [api, name, args]})
 
         else:
-
-            body_dict = dict(headers)
             body_dict.update({"method": name, "params": args})
 
         if as_json:
@@ -213,7 +205,6 @@ class HttpClient(object):
             kwargs['api'] = 'condenser_api'
 
         body = HttpClient.json_rpc_body(name, *args, **kwargs)
-            
         response = None
 
         if sys.version > '3.0':
@@ -263,14 +254,14 @@ class HttpClient(object):
                 logger.info('non 200 response:%s', response.status)
 
             return self._return(
-                    response=response,
-                    args=args,
-                    return_with_args=return_with_args)
+                response=response,
+                args=args,
+                return_with_args=return_with_args)
 
     def _return(self, response=None, args=None, return_with_args=None):
         return_with_args = return_with_args or self.return_with_args
         result = None
-        
+
         if response:
             try:
                 response_json = json.loads(response.data.decode('utf-8'))
@@ -281,7 +272,7 @@ class HttpClient(object):
             else:
                 if 'error' in response_json:
                     error = response_json['error']
-                    
+
                     if self.re_raise:
                         error_message = "Error Response: " + str(error)
                         raise RPCError(error_message)
