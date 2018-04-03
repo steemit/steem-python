@@ -147,29 +147,31 @@ class HttpClient(object):
             Otherwise, a Python dictionary is returned.
 
         """
-        api = kwargs.pop('api', None)
+
+        # if kwargs is non-empty after this, we pass it to steemd
         as_json = kwargs.pop('as_json', True)
+        api = kwargs.pop('api', None)
         _id = kwargs.pop('_id', 0)
 
-        # kv args take precedence over array args
-        if kwargs and len(kwargs) > 0:
+        # we pass `args` to steemd. kwargs overrides, if present.
+        assert not (kwargs and args), 'fail - passed array AND object args'
+        if kwargs:
             args = kwargs
 
-        # if api specified, resort to 'call' style
         if api:
-            method = 'call'
-            params = [api, name, args]
+            body = {'jsonrpc': '2.0',
+                    'id': _id,
+                    'method': 'call',
+                    'params': [api, name, args]}
         else:
-            method = name
-            params = args
-
-        body = {"jsonrpc": "2.0",
-                "id": _id,
-                "method": method,
-                "params": params}
+            body = {'jsonrpc': '2.0',
+                    'id': _id,
+                    'method': name,
+                    'params': args}
 
         if as_json:
             return json.dumps(body, ensure_ascii=False).encode('utf8')
+
         return body
 
     def call(self,
@@ -199,11 +201,11 @@ class HttpClient(object):
         while True:
             try:
 
-                new_kwargs = kwargs.copy()
+                body_kwargs = kwargs.copy()
                 if self.url not in HttpClient.downgraded:
-                    new_kwargs['api'] = 'condenser_api'
+                    body_kwargs['api'] = 'condenser_api'
 
-                body = HttpClient.json_rpc_body(name, *args, **new_kwargs)
+                body = HttpClient.json_rpc_body(name, *args, **body_kwargs)
                 response = self.request(body=body)
 
                 success_codes = tuple(list(response.REDIRECT_STATUSES) + [200])
@@ -239,6 +241,8 @@ class HttpClient(object):
                 tries += 1
                 continue
 
+            # TODO: unclear why this case is here; need to explicitly
+            #       define exceptions for which we refuse to retry.
             except Exception as e:
                 extra = dict(err=e, request=self.request)
                 logger.error('Request error: {}'.format(e), extra=extra)
