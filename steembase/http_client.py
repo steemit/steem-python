@@ -148,26 +148,25 @@ class HttpClient(object):
 
         """
 
-        # if kwargs is non-empty after this, we pass it to steemd
+        # if kwargs is non-empty after this, it becomes the call params
         as_json = kwargs.pop('as_json', True)
         api = kwargs.pop('api', None)
         _id = kwargs.pop('_id', 0)
 
-        # we pass `args` to steemd. kwargs overrides, if present.
+        # `kwargs` for object-style param, `args` for list-style. pick one.
         assert not (kwargs and args), 'fail - passed array AND object args'
-        if kwargs:
-            args = kwargs
+        params = kwargs if kwargs else args
 
         if api:
             body = {'jsonrpc': '2.0',
                     'id': _id,
                     'method': 'call',
-                    'params': [api, name, args]}
+                    'params': [api, name, params]}
         else:
             body = {'jsonrpc': '2.0',
                     'id': _id,
                     'method': name,
-                    'params': args}
+                    'params': params}
 
         if as_json:
             return json.dumps(body, ensure_ascii=False).encode('utf8')
