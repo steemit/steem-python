@@ -53,7 +53,7 @@ class HttpClient(object):
 
     """
 
-    # set of endpoints which were found to not support appbase/condenser_api
+    # set of endpoints which were found to not support condenser_api
     downgraded = set()
 
     def __init__(self, nodes, **kwargs):
@@ -67,9 +67,6 @@ class HttpClient(object):
         retries = kwargs.get('retries', 20)
         pool_block = kwargs.get('pool_block', False)
         tcp_keepalive = kwargs.get('tcp_keepalive', True)
-
-        # When everyone upgrades to appbase, remove this flag
-        self._use_appbase = True
 
         if tcp_keepalive:
             socket_options = HTTPConnection.default_socket_options + \
@@ -117,7 +114,6 @@ class HttpClient(object):
         """ Change current node to provided node URL. """
         self.url = node_url
         self.request = partial(self.http.urlopen, 'POST', self.url)
-        self._use_appbase = node_url not in HttpClient.downgraded
 
     @property
     def hostname(self):
@@ -155,21 +151,26 @@ class HttpClient(object):
         as_json = kwargs.pop('as_json', True)
         _id = kwargs.pop('_id', 0)
 
-        body_dict = {"jsonrpc": "2.0", "id": _id}
-        if kwargs is not None and len(kwargs) > 0:
-            body_dict.update({"method": "call",
-                              "params": [api, name, kwargs]})
-        elif api:
-            body_dict.update({"method": "call",
-                              "params": [api, name, args]})
+        # kv args take precedence over array args
+        if kwargs and len(kwargs) > 0:
+            args = kwargs
 
+        # if api specified, resort to 'call' style
+        if api:
+            method = 'call'
+            params = [api, name, args]
         else:
-            body_dict.update({"method": name, "params": args})
+            method = name
+            params = args
+
+        body = {"jsonrpc": "2.0",
+                "id": _id,
+                "method": method,
+                "params": params}
 
         if as_json:
-            return json.dumps(body_dict, ensure_ascii=False).encode('utf8')
-        else:
-            return body_dict
+            return json.dumps(body, ensure_ascii=False).encode('utf8')
+        return body
 
     def call(self,
              name,
@@ -183,84 +184,65 @@ class HttpClient(object):
             as handle node fail-over, unless we are broadcasting a
             transaction.  In latter case, the exception is **re-raised**.
 
-        TODO: Documentation for args and kwargs.
         """
 
-        api = kwargs.get('api', None)
-        return_with_args = kwargs.get('return_with_args', None)
-        _ret_cnt = kwargs.get('_ret_cnt', 0)
+        return_with_args = kwargs.get('return_with_args', self.return_with_args)
 
-        if self._use_appbase:
-            kwargs['api'] = 'condenser_api'
-        else:
-            raise Exception("not using appbase... {}".format(self.url))
-
-        body = HttpClient.json_rpc_body(name, *args, **kwargs)
-        response = None
-
-        retryExceptions = (MaxRetryError, ReadTimeoutError, ProtocolError, RPCError,)
+        # tuple of Exceptions which are eligible for retry
+        retry_exceptions = (MaxRetryError, ReadTimeoutError, ProtocolError, RPCError,)
         if sys.version > '3.0':
-            retryExceptions += (RemoteDisconnected, ConnectionResetError,)
+            retry_exceptions += (RemoteDisconnected, ConnectionResetError,)
         else:
-            retryExceptions += (HTTPException, RPCError,)
+            retry_exceptions += (HTTPException,)
 
-        try:
-            response = self.request(body=body)
+        tries = 0
+        while True:
+            try:
 
-            # check for valid response http status code
-            successCodes = tuple(list(response.REDIRECT_STATUSES) + [200])
-            if response.status not in successCodes:
-                raise RPCError("non-200 response:%s" % response.status)
+                new_kwargs = kwargs.copy()
+                if self.url not in HttpClient.downgraded:
+                    new_kwargs['api'] = 'condenser_api'
 
-            # check response format/success
-            result = json.loads(response.data.decode('utf-8'))
-            assert result, 'result entirely blank'
+                body = HttpClient.json_rpc_body(name, *args, **new_kwargs)
+                response = self.request(body=body)
 
-            # check for steemd error
-            if 'error' in result:
-                error = result['error']
-                if error['code'] == 1 and 'no method with' in error['message']:
-                    assert self.url not in HttpClient.downgraded
-                    HttpClient.downgraded.add(self.url)
-                    logging.info("Downgrading {} to pre-appbase.".format(self.url))
-                    return self.call(
-                        name,
-                        return_with_args=return_with_args,
-                        _ret_cnt=_ret_cnt + 1,
-                        *args)
+                success_codes = tuple(list(response.REDIRECT_STATUSES) + [200])
+                if response.status not in success_codes:
+                    raise RPCError("non-200 response:%s" % response.status)
 
-                raise RPCError("RPC {}: {}".format(self.url, str(error)))
+                result = json.loads(response.data.decode('utf-8'))
+                assert result, 'result entirely blank'
 
-            if return_with_args or self.return_with_args:
-                return result['result'], args
-            return result['result']
+                if 'error' in result:
+                    message = result['error']['message']
 
-        except retryExceptions as e:
-            # if we broadcasted a transaction, always raise
-            # this is to prevent potential for double spend scenario
-            if api == 'network_broadcast_api':
+                    # -- legacy (pre-appbase) nodes always return err code 1 --
+                    if result['error']['code'] == 1:
+                        message = "; ".join(message.split("\n")[0:2])
+                        if self.url not in HttpClient.downgraded:
+                            logging.error('Downgrade and retry: %s', message)
+                            HttpClient.downgraded.add(self.url)
+                            continue
+
+                    raise RPCError("RPC {}: {}".format(self.url, message))
+
+                if return_with_args:
+                    return result['result'], args
+                return result['result']
+
+            except retry_exceptions as e:
+                if tries > 10:
+                    raise e
+                time.sleep(tries)
+                self.next_node()
+                logging.info('Rotated to %s due to %s' % (self.url, str(e)))
+                tries += 1
+                continue
+
+            except Exception as e:
+                extra = dict(err=e, request=self.request)
+                logger.error('Request error: {}'.format(e), extra=extra)
                 raise e
-
-            # try switching nodes before giving up
-            if _ret_cnt > 2:
-                # we should wait only a short period before trying
-                # the next node, but still slowly increase backoff
-                time.sleep(_ret_cnt)
-            if _ret_cnt > 10:
-                raise e
-            self.next_node()
-            logging.debug('Switched node to %s due to exception: %s' %
-                          (self.hostname, e.__class__.__name__))
-            return self.call(
-                name,
-                return_with_args=return_with_args,
-                _ret_cnt=_ret_cnt + 1,
-                *args)
-
-        except Exception as e:
-            extra = dict(err=e, request=self.request)
-            logger.error('Request error: {}'.format(e), extra=extra)
-            raise e
 
 
     def call_multi_with_futures(self, name, params, api=None,
