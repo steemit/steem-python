@@ -5,7 +5,8 @@ from steembase.exceptions import RPCError
 
 def test_transfer():
     wif = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3'
-    c = Commit(steemd_instance=Steemd(nodes=[], keys=[wif]))
+    c = Commit(steemd_instance=Steemd(nodes=[]),
+               keys=[wif])
 
     rpc_error = None
     try:
@@ -20,7 +21,8 @@ def test_transfer():
 
 def test_claim_reward():
     wif = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3'
-    c = Commit(steemd_instance=Steemd(nodes=[], keys=[wif]))
+    c = Commit(steemd_instance=Steemd(nodes=[]),
+               keys=[wif])
 
     rpc_error = None
     try:
@@ -39,7 +41,9 @@ def test_claim_reward():
 
 def test_witness_update():
     wif = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3'
-    c = Commit(steemd_instance=Steemd(nodes=[], keys=[wif]))
+    c = Commit(steemd_instance=Steemd(nodes=[]),
+               keys=[wif])
+
     signing_key = 'STM1111111111111111111111111111111114T1Anm'
     props = {
         'account_creation_fee': '0.500 STEEM',
