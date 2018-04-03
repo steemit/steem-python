@@ -224,7 +224,7 @@ class HttpClient(object):
                             HttpClient.downgraded.add(self.url)
                             continue
 
-                    raise RPCError("RPC {}: {}".format(self.url, message))
+                    raise RPCError("RPC Error - Node: {} Body: {} Error: {}".format(self.url, str(body), message))
 
                 if return_with_args:
                     return result['result'], args
