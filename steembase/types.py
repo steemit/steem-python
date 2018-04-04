@@ -1,10 +1,11 @@
 import json
+import sys
 import struct
 import time
 import array
 from binascii import hexlify, unhexlify
 from calendar import timegm
-from steem.utils import compat_bytes
+from steem.utils import compat_bytes, compat_json
 
 object_type = {
     "dynamic_global_property": 0,
@@ -66,8 +67,12 @@ def JsonObj(data):
     """ Returns json object from data
     """
     try:
-        return json.loads(str(data))
-    except:  # noqa FIXME(sneak)
+        if sys.version >= '3.0':
+            return json.loads(str(data))
+        else:
+            return compat_json(json.loads(str(data), object_hook=compat_json),
+                               ignore_dicts=True)
+    except Exception as e:  # noqa FIXME(sneak)
         try:
             return data.__str__()
         except:  # noqa FIXME(sneak)
