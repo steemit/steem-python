@@ -53,11 +53,10 @@ class HttpClient(object):
 
     """
 
-    # set of endpoints which were found to not support condenser_api
-    downgraded = set()
+    # set of endpoints which were detected to not support condenser_api
+    non_appbase_nodes = set()
 
     def __init__(self, nodes, **kwargs):
-        self.return_with_args = kwargs.get('return_with_args', False)
         self.re_raise = kwargs.get('re_raise', True)
         self.max_workers = kwargs.get('max_workers', None)
 
@@ -98,6 +97,14 @@ class HttpClient(object):
 
         log_level = kwargs.get('log_level', logging.INFO)
         logger.setLevel(log_level)
+
+    def _curr_node_downgraded(self):
+        return self.url in HttpClient.non_appbase_nodes
+
+    def _downgrade_curr_node(self):
+        if self._curr_node_downgraded(): return False
+        HttpClient.non_appbase_nodes.add(self.url)
+        return True
 
     def next_node(self):
         """ Switch to the next available node.
@@ -182,12 +189,9 @@ class HttpClient(object):
         Warnings:
 
             This command will auto-retry in case of node failure, as well
-            as handle node fail-over, unless we are broadcasting a
-            transaction.  In latter case, the exception is **re-raised**.
+            as handle node fail-over.
 
         """
-
-        return_with_args = kwargs.get('return_with_args', self.return_with_args)
 
         # tuple of Exceptions which are eligible for retry
         retry_exceptions = (MaxRetryError, ReadTimeoutError, ProtocolError, RPCError,)
@@ -200,8 +204,9 @@ class HttpClient(object):
         while True:
             try:
 
+                retriable = True
                 body_kwargs = kwargs.copy()
-                if self.url not in HttpClient.downgraded:
+                if not self._curr_node_downgraded():
                     body_kwargs['api'] = 'condenser_api'
 
                 body = HttpClient.json_rpc_body(name, *args, **body_kwargs)
@@ -209,42 +214,44 @@ class HttpClient(object):
 
                 success_codes = tuple(list(response.REDIRECT_STATUSES) + [200])
                 if response.status not in success_codes:
-                    raise RPCError("non-200 response:%s" % response.status)
+                    raise RPCError("non-200 response: %s from %s"
+                                   % (response.status, self.hostname))
 
                 result = json.loads(response.data.decode('utf-8'))
                 assert result, 'result entirely blank'
 
                 if 'error' in result:
-                    message = result['error']['message']
+                    # legacy (pre-appbase) nodes always return err code 1
+                    legacy = result['error']['code'] == 1
+                    detail = result['error']['message']
+                    error = result['error']['data']['name']
 
-                    # -- legacy (pre-appbase) nodes always return err code 1 --
-                    if result['error']['code'] == 1:
-                        message = "; ".join(message.split("\n")[0:2])
-                        if self.url not in HttpClient.downgraded:
-                            logging.error('Downgrade and retry: %s', message)
-                            HttpClient.downgraded.add(self.url)
+                    if legacy:
+                        detail = ":".join(detail.split("\n")[0:2])
+                        if self._downgrade_curr_node():
+                            logging.error('Downgrade-retry %s', self.hostname)
                             continue
 
-                    raise RPCError("RPC Error - Node: {} Body: {} Error: {}".format(self.url, str(body), message))
+                    retriable = error in ['lock_exception'] # TODO: other retriable error types?
+                    raise RPCError('%s from %s (%s) in %s' % (
+                       error, self.hostname, detail, name))
 
-                if return_with_args:
-                    return result['result'], args
                 return result['result']
 
             except retry_exceptions as e:
-                if tries > 10:
+                if tries >= 10 or not retriable:
                     raise e
+                tries += 1
+                logging.error('Retry in %ds -- %s', tries, e)
                 time.sleep(tries)
                 self.next_node()
-                logging.info('Rotated to %s due to %s' % (self.url, str(e)))
-                tries += 1
                 continue
 
             # TODO: unclear why this case is here; need to explicitly
             #       define exceptions for which we refuse to retry.
             except Exception as e:
                 extra = dict(err=e, request=self.request)
-                logger.error('Request error: {}'.format(e), extra=extra)
+                logger.error('Unexpected error: %s', e, extra=extra)
                 raise e
 
 
