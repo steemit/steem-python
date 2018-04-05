@@ -16,7 +16,7 @@ def test_transfer():
     else:
         raise Exception('expected RPCError')
 
-    assert 'missing required active authority' in rpc_error
+    assert 'tx_missing_active_auth' in rpc_error
 
 
 def test_claim_reward():
@@ -36,7 +36,7 @@ def test_claim_reward():
     else:
         raise Exception('expected RPCError')
 
-    assert 'missing required posting authority' in rpc_error
+    assert 'tx_missing_posting_auth' in rpc_error
 
 
 def test_witness_update():
@@ -62,4 +62,4 @@ def test_witness_update():
     else:
         raise Exception('expected RPCError')
 
-    assert 'missing required active authority' in rpc_error
+    assert 'tx_missing_active_auth' in rpc_error

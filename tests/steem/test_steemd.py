@@ -10,6 +10,13 @@ def test_get_version():
     assert version[0:4] == '0.19'
 
 
+def test_get_dgp():
+    """ We should be able to call get_dynamic_global_properties on steemd """
+    s = Steemd()
+    response = s.call('get_dynamic_global_properties', api='database_api')
+    assert response['head_block_number'] > 20e6
+
+
 def test_ensured_block_ranges():
     """ Post should load correctly if passed a dict or string identifier. """
     s = Steemd()
