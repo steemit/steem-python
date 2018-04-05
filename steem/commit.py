@@ -134,13 +134,13 @@ class Commit(object):
         return tx.broadcast()
 
     def sign(self, unsigned_trx, wifs=[]):
-        """ Sign a provided transaction witht he provided key(s)
+        """ Sign a provided transaction with the provided key(s)
 
             :param dict unsigned_trx: The transaction to be signed and returned
             :param string wifs: One or many wif keys to use for signing
                 a transaction. If not present, the keys will be loaded
                 from the wallet as defined in "missing_signatures" key
-                of the transactizions.
+                of the transactions.
         """
         tx = TransactionBuilder(
             unsigned_trx,

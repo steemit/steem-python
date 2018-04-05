@@ -385,6 +385,29 @@ def compat_compose_dictionary(dictionary, **kwargs):
     return composed_dict
 
 
+def compat_json(data, ignore_dicts=False):
+    """
+
+    :param data: Json Data we want to ensure compatibility on.
+    :param ignore_dicts: should only be set to true when first called.
+    :return: Python compatible 2.7 byte-strings when encountering unicode.
+    """
+    # if this is a unicode string, return its string representation
+    if isinstance(data, unicode):
+        return data.encode('utf-8')
+    # if this is a list of values, return list of byte-string values
+    if isinstance(data, list):
+        return [compat_json(item, ignore_dicts=True) for item in data]
+    # if this is a dictionary, return dictionary of byte-string keys and values
+    # but only if we haven't already byte-string it
+    if isinstance(data, dict) and not ignore_dicts:
+        return {
+            compat_json(key, ignore_dicts=True): compat_json(value, ignore_dicts=True)
+            for key, value in data.iteritems()
+        }
+    # if it's anything else, return it in its original form
+    return data
+
 def compat_bytes(item, encoding=None):
     """
     This method is required because Python 2.7 `bytes` is simply an alias for `str`. Without this method,
