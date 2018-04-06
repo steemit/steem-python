@@ -9,7 +9,7 @@ from itertools import cycle
 import concurrent.futures
 import certifi
 import urllib3
-from steembase.exceptions import RPCError
+from steembase.exceptions import RPCError, RPCErrorRecoverable
 from urllib3.connection import HTTPConnection
 from urllib3.exceptions import MaxRetryError, ReadTimeoutError, ProtocolError
 
@@ -102,9 +102,20 @@ class HttpClient(object):
         return self.url in HttpClient.non_appbase_nodes
 
     def _downgrade_curr_node(self):
-        if self._curr_node_downgraded(): return False
         HttpClient.non_appbase_nodes.add(self.url)
-        return True
+
+    def _is_error_recoverable(self, error):
+        message = error['message']
+
+        # {"code"=>-32003, "message"=>"Unable to acquire database lock"}
+        if message == 'Unable to acquire database lock':
+            return True
+
+        # {"code"=>-32000, "message"=>"Unknown exception", "data"=>"0 exception: unspecified\nUnknown Exception\n[...]"}
+        if message == 'Unknown exception':
+            return True
+
+        return False
 
     def next_node(self):
         """ Switch to the next available node.
@@ -194,7 +205,8 @@ class HttpClient(object):
         """
 
         # tuple of Exceptions which are eligible for retry
-        retry_exceptions = (MaxRetryError, ReadTimeoutError, ProtocolError, RPCError,)
+        retry_exceptions = (MaxRetryError, ReadTimeoutError,
+                            ProtocolError, RPCErrorRecoverable,)
         if sys.version > '3.0':
             retry_exceptions += (RemoteDisconnected, ConnectionResetError,)
         else:
@@ -204,7 +216,6 @@ class HttpClient(object):
         while True:
             try:
 
-                retriable = True
                 body_kwargs = kwargs.copy()
                 if not self._curr_node_downgraded():
                     body_kwargs['api'] = 'condenser_api'
@@ -214,8 +225,8 @@ class HttpClient(object):
 
                 success_codes = tuple(list(response.REDIRECT_STATUSES) + [200])
                 if response.status not in success_codes:
-                    raise RPCError("non-200 response: %s from %s"
-                                   % (response.status, self.hostname))
+                    raise RPCErrorRecoverable("non-200 response: %s from %s"
+                                              % (response.status, self.hostname))
 
                 result = json.loads(response.data.decode('utf-8'))
                 assert result, 'result entirely blank'
@@ -228,18 +239,23 @@ class HttpClient(object):
 
                     if legacy:
                         detail = ":".join(detail.split("\n")[0:2])
-                        if self._downgrade_curr_node():
+                        if not self._curr_node_downgraded():
+                            self._downgrade_curr_node()
                             logging.error('Downgrade-retry %s', self.hostname)
                             continue
 
-                    retriable = error in ['lock_exception'] # TODO: other retriable error types?
-                    raise RPCError('%s from %s (%s) in %s' % (
-                       error, self.hostname, detail, name))
+                    detail = ('%s from %s (%s) in %s' % (
+                              error, self.hostname, detail, name))
+
+                    if self._is_error_recoverable(result['error']):
+                        raise RPCErrorRecoverable(detail)
+                    else:
+                        raise RPCError(detail)
 
                 return result['result']
 
             except retry_exceptions as e:
-                if tries >= 10 or not retriable:
+                if tries >= 10:
                     raise e
                 tries += 1
                 logging.error('Retry in %ds -- %s', tries, e)

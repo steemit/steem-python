@@ -156,23 +156,19 @@ class Blockchain(object):
 
         def reliable_query(_client, _method, _api, *_args):
             # this will ALWAYS eventually return, at all costs
-            retval = None
-            while retval is None:
+            while True:
                 try:
-                    retval = _client.call(_method, *_args, api=_api)
+                    return _client.call(_method, *_args, api=_api)
                 except Exception as e:
-                    logger.info(
-                        'Failed to get response',
+                    logger.error(
+                        'Error: %s' % str(s),
                         extra=dict(
                             exc=e,
                             response=retval,
                             api_name=_api,
                             api_method=_method,
                             api_args=_args))
-                    retval = None
-                if retval is None:
                     time.sleep(1)
-            return retval
 
         def get_reliable_block_interval(_client):
             return reliable_query(_client, 'get_config',

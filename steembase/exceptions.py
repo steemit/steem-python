@@ -21,6 +21,10 @@ class RPCError(Exception):
     pass
 
 
+class RPCErrorRecoverable(RPCError):
+    pass
+
+
 class NumRetriesReached(Exception):
     pass
 
