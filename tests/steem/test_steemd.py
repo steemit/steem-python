@@ -17,6 +17,26 @@ def test_get_dgp():
     assert response['head_block_number'] > 20e6
 
 
+def test_get_block():
+    """ We should be able to fetch some blocks. """
+    s = Steemd()
+
+    for num in [1000, 1000000, 10000000, 20000000, 21000000]:
+        b = s.get_block(num)
+        assert b, 'block %d was blank' % num
+        assert num == int(b['block_id'][:8], base=16)
+
+    start = 21000000
+    for num in range(start, start + 50):
+        b = s.get_block(num)
+        assert b, 'block %d was blank' % num
+        assert num == int(b['block_id'][:8], base=16)
+
+    non_existent_block = 99999999
+    b = s.get_block(non_existent_block)
+    assert not b, 'block %d expected to be blank' % non_existent_block
+
+
 def test_ensured_block_ranges():
     """ Post should load correctly if passed a dict or string identifier. """
     s = Steemd()

@@ -105,14 +105,25 @@ class HttpClient(object):
         HttpClient.non_appbase_nodes.add(self.url)
 
     def _is_error_recoverable(self, error):
+        assert 'message' in error, "missing error msg key: {}".format(error)
+        assert 'code' in error, "missing error code key: {}".format(error)
         message = error['message']
+        code = error['code']
 
+        # common steemd error
         # {"code"=>-32003, "message"=>"Unable to acquire database lock"}
         if message == 'Unable to acquire database lock':
             return True
 
+        # rare steemd error
         # {"code"=>-32000, "message"=>"Unknown exception", "data"=>"0 exception: unspecified\nUnknown Exception\n[...]"}
         if message == 'Unknown exception':
+            return True
+
+        # generic jussi error
+        # {'code': -32603, 'message': 'Internal Error', 'data': {'error_id': 'c7a15140-f306-4727-acbd-b5e8f3717e9b',
+        #         'request': {'amzn_trace_id': 'Root=1-5ad4cb9f-9bc86fbca98d9a180850fb80', 'jussi_request_id': None}}}
+        if message == 'Internal Error' and code == -32603:
             return True
 
         return False
@@ -235,7 +246,15 @@ class HttpClient(object):
                     # legacy (pre-appbase) nodes always return err code 1
                     legacy = result['error']['code'] == 1
                     detail = result['error']['message']
-                    error = result['error']['data']['name']
+
+                    # some errors have no data key (db lock error)
+                    if 'data' not in result['error']:
+                        error = 'error'
+                    # some errors have no name key (jussi errors)
+                    elif 'name' not in result['error']['data']:
+                        error = 'unspecified error'
+                    else:
+                        error = result['error']['data']['name']
 
                     if legacy:
                         detail = ":".join(detail.split("\n")[0:2])
@@ -256,9 +275,10 @@ class HttpClient(object):
 
             except retry_exceptions as e:
                 if tries >= 10:
+                    logging.error('Failed after %d attempts -- %s', tries, e)
                     raise e
                 tries += 1
-                logging.error('Retry in %ds -- %s', tries, e)
+                logging.info('Retry in %ds -- %s', tries, e)
                 time.sleep(tries)
                 self.next_node()
                 continue
