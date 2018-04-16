@@ -1,6 +1,5 @@
 from .commit import Commit
 from .steemd import Steemd
-from steembase.exceptions import RPCError
 
 
 class Steem:
