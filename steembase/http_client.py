@@ -249,10 +249,10 @@ class HttpClient(object):
 
                     # some errors have no data key (db lock error)
                     if 'data' not in result['error']:
-                        error = 'unspecified error'
+                        error = 'error'
                     # some errors have no name key (jussi errors)
                     elif 'name' not in result['error']['data']:
-                        error = 'unspecified error(2)'
+                        error = 'unspecified error'
                     else:
                         error = result['error']['data']['name']
 
