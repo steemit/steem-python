@@ -812,14 +812,6 @@ class Testcases(unittest.TestCase):
         rpc = self.steem.commit.wallet
         compare = rpc.serialize_transaction(tx.json())
 
-        pprint(tx.json())
-
-        print("\n")
-        print(compare[:-130])
-        print(tx_wire[:-130])
-        print("\n")
-
-        print(tx_wire[:-130] == compare[:-130])
         self.assertEqual(compare[:-130], tx_wire[:-130])
 
 

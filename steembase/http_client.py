@@ -217,7 +217,13 @@ class HttpClient(object):
 
         # tuple of Exceptions which are eligible for retry
         retry_exceptions = (MaxRetryError, ReadTimeoutError,
-                            ProtocolError, RPCErrorRecoverable, json.decoder.JSONDecodeError,)
+                            ProtocolError, RPCErrorRecoverable,)
+
+        if sys.version > '3.5':
+            retry_exceptions += (json.decoder.JSONDecodeError,)
+        else:
+            retry_exceptions += (ValueError, )
+
         if sys.version > '3.0':
             retry_exceptions += (RemoteDisconnected, ConnectionResetError,)
         else:
@@ -274,6 +280,8 @@ class HttpClient(object):
                 return result['result']
 
             except retry_exceptions as e:
+                if e == ValueError and 'JSON' not in e.args[0]:
+                    raise e
                 if tries >= 10:
                     logging.error('Failed after %d attempts -- %s', tries, e)
                     raise e
