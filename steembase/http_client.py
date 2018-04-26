@@ -217,7 +217,7 @@ class HttpClient(object):
 
         # tuple of Exceptions which are eligible for retry
         retry_exceptions = (MaxRetryError, ReadTimeoutError,
-                            ProtocolError, RPCErrorRecoverable,)
+                            ProtocolError, RPCErrorRecoverable, json.decoder.JSONDecodeError,)
         if sys.version > '3.0':
             retry_exceptions += (RemoteDisconnected, ConnectionResetError,)
         else:
