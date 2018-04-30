@@ -281,7 +281,7 @@ class HttpClient(object):
 
             except retry_exceptions as e:
                 if e == ValueError and 'JSON' not in e.args[0]:
-                    raise e
+                    raise e # (python<3.5 lacks json.decoder.JSONDecodeError)
                 if tries >= 10:
                     logging.error('Failed after %d attempts -- %s', tries, e)
                     raise e
