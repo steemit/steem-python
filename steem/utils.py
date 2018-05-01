@@ -186,7 +186,7 @@ def is_comment(item):
     The item can be a Post object or just a raw comment object from the
     blockchain.
     """
-    return item['permlink'][:3] == "re-" and item['parent_author']
+    return item['parent_author'] != ""
 
 
 def time_elapsed(posting_time):
