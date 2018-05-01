@@ -270,7 +270,7 @@ class HttpClient(object):
                             continue
 
                     detail = ('%s from %s (%s) in %s' % (
-                              error, self.hostname, detail, name))
+                        error, self.hostname, detail, name))
 
                     if self._is_error_recoverable(result['error']):
                         raise RPCErrorRecoverable(detail)
@@ -283,10 +283,12 @@ class HttpClient(object):
                 if e == ValueError and 'JSON' not in e.args[0]:
                     raise e # (python<3.5 lacks json.decoder.JSONDecodeError)
                 if tries >= 10:
-                    logging.error('Failed after %d attempts -- %s', tries, e)
+                    logging.error('Failed after %d attempts -- %s: %s',
+                                  tries, e.__class__.__name__, e)
                     raise e
                 tries += 1
-                logging.info('Retry in %ds -- %s', tries, e)
+                logging.warning('Retry in %ds -- %s: %s', tries,
+                                e.__class__.__name__, e)
                 time.sleep(tries)
                 self.next_node()
                 continue
@@ -295,21 +297,22 @@ class HttpClient(object):
             #       define exceptions for which we refuse to retry.
             except Exception as e:
                 extra = dict(err=e, request=self.request)
-                logger.error('Unexpected error: %s', e, extra=extra)
+                logger.error('Unexpected exception! Please report at ' +
+                             'https://github.com/steemit/steem-python/issues' +
+                             ' -- %s: %s', e.__class__.__name__, e, extra=extra)
                 raise e
 
 
     def call_multi_with_futures(self, name, params, api=None,
                                 max_workers=None):
         with concurrent.futures.ThreadPoolExecutor(
-                max_workers=max_workers) as executor:
+            max_workers=max_workers) as executor:
             # Start the load operations and mark each future with its URL
-            def ensure_list(parameter):
-                return parameter if type(parameter) in (list, tuple,
-                                                        set) else [parameter]
+            def ensure_list(val):
+                return val if isinstance(val, (list, tuple, set)) else [val]
 
             futures = (executor.submit(
                 self.call, name, *ensure_list(param), api=api)
-                for param in params)
+                       for param in params)
             for future in concurrent.futures.as_completed(futures):
                 yield future.result()
