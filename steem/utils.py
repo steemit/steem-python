@@ -326,7 +326,7 @@ def fmt_time_from_now(secs=0):
 
 
 def env_unlocked():
-    """ Check if wallet password is provided as ENV variable. """
+    """ Check if wallet passphrase is provided as ENV variable. """
     return os.getenv('UNLOCK', False)
 
 
