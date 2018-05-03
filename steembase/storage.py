@@ -331,71 +331,71 @@ class Configuration(DataDir):
         return len(cursor.fetchall())
 
 
-class WrongMasterPasswordException(Exception):
+class WrongKEKException(Exception):
     pass
 
 
-class MasterPassword(object):
-    """ The keys are encrypted with a Masterpassword that is stored in
+class KeyEncryptionKey(object):
+    """ The keys are encrypted with a KeyEncryptionKey that is stored in
         the configurationStore. It has a checksum to verify correctness
-        of the password
+        of the userPassphrase
     """
 
-    password = ""
-    decrypted_master = ""
+    userPassphrase = ""
+    decrypted_KEK = ""
 
-    #: This key identifies the encrypted master password
-    # stored in the confiration
+    #: This key identifies the encrypted KeyEncryptionKey
+    # stored in the configuration
     config_key = "encrypted_master_password"
 
-    def __init__(self, password):
+    def __init__(self, user_passphrase):
         """ The encrypted private keys in `keys` are encrypted with a
-            random encrypted masterpassword that is stored in the
+            random encrypted KeyEncryptionKey that is stored in the
             configuration.
 
-            The password is used to encrypt this masterpassword. To
+            The userPassphrase is used to encrypt this KeyEncryptionKey. To
             decrypt the keys stored in the keys database, one must use
-            BIP38, decrypt the masterpassword from the configuration
-            store with the user password, and use the decrypted
-            masterpassword to decrypt the BIP38 encrypted private keys
+            BIP38, decrypt the KeyEncryptionKey from the configuration
+            store with the userPassphrase, and use the decrypted
+            KeyEncryptionKey to decrypt the BIP38 encrypted private keys
             from the keys storage!
 
-            :param str password: Password to use for en-/de-cryption
+            :param str user_passphrase: Password to use for en-/de-cryption
         """
-        self.password = password
+        self.userPassphrase = user_passphrase
         if self.config_key not in configStorage:
-            self.newMaster()
-            self.saveEncrytpedMaster()
+            self.newKEK()
+            self.saveEncrytpedKEK()
         else:
-            self.decryptEncryptedMaster()
+            self.decryptEncryptedKEK()
 
-    def decryptEncryptedMaster(self):
-        """ Decrypt the encrypted masterpassword
+    def decryptEncryptedKEK(self):
+        """ Decrypt the encrypted KeyEncryptionKey
         """
-        aes = AESCipher(self.password)
-        checksum, encrypted_master = configStorage[self.config_key].split("$")
+        aes = AESCipher(self.userPassphrase)
+        checksum, encrypted_kek = configStorage[self.config_key].split("$")
         try:
-            decrypted_master = aes.decrypt(encrypted_master)
+            decrypted_kek = aes.decrypt(encrypted_kek)
         except:  # noqa FIXME(sneak)
-            raise WrongMasterPasswordException
-        if checksum != self.deriveChecksum(decrypted_master):
-            raise WrongMasterPasswordException
-        self.decrypted_master = decrypted_master
+            raise WrongKEKException
+        if checksum != self.deriveChecksum(decrypted_kek):
+            raise WrongKEKException
+        self.decrypted_KEK = decrypted_kek
 
-    def saveEncrytpedMaster(self):
-        """ Store the encrypted master password in the configuration
+    def saveEncrytpedKEK(self):
+        """ Store the encrypted KeyEncryptionKey in the configuration
             store
         """
-        configStorage[self.config_key] = self.getEncryptedMaster()
+        configStorage[self.config_key] = self.getEncryptedKEK()
 
-    def newMaster(self):
-        """ Generate a new random masterpassword
+    def newKEK(self):
+        """ Generate a new random KeyEncryptionKey
         """
         # make sure to not overwrite an existing key
         if (self.config_key in configStorage
                 and configStorage[self.config_key]):
             return
-        self.decrypted_master = hexlify(os.urandom(32)).decode("ascii")
+        self.decrypted_KEK = hexlify(os.urandom(32)).decode("ascii")
 
     def deriveChecksum(self, s):
         """ Derive the checksum
@@ -403,24 +403,24 @@ class MasterPassword(object):
         checksum = hashlib.sha256(compat_bytes(s, "ascii")).hexdigest()
         return checksum[:4]
 
-    def getEncryptedMaster(self):
-        """ Obtain the encrypted masterkey
+    def getEncryptedKEK(self):
+        """ Obtain the encrypted KeyEncryptionKey
         """
-        if not self.decrypted_master:
-            raise Exception("master not decrypted")
-        aes = AESCipher(self.password)
+        if not self.decrypted_KEK:
+            raise Exception("KeyEncryptionKey not decrypted")
+        aes = AESCipher(self.userPassphrase)
         return "{}${}".format(
-            self.deriveChecksum(self.decrypted_master),
-            aes.encrypt(self.decrypted_master))
+            self.deriveChecksum(self.decrypted_KEK),
+            aes.encrypt(self.decrypted_KEK))
 
-    def changePassword(self, newpassword):
-        """ Change the password
+    def changePassphrase(self, newpassphrase):
+        """ Change the passphrase
         """
-        self.password = newpassword
-        self.saveEncrytpedMaster()
+        self.userPassphrase = newpassphrase
+        self.saveEncrytpedKEK()
 
     def purge(self):
-        """ Remove the masterpassword from the configuration store
+        """ Remove the KeyEncryptionKey from the configuration store
         """
         configStorage[self.config_key] = ""
 

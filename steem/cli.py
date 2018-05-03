@@ -884,7 +884,7 @@ def legacyentry():
                 print("Couldn't identify object to read")
 
     elif args.command == "changewalletpassphrase":
-        steem.commit.wallet.changePassphrase()
+        steem.commit.wallet.changeUserPassphrase()
 
     elif args.command == "addkey":
         if args.unsafe_import_key:
