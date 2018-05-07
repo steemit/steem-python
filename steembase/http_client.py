@@ -89,6 +89,8 @@ class HttpClient(object):
             pool_timeout=None, release_conn=None, chunked=False, body_pos=None,
             **response_kw)
         '''
+        if not isinstance(nodes, list):
+            nodes = [nodes]
 
         self.nodes = cycle(nodes)
         self.url = ''
