@@ -73,8 +73,8 @@ def encrypt(privkey, passphrase):
             b'\x01' + b'\x42' + b'\xc0' + salt + encrypted_half1 + encrypted_half2)
     " Checksum "
     checksum = hashlib.sha256(hashlib.sha256(payload).digest()).digest()[:4]
-    privatkey = hexlify(payload + checksum).decode('ascii')
-    return Base58(privatkey)
+    privatekey = hexlify(payload + checksum).decode('ascii')
+    return Base58(privatekey)
 
 
 def decrypt(encrypted_privkey, passphrase):
@@ -97,7 +97,10 @@ def decrypt(encrypted_privkey, passphrase):
     salt = d[0:4]
     d = d[4:-4]
     if SCRYPT_MODULE == "scrypt":
-        key = scrypt.hash(passphrase, salt, 16384, 8, 8)
+        if sys.version >= '3.0.0':
+            key = scrypt.hash(passphrase, salt, 16384, 8, 8)
+        else:
+            key = scrypt.hash(str(passphrase), str(salt), 16384, 8, 8)
     elif SCRYPT_MODULE == "pylibscrypt":
         key = scrypt.scrypt(compat_bytes(passphrase, "utf-8"), salt, 16384, 8, 8)
     else:
