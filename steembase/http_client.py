@@ -89,10 +89,8 @@ class HttpClient(object):
             pool_timeout=None, release_conn=None, chunked=False, body_pos=None,
             **response_kw)
         '''
-        if not isinstance(nodes, list):
-            nodes = [nodes]
 
-        self.nodes = cycle(nodes)
+        self.nodes = cycle(self.sanitize_nodes(nodes))
         self.url = ''
         self.request = None
         self.next_node()
@@ -224,7 +222,7 @@ class HttpClient(object):
         if sys.version > '3.5':
             retry_exceptions += (json.decoder.JSONDecodeError,)
         else:
-            retry_exceptions += (ValueError, )
+            retry_exceptions += (ValueError,)
 
         if sys.version > '3.0':
             retry_exceptions += (RemoteDisconnected, ConnectionResetError,)
@@ -283,7 +281,7 @@ class HttpClient(object):
 
             except retry_exceptions as e:
                 if e == ValueError and 'JSON' not in e.args[0]:
-                    raise e # (python<3.5 lacks json.decoder.JSONDecodeError)
+                    raise e  # (python<3.5 lacks json.decoder.JSONDecodeError)
                 if tries >= 10:
                     logging.error('Failed after %d attempts -- %s: %s',
                                   tries, e.__class__.__name__, e)
@@ -304,17 +302,59 @@ class HttpClient(object):
                              ' -- %s: %s', e.__class__.__name__, e, extra=extra)
                 raise e
 
-
     def call_multi_with_futures(self, name, params, api=None,
                                 max_workers=None):
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=max_workers) as executor:
+                max_workers=max_workers) as executor:
             # Start the load operations and mark each future with its URL
             def ensure_list(val):
                 return val if isinstance(val, (list, tuple, set)) else [val]
 
             futures = (executor.submit(
                 self.call, name, *ensure_list(param), api=api)
-                       for param in params)
+                for param in params)
             for future in concurrent.futures.as_completed(futures):
                 yield future.result()
+
+    def sanitize_nodes(self, nodes):
+        """
+
+        This method is designed to explicitly validate the user defined
+        nodes that are passed to http_client. If left unvalidated, improper
+        input causes a variety of explicit-to-red herring errors in the code base.
+        This will fail loudly in the event that incorrect input has been passed.
+
+        There are three types of input allowed when defining nodes.
+        1. a string of a single node url. ie nodes='https://api.steemit.com'
+        2. a comma separated string of several node url's.
+            nodes='https://api.steemit.com,<<community node>>,<<your personal node>>'
+        3. a list of string node url's.
+            nodes=['https://api.steemit.com','<<community node>>','<<your personal node>>']
+
+        Any other input will result in a ValueError being thrown.
+
+        :param nodes: the nodes argument passed to http_client
+        :return: a list of node url's.
+        """
+
+        if isinstance(nodes, str) or \
+                (sys.version < '3.0' and isinstance(nodes, unicode)):
+            if ',' in nodes:
+                nodes = nodes.split(',')  # split nodes if commas in the string.
+            else:
+                nodes = [nodes]  # otherwise create a list of size one.
+        elif isinstance(nodes, list):
+            if not all(
+                    (
+                            isinstance(node, str)
+                            or
+                            (sys.version < '3.0' and isinstance(nodes, unicode))
+                    ) for node in nodes):
+                raise ValueError("All nodes in list must be a string.")
+        else:
+            raise ValueError("nodes arg must be a "
+                             "comma separated string of node url's, "
+                             "a single string url, "
+                             "or a list of strings.")
+
+        return nodes
