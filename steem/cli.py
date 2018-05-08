@@ -1335,7 +1335,13 @@ def confirm(question, default="yes"):
         raise ValueError("invalid default answer: '%s'" % default)
     while True:
         sys.stdout.write(question + prompt)
-        choice = input().lower()
+        # Python 2.7 `input` attempts to evaluate the input, while in 3+
+        # it returns a string. Python 2.7 `raw_input` returns a str as desired.
+        if sys.version >= '3.0':
+            choice = input().lower()
+        else:
+            choice = raw_input().lower()
+
         if default is not None and choice == '':
             return valid[default]
         elif choice in valid:
