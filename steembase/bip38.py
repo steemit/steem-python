@@ -28,6 +28,17 @@ if not SCRYPT_MODULE:
             SCRYPT_MODULE = "pylibscrypt"
         except ImportError:
             raise ImportError("Missing dependency: scrypt or pylibscrypt")
+elif 'pylibscrypt' in SCRYPT_MODULE:
+    try:
+        import pylibscrypt as scrypt
+    except ImportError:
+        raise ImportError("Missing dependency: pylibscrypt explicitly set but missing")
+elif 'scrypt' in SCRYPT_MODULE:
+    try:
+        import scrypt
+    except ImportError:
+            raise ImportError("Missing dependency: scrypt explicitly set but missing")
+
 
 log.debug("Using scrypt module: %s" % SCRYPT_MODULE)
 
