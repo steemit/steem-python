@@ -337,19 +337,10 @@ class HttpClient(object):
         :return: a list of node url's.
         """
 
-        if isinstance(nodes, str) or \
-                (sys.version < '3.0' and isinstance(nodes, unicode)):
-            if ',' in nodes:
-                nodes = nodes.split(',')  # split nodes if commas in the string.
-            else:
-                nodes = [nodes]  # otherwise create a list of size one.
+        if self._isString(nodes):
+            nodes = nodes.split(',')
         elif isinstance(nodes, list):
-            if not all(
-                    (
-                            isinstance(node, str)
-                            or
-                            (sys.version < '3.0' and isinstance(nodes, unicode))
-                    ) for node in nodes):
+            if not all(self._isString(node) for node in nodes):
                 raise ValueError("All nodes in list must be a string.")
         else:
             raise ValueError("nodes arg must be a "
@@ -358,3 +349,7 @@ class HttpClient(object):
                              "or a list of strings.")
 
         return nodes
+
+    def _isString(self, input):
+        return isinstance(input, str) or \
+               (sys.version < '3.0' and isinstance(input, unicode))
