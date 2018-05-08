@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import os
 import sys
 from binascii import hexlify, unhexlify
 
@@ -14,7 +15,7 @@ try:
 except ImportError:
     raise ImportError("Missing dependency: pycrypto")
 
-SCRYPT_MODULE = None
+SCRYPT_MODULE = os.environ.get('SCRYPT_MODULE', None)
 if not SCRYPT_MODULE:
     try:
         import scrypt
