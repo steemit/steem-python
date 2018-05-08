@@ -1,12 +1,13 @@
 import unittest
 import os
-import sys
 from steembase.account import PrivateKey
-import steembase.bip38
 
 
 class Testcases(unittest.TestCase):
-    def test_encrypt(self):
+
+    def test_encrypt_pylibscrypt(self):
+        os.environ['SCRYPT_MODULE'] = 'pylibscrypt'
+        import steembase.bip38
         self.assertEqual([
             format(
                 steembase.bip38.encrypt(
@@ -29,7 +30,9 @@ class Testcases(unittest.TestCase):
             "6PRNFFkZc2NZ6dJqFfhRoFNMR9Lnyj7dYGrzdgXXVMXcxoKTePPX1dWByq"
         ])
 
-    def test_decrypt(self):
+    def test_decrypt_pylibscrypt(self):
+        os.environ['SCRYPT_MODULE'] = 'pylibscrypt'
+        import steembase.bip38
         self.assertEqual([
             format(
                 steembase.bip38.decrypt(
