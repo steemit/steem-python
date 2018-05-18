@@ -440,6 +440,19 @@ class AccountUpdate(GrapheneObject):
                 ]))
 
 
+class ChangeRecoveryAccount(GrapheneObject):
+    def __init__(self, *args, **kwargs):
+        if isArgsThisClass(self, args):
+            self.data = args[0].data
+        else:
+            super(ChangeRecoveryAccount, self).__init__(
+                OrderedDict([
+                    ('account_to_recover', String(kwargs["account_to_recover"])),
+                    ('new_recovery_account', String(kwargs["new_recovery_account"])),
+                    ('extensions', Array([])),
+                ]))
+
+
 class Transfer(GrapheneObject):
     def __init__(self, *args, **kwargs):
         if isArgsThisClass(self, args):

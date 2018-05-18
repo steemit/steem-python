@@ -394,6 +394,29 @@ class Testcases(unittest.TestCase):
                    "53fbeccb331067")
         self.assertEqual(compare[:-130], tx_wire[:-130])
 
+    def test_change_recovery_account(self):
+        op = operations.ChangeRecoveryAccount(
+            **{
+                "account_to_recover": "barrie",
+                "extensions": [],
+                "new_recovery_account": "boombastic"
+            })
+        ops = [operations.Operation(op)]
+        tx = SignedTransaction(
+            ref_block_num=ref_block_num,
+            ref_block_prefix=ref_block_prefix,
+            expiration=expiration,
+            operations=ops)
+        tx = tx.sign([wif], chain=self.steem.chain_params)
+
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
+
+        compare = ('f68585abf4dce7c80457011a066261727269650a626f6f6d6261'
+                   '737469630000011f5513c021e89be2c4d8a725dc9b89334ffcde'
+                   '6a9535487f4b6d42f93de1722c251fd9d4ec414335dc41ea081a'
+                   'a7a4d27b179b1a07d3415f7e0a6190852b86ecde')
+        self.assertEqual(compare[:-130], tx_wire[:-130])
+
     def test_order_cancel(self):
         op = operations.LimitOrderCancel(**{
             "owner": "",
