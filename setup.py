@@ -131,7 +131,7 @@ class UploadCommand(Command):
 # Where the magic happens:
 setup(
     name=NAME,
-    version='1.0.0',
+    version='1.0.1',
     description=DESCRIPTION,
     keywords=['steem', 'steemit', 'cryptocurrency', 'blockchain'],
     # long_description=long_description,
