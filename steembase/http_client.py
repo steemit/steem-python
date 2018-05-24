@@ -13,8 +13,10 @@ from steembase.exceptions import RPCError, RPCErrorRecoverable
 from urllib3.connection import HTTPConnection
 from urllib3.exceptions import MaxRetryError, ReadTimeoutError, ProtocolError
 
-if sys.version >= '3.0':
+if sys.version >= '3.5':
     from http.client import RemoteDisconnected
+
+if sys.version >= '3.0':
     from urllib.parse import urlparse
 else:
     from urlparse import urlparse
@@ -220,12 +222,12 @@ class HttpClient(object):
                             ProtocolError, RPCErrorRecoverable,)
 
         if sys.version > '3.5':
-            retry_exceptions += (json.decoder.JSONDecodeError,)
+            retry_exceptions += (json.decoder.JSONDecodeError, RemoteDisconnected,)
         else:
             retry_exceptions += (ValueError,)
 
         if sys.version > '3.0':
-            retry_exceptions += (RemoteDisconnected, ConnectionResetError,)
+            retry_exceptions += (ConnectionResetError,)
         else:
             retry_exceptions += (HTTPException,)
 

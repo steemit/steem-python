@@ -17,6 +17,7 @@ jobs:
       - image: circleci/python:3.3
     steps:
       - checkout
+      - run: sudo pip3 install setuptools_scm
       - run: python setup.py test
   test34:
     docker:
@@ -42,7 +43,7 @@ workflows:
   test_all_envs:
     jobs:
       - test27
-#      - test33 - TODO: Fix issues with deps for 3.3.
-#      - test34 - TODO: Fix steemd import in instance.py.
+      - test33
+      - test34
       - test35
       - test36
