@@ -17,6 +17,7 @@ jobs:
       - image: circleci/python:3.3
     steps:
       - checkout
+      - run: sudo pip3 install setuptools_scm
       - run: python setup.py test
   test34:
     docker:

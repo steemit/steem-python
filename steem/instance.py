@@ -18,7 +18,7 @@ def shared_steemd_instance():
 
     global _shared_steemd_instance
     if not _shared_steemd_instance:
-        if sys.version >= '3.5':
+        if sys.version >= '3.0':
             _shared_steemd_instance = stm.steemd.Steemd(
                 nodes=get_config_node_list())
         else:

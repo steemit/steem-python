@@ -41,7 +41,7 @@ REQUIRED = [
 TEST_REQUIRED = [
     'pep8',
     'pytest',
-    'pytest-pylint',
+    'pytest-pylint ; python_version >= "3.4.0"',
     'pytest-xdist',
     'pytest-runner',
     'pytest-pep8',
