@@ -738,12 +738,12 @@ class CommentOptions(GrapheneObject):
                 kwargs = args[0]
 
             # handle beneficiaries
+            if "beneficiaries" in kwargs and kwargs['beneficiaries']:
+                kwargs['extensions'] = [[0, {'beneficiaries': kwargs['beneficiaries']}]]
+
             extensions = Array([])
-            beneficiaries = kwargs.get('beneficiaries')
-            if beneficiaries and type(beneficiaries) == list:
-                ext_obj = [0, {'beneficiaries': beneficiaries}]
-                ext = CommentOptionExtensions(ext_obj)
-                extensions = Array([ext])
+            if "extensions" in kwargs and kwargs["extensions"]:
+                extensions = Array([CommentOptionExtensions(o) for o in kwargs["extensions"]])
 
             super(CommentOptions, self).__init__(
                 OrderedDict([
