@@ -128,6 +128,12 @@ class HttpClient(object):
         if message == 'Internal Error' and code == -32603:
             return True
 
+        # jussi timeout error
+        # {'code': 1100, 'message': 'Bad or missing upstream response',
+        #  'data':{'error_id': 'fc3650d7-72...', 'exception': TimeoutError()}}
+        if message == 'Bad or missing upstream response' and code == 1100:
+            return True
+
         return False
 
     def next_node(self):
@@ -260,7 +266,10 @@ class HttpClient(object):
                         error = 'error'
                     # some errors have no name key (jussi errors)
                     elif 'name' not in result['error']['data']:
-                        error = 'unspecified error'
+                        if 'exception' in error['data']:
+                            error = error['data']['exception']
+                        else:
+                            error = 'unspecified error'
                     else:
                         error = result['error']['data']['name']
 
