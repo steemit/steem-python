@@ -4,16 +4,21 @@ import os
 import sys
 from binascii import hexlify, unhexlify
 
+from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.ciphers import algorithms
+from cryptography.hazmat.primitives.ciphers import modes
+from cryptography.hazmat.backends import default_backend
+
 from .account import PrivateKey
 from .base58 import Base58, base58decode
 from steem.utils import compat_bytes
 
+
 log = logging.getLogger(__name__)
 
-try:
-    from Crypto.Cipher import AES
-except ImportError:
-    raise ImportError("Missing dependency: pycrypto")
+
+
+
 
 SCRYPT_MODULE = os.environ.get('SCRYPT_MODULE', None)
 if not SCRYPT_MODULE:
@@ -47,10 +52,11 @@ class SaltException(Exception):
     pass
 
 
-def _encrypt_xor(a, b, aes):
+def _encrypt_xor(a, b, cipher):
     """ Returns encrypt(a ^ b). """
     a = unhexlify('%0.32x' % (int((a), 16) ^ int(hexlify(b), 16)))
-    return aes.encrypt(a)
+    encryptor = cipher.encryptor()
+    return encryptor.update(a) + encryptor.finalize()
 
 
 def encrypt(privkey, passphrase):
@@ -77,9 +83,11 @@ def encrypt(privkey, passphrase):
     else:
         raise ValueError("No scrypt module loaded")
     (derived_half1, derived_half2) = (key[:32], key[32:])
-    aes = AES.new(derived_half2)
-    encrypted_half1 = _encrypt_xor(privkeyhex[:32], derived_half1[:16], aes)
-    encrypted_half2 = _encrypt_xor(privkeyhex[32:], derived_half1[16:], aes)
+    backend = default_backend()
+    cipher = Cipher(algorithms.AES(derived_half2), modes.ECB(), backend=backend)
+    encrypted_half1 = _encrypt_xor(privkeyhex[:32], derived_half1[:16], cipher)
+
+    encrypted_half2 = _encrypt_xor(privkeyhex[32:], derived_half1[16:], cipher)
     " flag byte is forced 0xc0 because Graphene only uses compressed keys "
     payload = (
             b'\x01' + b'\x42' + b'\xc0' + salt + encrypted_half1 + encrypted_half2)
@@ -121,9 +129,15 @@ def decrypt(encrypted_privkey, passphrase):
     derivedhalf2 = key[32:64]
     encryptedhalf1 = d[0:16]
     encryptedhalf2 = d[16:32]
-    aes = AES.new(derivedhalf2)
-    decryptedhalf2 = aes.decrypt(encryptedhalf2)
-    decryptedhalf1 = aes.decrypt(encryptedhalf1)
+
+    backend = default_backend()
+    cipher = Cipher(algorithms.AES(derivedhalf2), modes.ECB(), backend=backend)
+    decryptor = cipher.decryptor()
+    decryptedhalf2 = decryptor.update(encryptedhalf2) + decryptor.finalize()
+
+    decryptor = cipher.decryptor()
+    decryptedhalf1 = decryptor.update(encryptedhalf1) + decryptor.finalize()
+
     privraw = decryptedhalf1 + decryptedhalf2
     privraw = ('%064x' %
                (int(hexlify(privraw), 16) ^ int(hexlify(derivedhalf1), 16)))

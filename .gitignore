@@ -116,3 +116,7 @@ tests/failed_blocks/
 /test.py
 
 .DS_Store
+.pytest_cache
+.venv
+Pipfile
+Pipfile.lock

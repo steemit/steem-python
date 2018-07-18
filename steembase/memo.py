@@ -5,7 +5,10 @@ import sys
 from binascii import hexlify, unhexlify
 from collections import OrderedDict
 
-from Crypto.Cipher import AES
+from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.ciphers import algorithms
+from cryptography.hazmat.primitives.ciphers.modes import CBC
+from cryptography.hazmat.backends import default_backend
 
 from .operations import Memo
 from .base58 import base58encode, base58decode
@@ -56,7 +59,9 @@ def init_aes(shared_secret, nonce):
     " AES "
     key = unhexlify(encryption_key[0:64])
     iv = unhexlify(encryption_key[64:96])
-    return AES.new(key, AES.MODE_CBC, iv), check
+    backend = default_backend()
+    cipher = Cipher(algorithms.AES(key), CBC(iv), backend=backend)
+    return cipher, check
 
 
 def _pad(s, BS):
@@ -84,7 +89,7 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     """
     from steembase import transactions
     shared_secret = get_shared_secret(priv, pub)
-    aes, check = init_aes(shared_secret, nonce)
+    cipher, check = init_aes(shared_secret, nonce)
     raw = compat_bytes(message, 'utf8')
 
     " Padding "
@@ -92,14 +97,15 @@ def encode_memo(priv, pub, nonce, message, **kwargs):
     if len(raw) % BS:
         raw = _pad(raw, BS)
     " Encryption "
-    cipher = hexlify(aes.encrypt(raw)).decode('ascii')
+    encryptor = cipher.encryptor()
+    cipher_text = hexlify(encryptor.update(raw) + encryptor.finalize()).decode('ascii')
     prefix = kwargs.pop("prefix", default_prefix)
     s = OrderedDict([
         ("from", format(priv.pubkey, prefix)),
         ("to", format(pub, prefix)),
         ("nonce", nonce),
         ("check", check),
-        ("encrypted", cipher),
+        ("encrypted", cipher_text),
         ("from_priv", repr(priv)),
         ("to_pub", repr(pub)),
         ("shared_secret", shared_secret),
@@ -130,7 +136,7 @@ def decode_memo(priv, message):
     raw = raw[16:]
     check = struct.unpack_from("<I", unhexlify(raw[:8]))[0]
     raw = raw[8:]
-    cipher = raw
+    cipher_text = raw
 
     if repr(to_key) == repr(priv.pubkey):
         shared_secret = get_shared_secret(priv, from_key)
@@ -140,15 +146,16 @@ def decode_memo(priv, message):
         raise ValueError("Incorrect PrivateKey")
 
     " Init encryption "
-    aes, checksum = init_aes(shared_secret, nonce)
+    cipher, checksum = init_aes(shared_secret, nonce)
 
     " Check "
     assert check == checksum, "Checksum failure"
 
     " Encryption "
     # remove the varint prefix (FIXME, long messages!)
-    message = cipher[2:]
-    message = aes.decrypt(unhexlify(compat_bytes(message, 'ascii')))
+    message = cipher_text[2:]
+    decryptor = cipher.decryptor()
+    message = decryptor.update(unhexlify(compat_bytes(message, 'ascii'))) + decryptor.finalize()
     try:
         return _unpad(message.decode('utf8'), 16)
     except:  # noqa FIXME(sneak)
