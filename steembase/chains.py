@@ -15,9 +15,9 @@ known_chains = {
         "sbd_symbol": "GBG",
         "vests_symbol": "GESTS",
     },
-    "TEST": {
+    "TESTS": {
         "chain_id":
-            "9afbce9f2416520733bacb370315d32b6b2c43d6097576df1c1222859d91eecc",
+            "46d82ab7d8db682eb1959aed0ada039a6d49afa1602491f93dde9cac3e8e6c32",
         "prefix":
             "TST",
         "steem_symbol":
