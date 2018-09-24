@@ -1003,6 +1003,40 @@ class Commit(object):
             })
         return self.finalizeOp(op, account, "active")
 
+    def witness_set_properties(self, signing_key, props, account=None):
+        """ Update witness
+
+            :param pubkey signing_key: Signing key
+            :param dict props: Properties
+            :param str account: (optional) witness account name
+
+             Properties:::
+
+                [
+                    ["account_creation_fee": x]
+                    ["maximum_block_size": x]
+                    ["sbd_interest_rate": x]
+                ]
+
+        """
+        if not account:
+            account = configStorage.get("default_account")
+        if not account:
+            raise ValueError("You need to provide an account")
+
+        try:
+            PublicKey(signing_key)
+        except Exception as e:
+            raise e
+
+        op = operations.WitnessSetProperties(
+            **{
+                "owner": account,
+                "props": props,
+                "extensions": []
+            })
+        return self.finalizeOp(op, account, "active")
+
     def decode_memo(self, enc_memo):
         """ Try to decode an encrypted memo
         """

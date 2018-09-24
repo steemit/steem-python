@@ -1,0 +1,20 @@
+{
+  "ref_block_prefix": 82172829,
+  "expiration": "2018-09-24T19:22:18",
+  "operations": [
+    [
+      "witness_set_properties", {
+        "owner": "init-1",
+        "props": [
+          ["account_creation_fee", "d0070000000000000354455354530000"],
+          ["key", "032d2a4af3e23294e0a1d9dbc46e0272d8e1977ce2ae3349527cc90fe1cc9c5db9"]
+        ]
+      }
+    ]
+  ],
+  "signatures": [
+    "a1489ddbe5046a39a95b012a06696e69742d3102146163636f756e745f6372656174696f6e5f66656510d0070000000000000354455354530000036b657921032d2a4af3e23294e0a1d9dbc46e0272d8e1977ce2ae3349527cc90fe1cc9c5db9000000"
+  ],
+  "ref_block_num": 18593,
+  "extensions": []
+}
