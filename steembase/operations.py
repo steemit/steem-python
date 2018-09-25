@@ -8,8 +8,8 @@ from collections import OrderedDict
 from steem.utils import compat_bytes
 from .account import PublicKey
 from .operationids import operations
-from .types import (Int16, Uint16, Uint32, Uint64, String, Bytes, Array,
-                    PointInTime, Bool, Optional, Map, Id, JsonObj,
+from .types import (Int16, Uint16, Uint32, Uint64, String, HexString, Bytes,
+                    Array, PointInTime, Bool, Optional, Map, Id, JsonObj,
                     StaticVariant)
 
 default_prefix = "STM"
@@ -725,10 +725,12 @@ class WitnessSetProperties(GrapheneObject):
                     props[k[0]] = (k[1])
             props_list = []
             for k in props:
-                if k == "key":
-                    props_list.append(([String(k), String(props[k])]))
-                else:
-                    props_list.append(([String(k), String(props[k])]))
+                props_list.append(([String(k), HexString(props[k])]))
+            props_list = sorted(
+                props_list,
+                key=lambda x: str(x[0]),
+                reverse=False,
+            )
             map_props = Map(props_list)
 
             super(WitnessSetProperties, self).__init__(OrderedDict([
