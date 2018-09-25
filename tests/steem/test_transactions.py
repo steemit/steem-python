@@ -730,15 +730,13 @@ class Testcases(unittest.TestCase):
             operations=ops)
         tx = tx.sign([wif], chain=self.steem.chain_params)
         tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
-        compare = ("f68585abf4dce7c80457012a06696e69742d3102036b65794230"
-                   "3332643261346166336532333239346530613164396462633436"
-                   "6530323732643865313937376365326165333334393532376363"
-                   "39306665316363396335646239146163636f756e745f63726561"
-                   "74696f6e5f666565206430303730303030303030303030303030"
-                   "3335343435353335343533303030300000011f3ed64264c74203"
-                   "7955e9eb71f7de8a6bd2635251ad569629f849f23d53f2874d0a"
-                   "879f2579bee31f34bbc7c67456e5be08ee8436f0fd5e0e4cc030"
-                   "3030000001")
+        compare = ("f68585abf4dce7c80457012a06696e69742d3102146163636f75"
+                   "6e745f6372656174696f6e5f66656510d0070000000000000354"
+                   "455354530000036b657921032d2a4af3e23294e0a1d9dbc46e02"
+                   "72d8e1977ce2ae3349527cc90fe1cc9c5db90000011f7797b8f7"
+                   "3e03c04d603512f278aeceb5f76de1d0c527052886df806badb0"
+                   "e41f55a8321abc6431c38130cc789b992e6c79ed4d403eb5906d"
+                   "5af6d3b83626a3e7")
         self.assertEqual(compare[:-130], tx_wire[:-130])
 
     def test_witness_vote(self):
