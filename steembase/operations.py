@@ -1,5 +1,6 @@
 import importlib
 import json
+from binascii import hexlify, unhexlify
 import re
 import struct
 from collections import OrderedDict
@@ -7,8 +8,8 @@ from collections import OrderedDict
 from steem.utils import compat_bytes
 from .account import PublicKey
 from .operationids import operations
-from .types import (Int16, Uint16, Uint32, Uint64, String, Bytes, Array,
-                    PointInTime, Bool, Optional, Map, Id, JsonObj,
+from .types import (Int16, Uint16, Uint32, Uint64, String, HexString, Bytes,
+                    Array, PointInTime, Bool, Optional, Map, Id, JsonObj,
                     StaticVariant)
 
 default_prefix = "STM"
@@ -683,6 +684,60 @@ class WitnessUpdate(GrapheneObject):
                     ('fee', Amount(kwargs["fee"])),
                 ]))
 
+class WitnessSetProperties(GrapheneObject):
+    """
+    Based on https://github.com/holgern/beem/blob/6cc303d1b0fdfb096da78d3ff331aaa79a18ad8f/beembase/operations.py#L278-L318
+    """
+    def __init__(self, *args, **kwargs):
+        if isArgsThisClass(self, args):
+            self.data = args[0].data
+        else:
+            if len(args) == 1 and len(kwargs) == 0:
+                kwargs = args[0]
+            prefix = kwargs.pop("prefix", default_prefix)
+            extensions = Array([])
+            props = {}
+            for k in kwargs["props"]:
+                if "key" == k[0]:
+                    block_signing_key = (PublicKey(k[1], prefix=prefix))
+                    props["key"] = repr(block_signing_key)
+                elif "new_signing_key" == k[0]:
+                    new_signing_key = (PublicKey(k[1], prefix=prefix))
+                    props["new_signing_key"] = repr(new_signing_key)
+            for k in kwargs["props"]:
+                if k[0] in ["key", "new_signing_key"]:
+                    continue
+                if isinstance(k[1], str):
+                    is_hex = re.match(r'^[0-9a-fA-F]+$', k[1] or '') is not None
+                else:
+                    is_hex = False
+                if isinstance(k[1], int) and k[0] in ["account_subsidy_budget", "account_subsidy_decay", "maximum_block_size", "sbd_interest_rate"]:
+                    props[k[0]] = (hexlify(Uint32(k[1]).__bytes__())).decode()
+                elif not isinstance(k[1], str) and k[0] in ["account_creation_fee"]:
+                    props[k[0]] = (hexlify(Amount(k[1]).__bytes__())).decode()
+                elif not is_hex and isinstance(k[1], str) and k[0] in ["account_creation_fee"]:
+                    props[k[0]] = (hexlify(Amount(k[1]).__bytes__())).decode()
+                elif not isinstance(k[1], str) and k[0] in ["sbd_exchange_rate"]:
+                    props[k[0]] = (hexlify(ExchangeRate(k[1]).__bytes__())).decode()
+                elif not is_hex and k[0] in ["url"]:
+                    props[k[0]] = (hexlify(String(k[1]).__bytes__())).decode()
+                else:
+                    props[k[0]] = (k[1])
+            props_list = []
+            for k in props:
+                props_list.append(([String(k), HexString(props[k])]))
+            props_list = sorted(
+                props_list,
+                key=lambda x: str(x[0]),
+                reverse=False,
+            )
+            map_props = Map(props_list)
+
+            super(WitnessSetProperties, self).__init__(OrderedDict([
+                ('owner', String(kwargs["owner"])),
+                ('props', map_props),
+                ('extensions', extensions),
+            ]))
 
 class AccountWitnessVote(GrapheneObject):
     def __init__(self, *args, **kwargs):

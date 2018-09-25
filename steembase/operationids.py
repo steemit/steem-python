@@ -41,6 +41,7 @@ op_names = [
     'claim_reward_balance',
     'delegate_vesting_shares',
     'account_create_with_delegation',
+    'witness_set_properties',
     'fill_convert_request',
     'author_reward',
     'curation_reward',

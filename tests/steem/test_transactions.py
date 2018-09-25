@@ -713,6 +713,32 @@ class Testcases(unittest.TestCase):
                    "b9f2405478badadb4c")
         self.assertEqual(compare[:-130], tx_wire[:-130])
 
+    def test_witness_set_properties(self):
+        op = operations.WitnessSetProperties(**{
+            "owner": "init-1",
+            "props": [
+                ["account_creation_fee", "d0070000000000000354455354530000"],
+                ["key", ("032d2a4af3e23294e0a1d9dbc46e0272d"
+                         "8e1977ce2ae3349527cc90fe1cc9c5db9")]
+            ]
+        })
+        ops = [operations.Operation(op)]
+        tx = SignedTransaction(
+            ref_block_num=ref_block_num,
+            ref_block_prefix=ref_block_prefix,
+            expiration=expiration,
+            operations=ops)
+        tx = tx.sign([wif], chain=self.steem.chain_params)
+        tx_wire = hexlify(compat_bytes(tx)).decode("ascii")
+        compare = ("f68585abf4dce7c80457012a06696e69742d3102146163636f75"
+                   "6e745f6372656174696f6e5f66656510d0070000000000000354"
+                   "455354530000036b657921032d2a4af3e23294e0a1d9dbc46e02"
+                   "72d8e1977ce2ae3349527cc90fe1cc9c5db90000011f7797b8f7"
+                   "3e03c04d603512f278aeceb5f76de1d0c527052886df806badb0"
+                   "e41f55a8321abc6431c38130cc789b992e6c79ed4d403eb5906d"
+                   "5af6d3b83626a3e7")
+        self.assertEqual(compare[:-130], tx_wire[:-130])
+
     def test_witness_vote(self):
         op = operations.AccountWitnessVote(**{
             "account": "xeroc",

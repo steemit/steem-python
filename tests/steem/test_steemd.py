@@ -7,7 +7,7 @@ def test_get_version():
     s = Steemd()
     response = s.call('get_version', api='login_api')
     version = response['blockchain_version']
-    assert version[0:4] == '0.19'
+    assert version[0:4] == '0.20'
 
 
 def test_get_dgp():

@@ -193,6 +193,20 @@ class String:
         return compat_bytes("".join(r), "utf-8")
 
 
+class HexString(object):
+    def __init__(self, d):
+        self.data = d
+
+    def __bytes__(self):
+        """Returns bytes representation."""
+        d = bytes(unhexlify(compat_bytes(self.data, 'ascii')))
+        return varint(len(d)) + d
+
+    def __str__(self):
+        """Returns data as string."""
+        return '%s' % str(self.data)
+
+
 class Bytes:
     def __init__(self, d, length=None):
         self.data = d
