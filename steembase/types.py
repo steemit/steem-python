@@ -199,7 +199,7 @@ class HexString(object):
 
     def __bytes__(self):
         """Returns bytes representation."""
-        d = bytes(unhexlify(bytes(self.data, 'ascii')))
+        d = bytes(unhexlify(compat_bytes(self.data, 'ascii')))
         return varint(len(d)) + d
 
     def __str__(self):
