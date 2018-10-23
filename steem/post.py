@@ -195,9 +195,9 @@ class Post(dict):
         return self['depth'] > 0
 
     def curation_reward_pct(self):
-        """ If post is less than 30 minutes old, it will incur a curation
+        """ If post is less than 15 minutes old, it will incur a curation
         reward penalty.  """
-        reward = (self.time_elapsed().seconds / 1800) * 100
+        reward = (self.time_elapsed().seconds / 900) * 100
         if reward > 100:
             reward = 100
         return reward
