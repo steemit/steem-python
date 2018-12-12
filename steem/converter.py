@@ -93,16 +93,11 @@ class Converter(object):
         """
         steem_payout = self.sbd_to_steem(sbd_payout)
 
-        props = self.steemd.get_dynamic_global_properties()
-        total_reward_fund_steem = Amount(props['total_reward_fund_steem'])
-        total_reward_shares2 = int(props['total_reward_shares2'])
+        reward_fund = self.steemd.get_reward_fund()
+        reward_balance = Amount(reward_fund['reward_balance']).amount
+        recent_claims = int(reward_fund['recent_claims'])
 
-        post_rshares2 = (
-                                steem_payout / total_reward_fund_steem) * total_reward_shares2
-
-        rshares = math.sqrt(
-            self.CONTENT_CONSTANT ** 2 + post_rshares2) - self.CONTENT_CONSTANT
-        return rshares
+        return int(recent_claims * steem_payout / (reward_balance - steem_payout))
 
     def rshares_2_weight(self, rshares):
         """ Obtain weight from rshares
